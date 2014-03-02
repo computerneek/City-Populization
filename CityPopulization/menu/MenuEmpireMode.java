@@ -27,7 +27,6 @@ public class MenuEmpireMode extends Menu{
     }
     @Override
     public void renderBackground(){
-        super.renderBackground();
         play.enabled = delete.enabled = missionList.selectedIndex>=0;
     }
     @Override

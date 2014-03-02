@@ -1,16 +1,18 @@
 package CityPopulization.world.plot;
-import CityPopulization.world.resource.Resource;
-import CityPopulization.world.resource.ResourceList;
-import CityPopulization.render.RoadRenderer;
-import CityPopulization.render.StoreRenderer;
-import CityPopulization.render.WarehouseRenderer;
-import CityPopulization.render.WorkshopRenderer;
 import CityPopulization.render.AirportRenderer;
 import CityPopulization.render.CubeRenderer;
 import CityPopulization.render.ForestRenderer;
 import CityPopulization.render.NonRenderer;
 import CityPopulization.render.PlotRenderer;
 import CityPopulization.render.PumpingStationRenderer;
+import CityPopulization.render.RoadRenderer;
+import CityPopulization.render.StoreRenderer;
+import CityPopulization.render.WarehouseRenderer;
+import CityPopulization.render.WorkshopRenderer;
+import CityPopulization.world.resource.Resource;
+import CityPopulization.world.resource.ResourceList;
+import java.io.IOException;
+import java.io.InputStream;
 public enum PlotType{
     Grass("Grass", "grass", new ResourceList(Resource.Dirt, 5000), new CubeRenderer(), 1, true),
     Dirt("Dirt", "dirt", new ResourceList(Resource.Dirt, 5000), new CubeRenderer(), 1, true),
@@ -38,6 +40,7 @@ public enum PlotType{
     private PlotRenderer renderer;
     private int highestLevel;
     private boolean isOpaque;
+    private int[] frameCaps;
     PlotType(String name, String textureFolder, ResourceList resourceHarvested, PlotRenderer renderer, int highestLevel, boolean isOpaque){
         this.name = name;
         this.textureFolder = textureFolder;
@@ -45,6 +48,7 @@ public enum PlotType{
         this.renderer = renderer;
         this.highestLevel = highestLevel;
         this.isOpaque = isOpaque;
+        frameCaps = findFrameCaps();
     }
     public int getMaximumLevel(){
         return highestLevel;
@@ -54,5 +58,22 @@ public enum PlotType{
     }
     public void render(Plot plot){
         renderer.render(plot, textureFolder);
+    }
+    private int[] findFrameCaps(){
+        int[] frameCaps = new int[highestLevel];
+        for(int i = 1; i<highestLevel+1; i++){
+            for(int j = 1; frameCaps[i-1]==0; j++){
+                String path = "/textures/plots/"+textureFolder+"/level "+i+"/frame "+j+".png";
+                try(InputStream in = PlotType.class.getResourceAsStream(path)){
+                    if(in==null){
+                        frameCaps[i-1] = j-1;
+                    }
+                }catch(IOException ex){}
+            }
+        }
+        return frameCaps;
+    }
+    public int getFrameCap(int level){
+        return frameCaps[level-1];
     }
 }

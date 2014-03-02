@@ -1,4 +1,4 @@
-package CityPopulization.render;
+package CityPopulization.menu;
 import CityPopulization.world.WinningCondition;
 import CityPopulization.menu.MenuNewWorld;
 import simplelibrary.opengl.gui.GUI;
@@ -29,4 +29,6 @@ public class MenuNewWorldGoal extends Menu{
     private void save(){
         parent.theGoal = WinningCondition.getGoal(goalType.getIndex());
     }
+    @Override
+    public void renderBackground(){}
 }

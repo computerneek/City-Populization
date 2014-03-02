@@ -1,13 +1,16 @@
 package CityPopulization.world.player;
-import CityPopulization.world.resource.ResourceManager;
-import CityPopulization.world.civillian.WorkerTaskManager;
+import CityPopulization.world.World;
 import CityPopulization.world.civillian.CivillianManager;
+import CityPopulization.world.civillian.WorkerTaskManager;
+import CityPopulization.world.resource.ResourceManager;
 public enum Race{
-    HUMAN("Human"),
-    ZOMBIE("Zombie");
+    HUMAN("Human", new PlayerHuman()),
+    ZOMBIE("Zombie", null);
     private final String name;
-    Race(String name){
+    private final Player player;
+    Race(String name, Player player){
         this.name = name;
+        this.player=player;
     }
     public String getName(){
         return name;
@@ -20,5 +23,8 @@ public enum Race{
     }
     public CivillianManager createCivillianManager(){
         return new CivillianManager();
+    }
+    public Player createPlayer(World world){
+        return player.createNew(world);
     }
 }

@@ -1,6 +1,5 @@
 package CityPopulization.menu;
 import CityPopulization.Core;
-import CityPopulization.render.MenuNewWorldGoal;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.plot.Template;
 import CityPopulization.world.WinningCondition;
@@ -57,7 +56,6 @@ public class MenuNewWorld extends Menu{
     }
     @Override
     public void renderBackground(){
-        super.renderBackground();
         drawText(-0.8, -0.88, 0.8, -0.8, "World Name:");
         create.enabled = !name.text.isEmpty();
     }

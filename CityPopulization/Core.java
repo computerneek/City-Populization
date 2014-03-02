@@ -1,11 +1,11 @@
 package CityPopulization;
-import CityPopulization.world.WorldInfo;
-import CityPopulization.world.WorldData;
-import CityPopulization.world.World;
-import CityPopulization.world.save.SaveLoader;
-import CityPopulization.menu.MenuMain;
 import CityPopulization.menu.MenuIngame;
+import CityPopulization.menu.MenuMain;
+import CityPopulization.world.World;
+import CityPopulization.world.WorldData;
+import CityPopulization.world.WorldInfo;
 import CityPopulization.world.save.LocalSaveLoader;
+import CityPopulization.world.save.SaveLoader;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -24,6 +24,8 @@ import org.lwjgl.openal.Util;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.Sys;
+import simplelibrary.error.ErrorCategory;
+import simplelibrary.error.ErrorLevel;
 import simplelibrary.font.FontManager;
 import simplelibrary.game.GameHelper;
 import simplelibrary.openal.SoundStash;
@@ -78,7 +80,11 @@ public class Core{
     }
     public static void tick(boolean isLastTick){
         if(world!=null&&(gui.menu==null||gui.menu.pausesGame())){
-            world.tick();
+            try{
+                world.tick();
+            }catch(Exception ex){
+                Sys.error(ErrorLevel.severe, null, ex, ErrorCategory.other);
+            }
         }
         tick++;
         gui.tick();
@@ -99,8 +105,13 @@ public class Core{
             FPStracker.remove(0);
         }
         if(Settings.guiScale==Settings.GUISCALE_DEFAULT){
+            float width = Display.getWidth()/800f;
             float height = Display.getHeight()/500f;
-            helper.guiScale = Math.min(Display.getWidth()/800f, Display.getHeight()/500f)/height;
+            if(width<1){
+                helper.guiScale = 1/width;
+            }else{
+                helper.guiScale = 1;
+            }
         }else{
             helper.guiScale = Settings.guiScale;
         }
@@ -121,6 +132,14 @@ public class Core{
         AL10.alSourceQueueBuffers(SoundStash.getSource("source "+sourceNum), SoundStash.getBuffer("/"+sound+".wav"));
         AL10.alSourcePlay(SoundStash.getSource("source "+sourceNum));
     }
+    public static synchronized void playSound(String sound, String source){
+        try{
+            AL10.alSourceUnqueueBuffers(SoundStash.getSource(source));
+            Util.checkALError();
+        }catch(Exception ex){}
+        AL10.alSourceQueueBuffers(SoundStash.getSource(source), SoundStash.getBuffer("/"+sound+".wav"));
+        AL10.alSourcePlay(SoundStash.getSource(source));
+    }
     public static SaveLoader getSingleplayerSaveLoader(){
         return empireSaveLoader;
     }
@@ -139,7 +158,7 @@ public class Core{
         info.version = VersionManager.currentVersion;
         World world = info.saveLoader.loadWorld(info);
         world.setTemplate(data.template);
-        world.getLocalPlayer().setRace(data.race);
+        world.setRace(data.race);
         world.setGoal(data.goal);
         world.setGameSpeed(data.gameSpeed);
         world.setDifficulty(data.difficulty);
