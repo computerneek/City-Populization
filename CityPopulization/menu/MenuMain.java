@@ -1,6 +1,5 @@
 package CityPopulization.menu;
 import CityPopulization.Core;
-import CityPopulization.render.MenuStory;
 import CityPopulization.menu.MenuEmpireMode;
 import simplelibrary.opengl.gui.GUI;
 import simplelibrary.opengl.gui.Menu;
@@ -23,6 +22,8 @@ public class MenuMain extends Menu{
         options = add(new MenuComponentButton(-0.8f, 0.32f, 1.6f, 0.16f, "Options (NYI)", false));
         exit = add(new MenuComponentButton(-0.8f, 0.52f, 1.6f, 0.16f, "Exit", true));
     }
+    @Override
+    public void renderBackground(){}
     @Override
     public void buttonClicked(MenuComponentButton button){
         if(button==story){

@@ -28,15 +28,19 @@ public enum Template{
                 airChance = rand.nextGaussian()*10;
                 woodChance = rand.nextGaussian();
             }else{
+                dirtChance = rand.nextGaussian()*10*(z==-1?10:1);
                 coalChance = rand.nextGaussian()*3/2;
                 oilChance = rand.nextGaussian()*3/2;
-                stoneChance = rand.nextGaussian()*10;
+                if(z<-1){
+                    stoneChance = rand.nextGaussian()*10;
+                }
                 ironChance = rand.nextGaussian();
                 sandChance = rand.nextGaussian()*2;
                 clayChance = rand.nextGaussian();
                 goldChance = rand.nextGaussian()/5;
             }
             HashMap<Double, Resource> chances = new HashMap<>();
+            chances.put(Math.abs(airChance), null);
             chances.put(Math.abs(dirtChance), Resource.Dirt);
             chances.put(Math.abs(coalChance), Resource.Coal);
             chances.put(Math.abs(oilChance), Resource.Oil);

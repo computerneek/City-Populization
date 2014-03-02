@@ -1,4 +1,4 @@
-package CityPopulization.render;
+package CityPopulization.menu;
 import CityPopulization.world.story.StoryManager;
 import CityPopulization.world.story.StoryMission;
 import simplelibrary.opengl.gui.GUI;

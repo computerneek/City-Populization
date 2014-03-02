@@ -1,24 +1,21 @@
 package CityPopulization.world;
-import CityPopulization.world.WinningCondition;
-import CityPopulization.world.plot.Template;
-import CityPopulization.world.plot.PlotType;
-import CityPopulization.world.plot.Plot;
 import CityPopulization.world.player.Player;
-import CityPopulization.world.player.LocalPlayer;
-import CityPopulization.world.aircraft.InitialWorkerAircraft;
-import CityPopulization.world.GameDifficulty;
+import CityPopulization.world.player.Race;
+import CityPopulization.world.plot.Plot;
+import CityPopulization.world.plot.Template;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Random;
 import org.lwjgl.opengl.GL11;
 public class World{
-    long cash;
-    int seed;
-    private Player localPlayer = new LocalPlayer();
+    public long seed = new Random().nextLong();
+    private Player localPlayer;
     private ArrayList<Player> otherPlayers = new ArrayList<Player>();
     private Template template;
     private int speedMultiplier;
     private WinningCondition goal;
-    private int age;
+    public int age;
     private boolean isPaused;
     private GameDifficulty difficulty;
     private HashMap<Integer, HashMap<Integer, HashMap<Integer, Plot>>> plots = new HashMap<>();
@@ -30,10 +27,11 @@ public class World{
         }
         age++;
         ArrayList<Plot> plots = plotsNeedingUpdate.remove(age);
-        for(Plot plot : plots){
-            plot.update();
+        if(plots!=null){
+            for(Plot plot : plots){
+                plot.update();
+            }
         }
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     public Player getLocalPlayer(){
         return localPlayer;
@@ -78,11 +76,7 @@ public class World{
         return plots3.get(z);
     }
     public void summonInitialWorker(){
-        generateAndGetPlot(0, 0, 0).setType(PlotType.AirportEntrance).setOwner(localPlayer);
-        generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(localPlayer);
-        generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(localPlayer);
-        generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(localPlayer);
-        getPlot(0, 0, 0).addInboundAircraft(new InitialWorkerAircraft());
+        localPlayer.summonInitialWorkers();
     }
     public Plot generatePlot(int x, int y, int z){
         HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x);
@@ -124,30 +118,57 @@ public class World{
     }
     public void render(){
         GL11.glLoadIdentity();
-        GL11.glTranslatef(localPlayer.getCameraX(), -localPlayer.getCameraY(), -5);
-        int x = (int)localPlayer.getCameraX();
-        int y = (int)localPlayer.getCameraY();
+        GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -3);
+//        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        int x = -(int)localPlayer.getCameraX();
+        int y = -(int)localPlayer.getCameraY();
         int z = (int)localPlayer.getCameraZ();
-        for(int i = -6; i<7; i++){
-            HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x+i);
-            if(plots2==null){
-                continue;
-            }
-            for(int j = -6; j<7; j++){
-                HashMap<Integer, Plot> plots3 = plots2.get(y+j);
-                if(plots3==null){
-                    continue;
-                }
-                for(int k = -10; k<4; k++){
-                    Plot plot = plots3.get(z+k);
-                    if(plot==null){
-                        continue;
+        for(int i = -10; i<4; i++){
+            GL11.glColor4d(1, 1, 1, i>0?0.2:1);
+            HashMap<Float, ArrayList<Plot>> map = new HashMap<>();
+            for(int j=-5; j<6; j++){
+                for(int k = -5; k<6; k++){
+                    float dist = (float)Math.sqrt(j*j+k*k);
+                    if(!map.containsKey(dist)){
+                        map.put(dist, new ArrayList<Plot>());
                     }
-                    GL11.glColor4d(1, 1, 1, k>0?0.2:1);
-                    plot.render(localPlayer);
+                    map.get(dist).add(getPlot(x+j, y+k, z+i));
+                }
+            }
+            ArrayList<Float> dists = new ArrayList<>(map.keySet());
+            Collections.sort(dists);
+            while(!dists.isEmpty()){
+                for(Plot plot : map.get(dists.remove(dists.size()-1))){
+                    if(plot!=null){
+                        plot.render(localPlayer);
+                    }
                 }
             }
         }
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        for(int i = -6; i<7; i++){
+//            HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x+i);
+//            if(plots2==null){
+//                continue;
+//            }
+//            for(int j = -6; j<7; j++){
+//                HashMap<Integer, Plot> plots3 = plots2.get(y+j);
+//                if(plots3==null){
+//                    continue;
+//                }
+//                for(int k = -10; k<4; k++){
+//                    Plot plot = plots3.get(z+k);
+//                    if(plot==null){
+//                        continue;
+//                    }
+//                    GL11.glColor4d(1, 1, 1, k>0?0.2:1);
+//                    plot.render(localPlayer);
+//                }
+//            }
+//        }
+//        GL11.glDisable(GL11.GL_DEPTH_TEST);
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    public void setRace(Race race){
+        localPlayer = race.createPlayer(this);
     }
 }
