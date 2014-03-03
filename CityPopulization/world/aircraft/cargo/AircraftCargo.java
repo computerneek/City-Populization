@@ -9,5 +9,12 @@ public abstract class AircraftCargo {
         }
         return lst;
     }
+    public static ArrayList<AircraftCargo> tools(int quantity){
+        ArrayList<AircraftCargo> lst = new ArrayList<>(quantity);
+        for(int i = 0; i<quantity; i++){
+            lst.add(new AircraftCargoTool());
+        }
+        return lst;
+    }
     public abstract int getSpaceOccupied();
 }

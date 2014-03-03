@@ -26,9 +26,11 @@ public abstract class Player{
     }
     public void setRace(Race race){
         this.race = race;
-        this.resourceManager = race.createResourceManager();
-        this.workerTaskManager = race.createWorkerTaskManager();
-        this.civillianManager = race.createCivillianManager();
+        if(race!=null){
+            this.resourceManager = race.createResourceManager();
+            this.workerTaskManager = race.createWorkerTaskManager();
+            this.civillianManager = race.createCivillianManager();
+        }
     }
     public double getCameraX(){
         return cameraX;
