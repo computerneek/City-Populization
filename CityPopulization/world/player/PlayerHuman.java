@@ -1,4 +1,5 @@
 package CityPopulization.world.player;
+import CityPopulization.render.Side;
 import CityPopulization.world.World;
 import CityPopulization.world.aircraft.StartingHellicopter;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
@@ -26,7 +27,7 @@ public class PlayerHuman extends Player {
         world.generateAndGetPlot(0, 0, 0).setType(PlotType.AirportEntrance).setOwner(world.getLocalPlayer());
         world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(world.getLocalPlayer());
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(world.getLocalPlayer());
-        world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(world.getLocalPlayer());
+        world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(world.getLocalPlayer()).setFront(Side.LEFT);
         world.getPlot(0, 0, 0)
                 .addInboundAircraft(new StartingHellicopter(this))
                 .loadPassengers(AircraftPassenger.workers(4))

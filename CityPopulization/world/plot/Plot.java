@@ -2,6 +2,7 @@ package CityPopulization.world.plot;
 import CityPopulization.render.Side;
 import CityPopulization.world.World;
 import CityPopulization.world.aircraft.Aircraft;
+import CityPopulization.world.aircraft.Terminal;
 import CityPopulization.world.player.Player;
 import java.util.ArrayList;
 import java.util.Random;
@@ -23,6 +24,7 @@ public class Plot{
     public boolean shouldRenderBackFace;
     private int frameBoost;
     public Side front = Side.FRONT;
+    public Terminal terminal;
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -39,6 +41,7 @@ public class Plot{
         }else{
             setType(PlotType.Stone);
         }
+        terminal = new Terminal(this);
     }
     public Plot setType(PlotType type){
         this.type = type;
@@ -74,7 +77,7 @@ public class Plot{
     public void setNextBreakageTime(int i){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    public void setOwner(Player player){
+    public Plot setOwner(Player player){
         owner = player;
         for(int i = -1; i<2; i++){
             for(int j = -1; j<2; j++){
@@ -83,6 +86,11 @@ public class Plot{
                 }
             }
         }
+        return this;
+    }
+    public Plot setFront(Side front){
+        this.front = front;
+        return this;
     }
     public Aircraft addInboundAircraft(Aircraft aircraft){
         if(getType()==PlotType.AirportEntrance){
@@ -120,7 +128,17 @@ public class Plot{
     }
     private void attemptToLandAircraft(Aircraft aircraft){
         ArrayList<Plot> terminals = new ArrayList<>();
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        findTerminals(terminals);
+        for(Plot plot : terminals){
+            Terminal terminal = plot.terminal;
+            if(!terminal.occupied){
+                terminal.attemptToLandAircraft(aircraft);
+                if(terminal.occupied){
+                    return;
+                }
+            }
+        }
+        inboundAircraft.add(aircraft);
     }
     private void onNeighborPlotChange(){
         shouldRenderTopFace = world.getPlot(x, y, z+1)==null||!world.getPlot(x, y, z+1).getType().isOpaque();
@@ -149,5 +167,29 @@ public class Plot{
     }
     public Plot getBackPlot(){
         return front.reverse().getPlot(world, x, y, z);
+    }
+    private void findTerminals(ArrayList<Plot> terminals){
+        findTerminal(terminals, x+1, y, z);
+        findTerminal(terminals, x-1, y, z);
+        findTerminal(terminals, x, y+1, z);
+        findTerminal(terminals, x, y-1, z);
+        findTerminal(terminals, x, y, z+1);
+        findTerminal(terminals, x, y, z-1);
+    }
+    private void findTerminal(ArrayList<Plot> terminals, int x, int y, int z){
+        Plot plot = world.getPlot(x, y, z);
+        if(plot==null){
+            return;
+        }
+        if(plot.getType()==PlotType.AirportTerminal&&!terminals.contains(plot)&&plot.getOwner()==getOwner()){
+            terminals.add(plot);
+            plot.findTerminals(terminals);
+        }
+    }
+    public Player getOwner(){
+        return owner;
+    }
+    public Side getFront(){
+        return front;
     }
 }
