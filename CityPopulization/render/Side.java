@@ -86,9 +86,9 @@ public enum Side{
             return UP;
         }
     };
-    private final int xModification;
-    private final int yModification;
-    private final int zModification;
+    public final int xModification;
+    public final int yModification;
+    public final int zModification;
     Side(int xModification, int yModification, int zModification){
         this.xModification=xModification;
         this.yModification=yModification;

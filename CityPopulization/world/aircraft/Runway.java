@@ -1,0 +1,22 @@
+package CityPopulization.world.aircraft;
+import CityPopulization.world.plot.Plot;
+import java.util.ArrayList;
+public class Runway{
+    public ArrayList<Plot> plots = new ArrayList<>();
+    public Runway(Plot plot){
+        plots.add(plot);
+        while(plot.getBackPlot()!=null&&plot.getOwner()==plot.getBackPlot().getOwner()&&plot.getFront()==plot.getBackPlot().getFront()&&plot.getType()==plot.getBackPlot().getType()){
+            plot = plot.getBackPlot();
+            plots.add(0, plot);
+        }
+    }
+    public boolean isOccupied(){
+        return plots.get(plots.size()-1).terminal.occupied;
+    }
+    public int size(){
+        return plots.size();
+    }
+    public Plot getTouchdownPlot(){
+        return plots.get(0);
+    }
+}
