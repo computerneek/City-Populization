@@ -1,10 +1,12 @@
 package CityPopulization.world.aircraft;
 import CityPopulization.render.Side;
+import CityPopulization.world.World;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
 import CityPopulization.world.aircraft.landingSequence.LandingSequenceEvent;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
+import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
 import java.util.Iterator;
 public abstract class Aircraft{
@@ -22,9 +24,13 @@ public abstract class Aircraft{
     private int x;
     private int y;
     private int z;
-    private Side heading;
-    private int speed;
-    private int targetSpeed;
+    private float heading;
+    private float pitch;
+    private boolean tiltToMatchPitch;
+    private float tilt;
+    private float speed;
+    private float targetSpeed;
+    public float targetPitch;
     public Aircraft(Player player){
         this.player = player;
     }
@@ -64,19 +70,24 @@ public abstract class Aircraft{
         landingSequence = getLandingSequence();
         player.world.aircraft.add(this);
         state = "Landing";
+        terminal.occupied = true;
     }
     public abstract ArrayList<LandingSequenceEvent> getLandingSequence();
     public void update(){
-        if(heading==null){
-            x+=heading.xModification*0.1F*speed;
-            y+=heading.yModification*0.1F*speed;
-            z+=heading.zModification*0.1F*speed;
-            NEED_BETTER_MOVEMENT_CODE_USING_PYTHAGOREAN_STUFF
-            if(speed<targetSpeed){
-                speed+=Math.min(targetSpeed-speed, 0.1F);
-            }else if(speed>targetSpeed){
-                speed-=Math.min(speed-targetSpeed, 0.05F);
-            }
+        float distance = 0.02F*speed;
+        float xyDist = (float)Math.cos(Math.toRadians(pitch))*distance;
+        float zDist = (float)Math.sin(Math.toRadians(pitch))*distance;
+        float xDist = (float)Math.cos(Math.toRadians(heading))*xyDist;
+        float yDist = (float)Math.sin(Math.toRadians(heading))*xyDist;
+        if(speed<targetSpeed){
+            speed+=Math.min(targetSpeed-speed, 0.1F);
+        }else if(speed>targetSpeed){
+            speed-=Math.min(speed-targetSpeed, 0.05F);
+        }
+        if(pitch<targetPitch){
+            pitch+=Math.min(targetPitch-pitch, 3);
+        }else if(pitch>targetPitch){
+            pitch-=Math.min(pitch-targetPitch, 3);
         }
         switch(state){
             case "Landing":
@@ -88,12 +99,47 @@ public abstract class Aircraft{
         checkForCrashes();
     }
     private void landingUpdate(){
+        if(landingSequence.isEmpty()){
+            state="Landed";
+            return;
+        }
         if(landingSequence.get(0).update(this)){
             landingSequence.remove(0);
         }
     }
     private void checkForCrashes(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ArrayList<Plot> plots = new ArrayList<>();
+        int xDown = Math.round(x-0.3f);
+        int xUp = Math.round(x+0.3f);
+        int yDown = Math.round(y-0.3f);
+        int yUp = Math.round(y+0.3f);
+        int zDown = Math.round(z-0.3f);
+        int zUp = Math.round(z+0.3f);
+        checkForCrash(xDown, yDown, zDown);
+        if(xUp!=xDown){
+            checkForCrash(xUp, yDown, zDown);
+            if(yUp!=yDown){
+                checkForCrash(xDown, yUp, zDown);
+                checkForCrash(xUp, yUp, zDown);
+                if(zUp!=zDown){
+                    checkForCrash(xDown, yDown, zUp);
+                    checkForCrash(xUp, yDown, zUp);
+                    checkForCrash(xDown, yUp, zUp);
+                    checkForCrash(xUp, yUp, zUp);
+                }
+            }else if(zUp!=zDown){
+                checkForCrash(xDown, yDown, zUp);
+                checkForCrash(xUp, yDown, zUp);
+            }
+        }else if(yUp!=yDown){
+            checkForCrash(xDown, yUp, zDown);
+            if(zUp!=zDown){
+                checkForCrash(xDown, yDown, zUp);
+                checkForCrash(xDown, yUp, zUp);
+            }
+        }else if(zUp!=zDown){
+            checkForCrash(xDown, yDown, zUp);
+        }
     }
     public void setLocation(Plot plot){
         this.x = plot.x;
@@ -101,16 +147,41 @@ public abstract class Aircraft{
         this.z = plot.z;
     }
     public void setHeading(Side front){
-        this.heading = front;
+        switch(front){
+            case FRONT:
+                heading = 270;
+                break;
+            case BACK:
+                heading = 90;
+                break;
+            case LEFT:
+                heading = 180;
+                break;
+            case RIGHT:
+                heading = 0;
+                break;
+            default:
+                throw new AssertionError(front.name());
+        }
     }
     public void setSpeed(int speed){
         this.speed = speed;
         this.targetSpeed = speed;
     }
     public void setTargetSpeed(int speed){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        targetSpeed = speed;
     }
-    public void setTargetHeight(int height){
+    private void checkForCrash(int x, int y, int z){
+        World world = player.world;
+        Plot plot = world.getPlot(x, y, z);
+        if(plot==null){
+            return;
+        }
+        if(plot.getType().causesAirlineCrash()){
+            crash();
+        }
+    }
+    private void crash(){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
