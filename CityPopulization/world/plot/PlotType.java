@@ -14,26 +14,26 @@ import CityPopulization.world.resource.ResourceList;
 import java.io.IOException;
 import java.io.InputStream;
 public enum PlotType{
-    Grass("Grass", "grass", new ResourceList(Resource.Dirt, 5000), new CubeRenderer(), 1, true),
-    Dirt("Dirt", "dirt", new ResourceList(Resource.Dirt, 5000), new CubeRenderer(), 1, true),
-    Road("Road", "road", new ResourceList(), new RoadRenderer(), 10, false),
-    Warehouse("Warehouse", "warehouse", new ResourceList(), new WarehouseRenderer(), 10, false),
-    Workshop("Workshop", "workshop", new ResourceList(), new WorkshopRenderer(), 10, false),
-    Store("Store", "store", new ResourceList(), new StoreRenderer(), 1, false),
-    CoalDeposit("Coal", "coal", new ResourceList(Resource.Coal, 5000), new CubeRenderer(), 1, true),
-    Air("Air", "air", new ResourceList(), new NonRenderer(), 1, false),
-    OilDeposit("Oil", "oil", new ResourceList(Resource.Oil, 5000), new CubeRenderer(), 1, true),
-    PumpingStation("Pumping Station", "pump", new ResourceList(), new PumpingStationRenderer(), 1, false),
-    Woods("Forest", "woods", new ResourceList(Resource.Wood, 5000), new ForestRenderer(), 1, false),
-    Stone("Stone", "stone", new ResourceList(Resource.Stone, 5000), new CubeRenderer(), 1, true),
-    IronDeposit("Iron", "iron", new ResourceList(Resource.Iron, 5000), new CubeRenderer(), 1, true),
-    Sand("Sand", "sand", new ResourceList(Resource.Sand, 5000), new CubeRenderer(), 1, true),
-    ClayDeposit("Clay", "clay", new ResourceList(Resource.Clay, 5000), new CubeRenderer(), 1, true),
-    GoldDeposit("Gold", "gold", new ResourceList(Resource.Gold, 5000), new CubeRenderer(), 1, true),
-    AirportEntrance("Airport Entrance", "airport/entrance", new ResourceList(), new AirportRenderer(AirportRenderer.ENTRANCE), 1, false),
-    AirportTerminal("Airport Terminal", "airport/terminal", new ResourceList(), new AirportRenderer(AirportRenderer.TERMINAL), 1, false),
-    AirportJetway("Airport Jetway", "airport/jetway", new ResourceList(), new AirportRenderer(AirportRenderer.JETWAY), 1, false),
-    AirportRunway("Airport Runway", "airport/runway", new ResourceList(), new AirportRenderer(AirportRenderer.RUNWAY), 1, false);
+    Grass("Grass", "grass", new ResourceList(Resource.Dirt, 5000), new CubeRenderer(), 1, true, true),
+    Dirt("Dirt", "dirt", new ResourceList(Resource.Dirt, 5000), new CubeRenderer(), 1, true, true),
+    Road("Road", "road", new ResourceList(), new RoadRenderer(), 10, false, false),
+    Warehouse("Warehouse", "warehouse", new ResourceList(), new WarehouseRenderer(), 10, false, true),
+    Workshop("Workshop", "workshop", new ResourceList(), new WorkshopRenderer(), 10, false, true),
+    Store("Store", "store", new ResourceList(), new StoreRenderer(), 1, false, true),
+    CoalDeposit("Coal", "coal", new ResourceList(Resource.Coal, 5000), new CubeRenderer(), 1, true, true),
+    Air("Air", "air", new ResourceList(), new NonRenderer(), 1, false, false),
+    OilDeposit("Oil", "oil", new ResourceList(Resource.Oil, 5000), new CubeRenderer(), 1, true, true),
+    PumpingStation("Pumping Station", "pump", new ResourceList(), new PumpingStationRenderer(), 1, false, true),
+    Woods("Forest", "woods", new ResourceList(Resource.Wood, 5000), new ForestRenderer(), 1, false, true),
+    Stone("Stone", "stone", new ResourceList(Resource.Stone, 5000), new CubeRenderer(), 1, true, true),
+    IronDeposit("Iron", "iron", new ResourceList(Resource.Iron, 5000), new CubeRenderer(), 1, true, true),
+    Sand("Sand", "sand", new ResourceList(Resource.Sand, 5000), new CubeRenderer(), 1, true, true),
+    ClayDeposit("Clay", "clay", new ResourceList(Resource.Clay, 5000), new CubeRenderer(), 1, true, true),
+    GoldDeposit("Gold", "gold", new ResourceList(Resource.Gold, 5000), new CubeRenderer(), 1, true, true),
+    AirportEntrance("Airport Entrance", "airport/entrance", new ResourceList(), new AirportRenderer(AirportRenderer.ENTRANCE), 1, false, true),
+    AirportTerminal("Airport Terminal", "airport/terminal", new ResourceList(), new AirportRenderer(AirportRenderer.TERMINAL), 1, false, true),
+    AirportJetway("Airport Jetway", "airport/jetway", new ResourceList(), new AirportRenderer(AirportRenderer.JETWAY), 1, false, false),
+    AirportRunway("Airport Runway", "airport/runway", new ResourceList(), new AirportRenderer(AirportRenderer.RUNWAY), 1, false, false);
     private final String name;
     private String textureFolder;
     private ResourceList resourceHarvested;
@@ -41,13 +41,15 @@ public enum PlotType{
     private int highestLevel;
     private boolean isOpaque;
     private int[] frameCaps;
-    PlotType(String name, String textureFolder, ResourceList resourceHarvested, PlotRenderer renderer, int highestLevel, boolean isOpaque){
+    private final boolean causesAirlineCrash;
+    PlotType(String name, String textureFolder, ResourceList resourceHarvested, PlotRenderer renderer, int highestLevel, boolean isOpaque, boolean causesAirlineCrash){
         this.name = name;
         this.textureFolder = textureFolder;
         this.resourceHarvested = resourceHarvested;
         this.renderer = renderer;
         this.highestLevel = highestLevel;
         this.isOpaque = isOpaque;
+        this.causesAirlineCrash=causesAirlineCrash;
         frameCaps = findFrameCaps();
     }
     public int getMaximumLevel(){
@@ -75,5 +77,8 @@ public enum PlotType{
     }
     public int getFrameCap(int level){
         return frameCaps[level-1];
+    }
+    public boolean causesAirlineCrash(){
+        return causesAirlineCrash;
     }
 }
