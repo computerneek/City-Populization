@@ -6,7 +6,6 @@ import CityPopulization.world.aircraft.landingSequence.LandingSequenceEvent;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
-import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
 import java.util.Iterator;
 public abstract class Aircraft{
