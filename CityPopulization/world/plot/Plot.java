@@ -233,6 +233,19 @@ public class Plot{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     private void workerUpdate(){
+        timeSinceLastWorkerOperation++;
+        if(timeSinceLastWorkerOperation>=20){
+            doWorkerUpdate();
+        }
+    }
+    private void doWorkerUpdate(){
+        ArrayList<TaskPotential> tasks = new ArrayList<>();
+        findPotentialTasks(tasks);
+        for(TaskPotential potentialTask : tasks){
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+    private void findPotentialTasks(ArrayList<TaskPotential> tasks){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
