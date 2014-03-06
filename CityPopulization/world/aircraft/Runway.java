@@ -11,12 +11,15 @@ public class Runway{
         }
     }
     public boolean isOccupied(){
-        return plots.get(plots.size()-1).terminal.occupied;
+        return getStartPlot().terminal.occupied>0;
     }
     public int size(){
         return plots.size();
     }
     public Plot getTouchdownPlot(){
         return plots.get(0);
+    }
+    public Plot getStartPlot(){
+        return plots.get(plots.size()-1);
     }
 }

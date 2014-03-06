@@ -2,7 +2,7 @@ package CityPopulization.render;
 import CityPopulization.world.World;
 import CityPopulization.world.plot.Plot;
 public enum Side{
-    FRONT(0, -1, 0){
+    FRONT(0, 1, 0){
         @Override
         public Side right(){
             return LEFT;
@@ -16,7 +16,7 @@ public enum Side{
             return BACK;
         }
     },
-    BACK(0, 1, 0){
+    BACK(0, -1, 0){
         @Override
         public Side right(){
             return RIGHT;

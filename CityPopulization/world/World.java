@@ -128,7 +128,7 @@ public class World{
         GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -3);
 //        GL11.glEnable(GL11.GL_DEPTH_TEST);
         int x = -(int)localPlayer.getCameraX();
-        int y = -(int)localPlayer.getCameraY();
+        int y = (int)localPlayer.getCameraY();
         int z = (int)localPlayer.getCameraZ();
         for(int i = -10; i<4; i++){
             GL11.glColor4d(1, 1, 1, i>0?0.2:1);
@@ -151,6 +151,9 @@ public class World{
                     }
                 }
             }
+        }
+        for(Aircraft aircraft : this.aircraft){
+            aircraft.render(localPlayer);
         }
 //        for(int i = -6; i<7; i++){
 //            HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x+i);

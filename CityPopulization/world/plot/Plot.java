@@ -131,9 +131,9 @@ public class Plot{
         findTerminals(terminals);
         for(Plot plot : terminals){
             Terminal terminal = plot.terminal;
-            if(!terminal.occupied){
+            if(terminal.occupied==0){
                 terminal.attemptToLandAircraft(aircraft);
-                if(terminal.occupied){
+                if(terminal.occupied>0){
                     return;
                 }
             }

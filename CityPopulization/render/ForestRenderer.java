@@ -6,7 +6,7 @@ public class ForestRenderer implements PlotRenderer{
     @Override
     public void render(Plot plot, String textureFolder){
         int x = plot.x;
-        int y = plot.y;
+        int y = -plot.y;
         int z = plot.z;
         int levelCap = plot.getType().getMaximumLevel();
         int level = plot.getLevel()%levelCap;

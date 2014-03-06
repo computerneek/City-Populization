@@ -4,8 +4,11 @@ import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
 import java.util.Iterator;
 public class Terminal {
-    public boolean occupied;
+    public static final int IN = 1;
+    public static final int OUT = 2;
+    public int occupied;
     private Plot plot;
+    public int occupiers;
     public Terminal(Plot plot){
         this.plot = plot;
     }
@@ -46,5 +49,11 @@ public class Terminal {
                 runways.add(new Runway(plot));
             }
         }
+    }
+    public Plot getPlot(){
+        return plot;
+    }
+    void onArrival(Aircraft aThis){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

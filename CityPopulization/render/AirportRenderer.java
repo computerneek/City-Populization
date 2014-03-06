@@ -109,6 +109,7 @@ public class AirportRenderer implements PlotRenderer{
         if(facing==null||facing==Side.UP||facing==Side.DOWN){
             facing = Side.FRONT;
         }
+        y=-y;
         int texture = ImageStash.instance.getTexture(path);
         ImageStash.instance.bindTexture(texture);
         GL11.glBegin(GL11.GL_QUADS);
@@ -137,7 +138,7 @@ public class AirportRenderer implements PlotRenderer{
                     GL11.glVertex3d(x, y-1, z-0.99);
                 }
                 break;
-            case LEFT:
+            case RIGHT:
                 {
                     GL11.glTexCoord2d(0, 0.5);
                     GL11.glVertex3d(x, y, z-0.99);
@@ -150,7 +151,7 @@ public class AirportRenderer implements PlotRenderer{
                     GL11.glTexCoord2d(0, 0.5);
                 }
                 break;
-            case RIGHT:
+            case LEFT:
                 {
                     GL11.glTexCoord2d(0.5, 0);
                     GL11.glVertex3d(x, y, z-0.99);

@@ -6,8 +6,13 @@ import CityPopulization.world.aircraft.landingSequence.LandingSequenceEvent;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
+import CityPopulization.world.plot.PlotType;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.lwjgl.opengl.GL11;
+import simplelibrary.opengl.ImageStash;
 public abstract class Aircraft{
     public final Player player;
     private ArrayList<AircraftPassenger> passengers = new ArrayList<>();
@@ -20,18 +25,38 @@ public abstract class Aircraft{
     private Terminal terminal;
     private ArrayList<LandingSequenceEvent> landingSequence = new ArrayList<>();
     private String state;
-    private int x;
-    private int y;
-    private int z;
+    private float x;
+    private float y;
+    private float z;
     private float heading;
+    private float targetHeading;
     private float pitch;
     private boolean tiltToMatchPitch;
     private float tilt;
     private float speed;
     private float targetSpeed;
     public float targetPitch;
-    public Aircraft(Player player){
+    private final String textureFolder;
+    private int frameCap;
+    private int tick;
+    private AircraftPath path;
+    private ArrayList<TaxiEvent> taxiSequence;
+    public Aircraft(Player player, String textureFolder){
         this.player = player;
+        this.textureFolder=textureFolder;
+        this.frameCap = findFrameCap();
+    }
+    private int findFrameCap(){
+        int frameCap = 0;
+        for(int i = 1; frameCap==0; i++){
+            String path = "/textures/aircraft/"+textureFolder+"/frame "+i+".png";
+            try(InputStream in = PlotType.class.getResourceAsStream(path)){
+                if(in==null){
+                    frameCap = i-1;
+                }
+            }catch(IOException ex){}
+        }
+        return frameCap;
     }
     public Aircraft loadPassengers(ArrayList<AircraftPassenger> passengers){
         for(Iterator<AircraftPassenger> it=passengers.iterator(); it.hasNext();){
@@ -69,15 +94,20 @@ public abstract class Aircraft{
         landingSequence = getLandingSequence();
         player.world.aircraft.add(this);
         state = "Landing";
-        terminal.occupied = true;
+        terminal.occupied = Terminal.IN;
+        runway.getStartPlot().terminal.occupied = Terminal.IN;
     }
     public abstract ArrayList<LandingSequenceEvent> getLandingSequence();
     public void update(){
+        tick++;
         float distance = 0.02F*speed;
         float xyDist = (float)Math.cos(Math.toRadians(pitch))*distance;
         float zDist = (float)Math.sin(Math.toRadians(pitch))*distance;
         float xDist = (float)Math.cos(Math.toRadians(heading))*xyDist;
         float yDist = (float)Math.sin(Math.toRadians(heading))*xyDist;
+        x+=xDist;
+        y+=yDist;
+        z+=zDist;
         if(speed<targetSpeed){
             speed+=Math.min(targetSpeed-speed, 0.1F);
         }else if(speed>targetSpeed){
@@ -88,9 +118,24 @@ public abstract class Aircraft{
         }else if(pitch>targetPitch){
             pitch-=Math.min(pitch-targetPitch, 3);
         }
+        if(heading<targetHeading){
+            heading+=Math.min(targetHeading-heading, 3);
+        }else if(heading>targetHeading){
+            heading-=Math.min(heading-targetHeading, 3);
+        }
+        if(tiltToMatchPitch){
+            tilt = pitch;
+        }
         switch(state){
             case "Landing":
                 landingUpdate();
+                break;
+            case "Landed":
+                landedUpdate();
+                break;
+            case "TaxiIn":
+            case "TaxiOut":
+                taxiUpdate();
                 break;
             default:
                 throw new AssertionError(state);
@@ -162,6 +207,7 @@ public abstract class Aircraft{
             default:
                 throw new AssertionError(front.name());
         }
+        targetHeading = heading;
     }
     public void setSpeed(int speed){
         this.speed = speed;
@@ -171,6 +217,7 @@ public abstract class Aircraft{
         targetSpeed = speed;
     }
     private void checkForCrash(int x, int y, int z){
+        z++;
         World world = player.world;
         Plot plot = world.getPlot(x, y, z);
         if(plot==null){
@@ -183,4 +230,59 @@ public abstract class Aircraft{
     private void crash(){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    public void render(Player localPlayer){
+        boolean canPlayerSeePlane = player==localPlayer;
+        Plot currentPlot = player.world.getPlot(Math.round(x), Math.round(y), Math.round(z));
+        if(currentPlot!=null&&localPlayer==currentPlot.getOwner()){
+            canPlayerSeePlane = true;
+        }
+        if(!canPlayerSeePlane){
+            return;
+        }
+        GL11.glTranslatef(x+0.5f, -y-0.5f, z);
+        GL11.glRotatef(heading-90, 0, 0, 1);
+        GL11.glRotatef(tilt, 0, 1, 0);
+        ImageStash.instance.bindTexture(ImageStash.instance.getTexture("/textures/aircraft/"+textureFolder+"/frame "+(tick%frameCap)+".png"));
+        GL11.glColor3f(1, 1, 1);
+        render();
+        GL11.glRotatef(tilt, 0, -1, 0);
+        GL11.glRotatef(heading, 0, 0, -1);
+        GL11.glTranslatef(-x-0.5f, y+0.5f, -z);
+    }
+    private void render(){
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2f(0, 0);
+        GL11.glVertex3d(-0.3, -0.3, 0);
+        GL11.glTexCoord2f(1, 0);
+        GL11.glVertex3d(0.3, -0.3, 0);
+        GL11.glTexCoord2f(1, 1);
+        GL11.glVertex3d(0.3, 0.3, 0);
+        GL11.glTexCoord2f(0, 1);
+        GL11.glVertex3d(-0.3, 0.3, 0);
+        GL11.glEnd();
+    }
+    private void landedUpdate(){
+        AircraftPath path = AircraftPath.findPath(runway, terminal);
+        if(path!=null){
+            this.path = path;
+            taxiSequence = path.generateDirections();
+            state = "TaxiIn";
+        }
+    }
+    private void taxiUpdate(){
+        if(taxiSequence.isEmpty()){
+            if(state.equals("TaxiIn")){
+                player.world.aircraft.remove(this);
+                terminal.onArrival(this);
+            }else{
+                landingSequence = getTakeoffSequence();
+                state = "Takeoff";
+            }
+            return;
+        }
+        if(taxiSequence.get(0).update(this)){
+            taxiSequence.remove(0);
+        }
+    }
+    public abstract ArrayList<LandingSequenceEvent> getTakeoffSequence();
 }

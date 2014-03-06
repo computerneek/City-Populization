@@ -24,6 +24,7 @@ public class LSEStartingPoint implements LandingSequenceEvent {
         for(int i = 0; i<height; i++){
             plot = Side.UP.getPlot(aircraft.player.world, plot.x, plot.y, plot.z);
         }
+        plot = Side.DOWN.getPlot(aircraft.player.world, plot.x, plot.y, plot.z);
         aircraft.setLocation(plot);
         aircraft.setHeading(touchdown.front);
         aircraft.setSpeed(speed);
