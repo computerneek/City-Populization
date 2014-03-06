@@ -1,10 +1,16 @@
 package CityPopulization.world.aircraft;
 import CityPopulization.world.plot.Plot;
 public class TaxiEventRelease implements TaxiEvent {
+    private Plot plot;
     public TaxiEventRelease(Plot plot){
+        this.plot = plot;
     }
     @Override
     public boolean update(Aircraft aThis){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        plot.terminal.occupiers--;
+        if(plot.terminal.occupiers<1){
+            plot.terminal.occupied = 0;
+        }
+        return true;
     }
 }

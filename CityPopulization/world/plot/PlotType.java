@@ -31,7 +31,7 @@ public enum PlotType{
     ClayDeposit("Clay", "clay", new ResourceList(Resource.Clay, 5000), new CubeRenderer(), 1, true, true),
     GoldDeposit("Gold", "gold", new ResourceList(Resource.Gold, 5000), new CubeRenderer(), 1, true, true),
     AirportEntrance("Airport Entrance", "airport/entrance", new ResourceList(), new AirportRenderer(AirportRenderer.ENTRANCE), 1, false, true),
-    AirportTerminal("Airport Terminal", "airport/terminal", new ResourceList(), new AirportRenderer(AirportRenderer.TERMINAL), 1, false, true),
+    AirportTerminal("Airport Terminal", "airport/terminal", new ResourceList(), new AirportRenderer(AirportRenderer.TERMINAL), 1, false, false),
     AirportJetway("Airport Jetway", "airport/jetway", new ResourceList(), new AirportRenderer(AirportRenderer.JETWAY), 1, false, false),
     AirportRunway("Airport Runway", "airport/runway", new ResourceList(), new AirportRenderer(AirportRenderer.RUNWAY), 1, false, false);
     private final String name;

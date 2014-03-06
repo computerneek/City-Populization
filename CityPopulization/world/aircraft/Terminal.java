@@ -1,4 +1,6 @@
 package CityPopulization.world.aircraft;
+import CityPopulization.world.aircraft.cargo.AircraftCargo;
+import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
@@ -6,9 +8,17 @@ import java.util.Iterator;
 public class Terminal {
     public static final int IN = 1;
     public static final int OUT = 2;
+    public static final int UNLOADING = 1;
+    public static final int IDLE = 2;
+    public static final int LOADING = 3;
     public int occupied;
     private Plot plot;
     public int occupiers;
+    private Aircraft aircraft;
+    private int timeLanded;
+    public int state;
+    public ArrayList<AircraftCargo> cargo = new ArrayList<>();
+    public ArrayList<AircraftPassenger> passengers = new ArrayList<>();
     public Terminal(Plot plot){
         this.plot = plot;
     }
@@ -53,7 +63,20 @@ public class Terminal {
     public Plot getPlot(){
         return plot;
     }
-    void onArrival(Aircraft aThis){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void onArrival(Aircraft aircraft){
+        this.aircraft = aircraft;
+        timeLanded = 0;
+        state = UNLOADING;
+    }
+    public void update(Terminal entrance){
+        timeLanded++;
+        if(state==UNLOADING){
+            if(!aircraft.cargo.isEmpty()){
+                entrance.cargo.add(aircraft.cargo.remove(0));
+            }
+            if(timeLanded%20==0&&!aircraft.passengers.isEmpty()){
+                entrance.plot.addPassenger(aircraft.passengers.remove(0));
+            }
+        }
     }
 }

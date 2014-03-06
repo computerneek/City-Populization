@@ -1,9 +1,8 @@
 package CityPopulization.world.aircraft.passenger;
 import CityPopulization.world.civillian.Civilian;
-import CityPopulization.world.civillian.Worker;
-public class AircraftPassengerWorker extends AircraftPassenger{
+public class AircraftPassengerCivilian extends AircraftPassenger{
     @Override
     public Civilian createCivilian(){
-        return new Worker();
+        return new Civilian();
     }
 }

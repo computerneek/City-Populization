@@ -1,10 +1,10 @@
 package CityPopulization.world.civillian;
-import CityPopulization.world.civillian.Civillian;
+import CityPopulization.world.civillian.Civilian;
 public class CivillianManager{
-    Civillian createNewCivillian(){
+    Civilian createNewCivillian(){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    void addCivillian(Civillian civillian){
+    void addCivillian(Civilian civillian){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     Worker createNewWorker(){

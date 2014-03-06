@@ -3,6 +3,9 @@ import CityPopulization.render.Side;
 import CityPopulization.world.World;
 import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.aircraft.Terminal;
+import CityPopulization.world.aircraft.passenger.AircraftPassenger;
+import CityPopulization.world.civillian.Civilian;
+import CityPopulization.world.civillian.Worker;
 import CityPopulization.world.player.Player;
 import java.util.ArrayList;
 import java.util.Random;
@@ -25,6 +28,12 @@ public class Plot{
     private int frameBoost;
     public Side front = Side.FRONT;
     public Terminal terminal;
+    private ArrayList<Civilian> civilians = new ArrayList<>();
+    private ArrayList<Civilian> civiliansPresent = new ArrayList<>();
+    private ArrayList<Civilian> workers = new ArrayList<>();
+    private ArrayList<Civilian> workersPresent = new ArrayList<>();
+    int timeSinceLastCivilianOperation = 0;
+    int timeSinceLastWorkerOperation = 0;
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -117,13 +126,26 @@ public class Plot{
     }
     public void update(){
         if(getType()==PlotType.AirportEntrance){
-            world.schedulePlotUpdate(this, 20);
+            world.schedulePlotUpdate(this);
             doAirportUpdate();
+        }
+        if(!civiliansPresent.isEmpty()){
+            world.schedulePlotUpdate(this);
+            civilianUpdate();
+        }
+        if(!workersPresent.isEmpty()){
+            world.schedulePlotUpdate(this);
+            workerUpdate();
         }
     }
     private void doAirportUpdate(){
-        if(!inboundAircraft.isEmpty()){
+        if(world.age%20==0&&!inboundAircraft.isEmpty()){
             attemptToLandAircraft(inboundAircraft.remove(0));
+        }
+        ArrayList<Plot> terminals = new ArrayList<>();
+        findTerminals(terminals);
+        for(Plot plot : terminals){
+            plot.terminal.update(terminal);
         }
     }
     private void attemptToLandAircraft(Aircraft aircraft){
@@ -191,5 +213,26 @@ public class Plot{
     }
     public Side getFront(){
         return front;
+    }
+    public void addPassenger(AircraftPassenger passenger){
+        Civilian civilian = passenger.createCivilian();
+        civilian.homePlot = this;
+        civilian.x = x;
+        civilian.y = y;
+        civilian.z = z;
+        if(civilian instanceof Worker){
+            workers.add((Worker)civilian);
+            workersPresent.add((Worker)civilian);
+        }else{
+            civilians.add(civilian);
+            civiliansPresent.add(civilian);
+        }
+        world.schedulePlotUpdate(this);
+    }
+    private void civilianUpdate(){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    private void workerUpdate(){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

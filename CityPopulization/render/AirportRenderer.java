@@ -1,4 +1,5 @@
 package CityPopulization.render;
+import CityPopulization.world.aircraft.Terminal;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import org.lwjgl.opengl.GL11;
@@ -59,8 +60,10 @@ public class AirportRenderer implements PlotRenderer{
         PlotType rightPlot = plot.getRightPlot().getType();
         boolean canLeft = leftPlot==PlotType.AirportTerminal||leftPlot==PlotType.AirportEntrance;
         boolean canRight = rightPlot==PlotType.AirportTerminal||rightPlot==PlotType.AirportEntrance;
-        String specification = canLeft?(canRight?"dual":"left"):(canRight?"right":"lone");
-        String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+"/"+specification+".png";
+        String sideConnection = canLeft?(canRight?"dual":"left"):(canRight?"right":"lone");
+        Terminal term = plot.terminal;
+        String state = term.state==Terminal.UNLOADING?"unloading":(term.state==Terminal.LOADING?"loading":(term.state==Terminal.IDLE?"idle":(term.occupied>0?"pending":"empty")));
+        String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+"/"+sideConnection+" "+state+".png";
         render(x, y, z, path, plot.front);
     }
     private void renderJetway(Plot plot, String textureFolder){

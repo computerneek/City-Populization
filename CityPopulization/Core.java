@@ -45,7 +45,6 @@ public class Core{
     private static SaveLoader empireSaveLoader;
     //</editor-fold>
     public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, IOException, URISyntaxException{
-        Sys.restartAndLoadBinaries(args, new File(getAppdataRoot()), Core.class);
         Sys.initLWJGL(new File(getAppdataRoot()), null);
         empireSaveLoader = new LocalSaveLoader(new File(getAppdataRoot()+"\\Saves"));
         helper = new GameHelper();
@@ -66,7 +65,7 @@ public class Core{
             }
         });
         GL11.glEnable(org.lwjgl.opengl.GL11.GL_TEXTURE_2D);
-        FontManager.addFont("/font");
+        FontManager.addFont("/simplelibrary/font");
         FontManager.setFont("font");
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glEnable(GL11.GL_ALPHA_TEST);

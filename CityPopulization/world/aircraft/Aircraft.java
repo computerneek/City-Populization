@@ -15,8 +15,8 @@ import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.ImageStash;
 public abstract class Aircraft{
     public final Player player;
-    private ArrayList<AircraftPassenger> passengers = new ArrayList<>();
-    private ArrayList<AircraftCargo> cargo = new ArrayList<>();
+    public ArrayList<AircraftPassenger> passengers = new ArrayList<>();
+    public ArrayList<AircraftCargo> cargo = new ArrayList<>();
     protected int passengerCapacity;
     protected int cargoCapacity;
     private int departureTime;
@@ -240,13 +240,13 @@ public abstract class Aircraft{
             return;
         }
         GL11.glTranslatef(x+0.5f, -y-0.5f, z);
-        GL11.glRotatef(heading-90, 0, 0, 1);
+        GL11.glRotatef(-heading+90, 0, 0, 1);
         GL11.glRotatef(tilt, 0, 1, 0);
         ImageStash.instance.bindTexture(ImageStash.instance.getTexture("/textures/aircraft/"+textureFolder+"/frame "+(tick%frameCap)+".png"));
         GL11.glColor3f(1, 1, 1);
         render();
         GL11.glRotatef(tilt, 0, -1, 0);
-        GL11.glRotatef(heading, 0, 0, -1);
+        GL11.glRotatef(heading-90, 0, 0, -1);
         GL11.glTranslatef(-x-0.5f, y+0.5f, -z);
     }
     private void render(){
@@ -285,4 +285,10 @@ public abstract class Aircraft{
         }
     }
     public abstract ArrayList<LandingSequenceEvent> getTakeoffSequence();
+    public float getHeading(){
+        return heading;
+    }
+    public void setTargetHeading(float targetHeading){
+        this.targetHeading = targetHeading;
+    }
 }
