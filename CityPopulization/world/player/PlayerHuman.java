@@ -25,7 +25,7 @@ public class PlayerHuman extends Player {
         world.generatePlot(-1, -1, -1).setType(PlotType.Grass);
         world.generatePlot(0, -1, 0).setType(PlotType.Grass);
         world.generateAndGetPlot(0, 0, 0).setType(PlotType.AirportEntrance).setOwner(world.getLocalPlayer());
-        world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(world.getLocalPlayer());
+        world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(world.getLocalPlayer()).setFront(Side.BACK);
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(world.getLocalPlayer());
         world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(world.getLocalPlayer()).setFront(Side.LEFT);
         world.getPlot(0, 0, 0)
