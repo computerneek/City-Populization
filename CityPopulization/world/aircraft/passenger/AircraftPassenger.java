@@ -1,6 +1,7 @@
 package CityPopulization.world.aircraft.passenger;
+import CityPopulization.world.civillian.Civilian;
 import java.util.ArrayList;
-public class AircraftPassenger {
+public abstract class AircraftPassenger {
     public static ArrayList<AircraftPassenger> workers(int quantity){
         ArrayList<AircraftPassenger> lst = new ArrayList<>(quantity);
         for(int i = 0; i<quantity; i++){
@@ -8,11 +9,12 @@ public class AircraftPassenger {
         }
         return lst;
     }
-    public static ArrayList<AircraftPassenger> civillians(int quantity){
+    public static ArrayList<AircraftPassenger> civilians(int quantity){
         ArrayList<AircraftPassenger> lst = new ArrayList<>(quantity);
         for(int i = 0; i<quantity; i++){
-            lst.add(new AircraftPassengerCivillian());
+            lst.add(new AircraftPassengerCivilian());
         }
         return lst;
     }
+    public abstract Civilian createCivilian();
 }

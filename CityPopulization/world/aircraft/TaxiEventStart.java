@@ -1,9 +1,10 @@
 package CityPopulization.world.aircraft;
 public class TaxiEventStart implements TaxiEvent {
-    public TaxiEventStart(){
-    }
+    private int tick;
     @Override
-    public boolean update(Aircraft aThis){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean update(Aircraft aircraft){
+        aircraft.setTargetSpeed(1);
+        tick++;
+        return tick>=35;
     }
 }
