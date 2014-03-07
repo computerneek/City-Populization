@@ -1,11 +1,11 @@
 package CityPopulization.world.civillian;
-import CityPopulization.world.civillian.WorkerTask;
+import java.util.ArrayList;
 public class WorkerTaskManager{
-    WorkerTask createNewTask(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private static ArrayList<WorkerTask> tasks = new ArrayList<>();
+    public static boolean hasTasks(){
+        return !tasks.isEmpty();
     }
-    void addTask(WorkerTask task){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void addTask(WorkerTask task){
+        tasks.add(task);
     }
-    
 }
