@@ -1,4 +1,5 @@
 package CityPopulization.world.player;
+import CityPopulization.menu.MenuIngame;
 import CityPopulization.world.World;
 import CityPopulization.world.civillian.CivillianManager;
 import CityPopulization.world.civillian.WorkerTaskManager;
@@ -43,4 +44,7 @@ public abstract class Player{
     }
     public abstract void summonInitialWorkers();
     public abstract Player createNew(World world);
+    public void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

@@ -18,7 +18,12 @@ public class Path{
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
             Plot plot = path.currentPlot;
-            if(coveredPlots.contains(plot)||plot.getType()!=PlotType.Road){
+            if(coveredPlots.contains(plot)){
+                continue;
+            }else if(plot.task!=null){
+                tasks.add(new TaskPotential(plot.task, path));
+                continue;
+            }else if(plot.getType()!=PlotType.Road){
                 continue;
             }
             coveredPlots.add(plot);

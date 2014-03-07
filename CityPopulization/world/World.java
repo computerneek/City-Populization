@@ -121,7 +121,9 @@ public class World{
         if(!plotsNeedingUpdate.containsKey(tick)){
             plotsNeedingUpdate.put(tick, new ArrayList<Plot>());
         }
-        plotsNeedingUpdate.get(tick).add(plot);
+        if(!plotsNeedingUpdate.get(tick).contains(plot)){
+            plotsNeedingUpdate.get(tick).add(plot);
+        }
     }
     public void render(){
         GL11.glLoadIdentity();
