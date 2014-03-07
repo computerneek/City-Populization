@@ -5,7 +5,11 @@ import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.aircraft.Terminal;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.civillian.Civilian;
+import CityPopulization.world.civillian.Path;
+import CityPopulization.world.civillian.TaskPotential;
 import CityPopulization.world.civillian.Worker;
+import CityPopulization.world.civillian.WorkerTask;
+import CityPopulization.world.civillian.WorkerTaskManager;
 import CityPopulization.world.player.Player;
 import java.util.ArrayList;
 import java.util.Random;
@@ -34,6 +38,7 @@ public class Plot{
     private ArrayList<Civilian> workersPresent = new ArrayList<>();
     int timeSinceLastCivilianOperation = 0;
     int timeSinceLastWorkerOperation = 0;
+    public WorkerTask task;
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -246,6 +251,31 @@ public class Plot{
         }
     }
     private void findPotentialTasks(ArrayList<TaskPotential> tasks){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(!WorkerTaskManager.hasTasks()){
+            return;
+        }
+        Path.findPotentialTasks(tasks, this);
+    }
+    public ArrayList<Side> getPathableSides(){
+        ArrayList<Side> sides = new ArrayList<>();
+        for(Side side : type.getPathableSides()){
+            switch(side){
+                case FRONT:
+                    sides.add(front);
+                    break;
+                case LEFT:
+                    sides.add(front.left());
+                    break;
+                case RIGHT:
+                    sides.add(front.right());
+                    break;
+                case BACK:
+                    sides.add(front.reverse());
+                    break;
+                default:
+                    sides.add(side);
+            }
+        }
+        return sides;
     }
 }
