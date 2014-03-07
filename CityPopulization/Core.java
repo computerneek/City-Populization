@@ -106,8 +106,8 @@ public class Core{
         if(Settings.guiScale==Settings.GUISCALE_DEFAULT){
             float width = Display.getWidth()/800f;
             float height = Display.getHeight()/500f;
-            if(width<1){
-                helper.guiScale = 1/width;
+            if(width<height){
+                helper.guiScale = height/width;
             }else{
                 helper.guiScale = 1;
             }
