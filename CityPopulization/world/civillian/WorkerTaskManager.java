@@ -1,11 +1,15 @@
 package CityPopulization.world.civillian;
 import java.util.ArrayList;
 public class WorkerTaskManager{
-    private static ArrayList<WorkerTask> tasks = new ArrayList<>();
-    public static boolean hasTasks(){
+    private ArrayList<WorkerTask> tasks = new ArrayList<>();
+    public boolean hasTasks(){
         return !tasks.isEmpty();
     }
     public void addTask(WorkerTask task){
         tasks.add(task);
+        task.prepare();
+    }
+    public int getWorkerCarryingCapacity(){
+        return 25;
     }
 }

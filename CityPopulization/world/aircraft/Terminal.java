@@ -4,6 +4,7 @@ import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 public class Terminal {
     public static final int IN = 1;
@@ -16,9 +17,11 @@ public class Terminal {
     public int occupiers;
     private Aircraft aircraft;
     private int timeLanded;
+    private int timeWaiting;
     public int state;
     public ArrayList<AircraftCargo> cargo = new ArrayList<>();
     public ArrayList<AircraftPassenger> passengers = new ArrayList<>();
+    private int fuel;
     public Terminal(Plot plot){
         this.plot = plot;
     }
@@ -40,7 +43,7 @@ public class Terminal {
         aircraft.setTerminal(this);
         aircraft.land();
     }
-    private void findRunways(ArrayList<Runway> runways){
+    public void findRunways(ArrayList<Runway> runways){
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         ArrayList<Plot> currentPlots = new ArrayList<>();
         currentPlots.add(plot.getFrontPlot());
@@ -69,13 +72,57 @@ public class Terminal {
         state = UNLOADING;
     }
     public void update(Terminal entrance){
+        if(aircraft==null){
+            return;
+        }
         timeLanded++;
+        timeWaiting++;
+        if(aircraft.fuelLevel<aircraft.maxFuelLevel&&entrance.fuel>0){
+            entrance.fuel--;
+            aircraft.fuelLevel++;
+        }
+        boolean canLoad = false;
         if(state==UNLOADING){
             if(!aircraft.cargo.isEmpty()){
                 entrance.cargo.add(aircraft.cargo.remove(0));
             }
             if(timeLanded%20==0&&!aircraft.passengers.isEmpty()){
                 entrance.plot.addPassenger(aircraft.passengers.remove(0));
+            }
+            if(aircraft.cargo.isEmpty()&&aircraft.passengers.isEmpty()){
+                state = IDLE;
+            }
+        }else if(state==IDLE){
+            if(timeLanded>=aircraft.departureTime){
+                state = LOADING;
+                timeWaiting = 0;
+            }
+        }else if(state==LOADING){
+            if(!entrance.cargo.isEmpty()&&aircraft.cargoOccupied<aircraft.cargoCapacity){
+                canLoad = true;
+                Collections.sort(entrance.cargo);
+                if(aircraft.loadOneCargo(entrance.cargo)){
+                    timeWaiting = 0;
+                }
+            }
+            if(timeLanded%20==0&&aircraft.passengers.size()<aircraft.passengerCapacity&&(!entrance.plot.workers.isEmpty()||!entrance.plot.civilians.isEmpty())){
+                canLoad = true;
+                if(!entrance.plot.workersPresent.isEmpty()){
+                    aircraft.loadPassengers(AircraftPassenger.workers(1));
+                    entrance.plot.workers.remove(entrance.plot.workersPresent.remove(0));
+                    timeWaiting = 0;
+                }else if(!entrance.plot.civiliansPresent.isEmpty()){
+                    aircraft.loadPassengers(AircraftPassenger.civilians(1));
+                    entrance.plot.civilians.remove(entrance.plot.civiliansPresent.remove(0));
+                    timeWaiting = 0;
+                }
+            }
+            if((timeWaiting>=200||!canLoad)&&aircraft.fuelLevel==aircraft.maxFuelLevel){
+                aircraft.depart();
+                aircraft = null;
+                timeLanded = 0;
+                timeWaiting = 0;
+                state = 0;
             }
         }
     }

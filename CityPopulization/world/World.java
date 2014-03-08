@@ -1,5 +1,6 @@
 package CityPopulization.world;
 import CityPopulization.world.aircraft.Aircraft;
+import CityPopulization.world.civillian.Civilian;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.plot.Plot;
@@ -18,16 +19,17 @@ public class World{
     private WinningCondition goal;
     public int age;
     private boolean isPaused;
-    private GameDifficulty difficulty;
+    public GameDifficulty difficulty;
     private HashMap<Integer, HashMap<Integer, HashMap<Integer, Plot>>> plots = new HashMap<>();
     private HashMap<Integer, ArrayList<Plot>> plotsNeedingUpdate = new HashMap<>();
     public ArrayList<Aircraft> aircraft = new ArrayList<>();
+    public ArrayList<Civilian> civilians = new ArrayList<>();
     public World(){}
     public void tick(){
-        if(isPaused){
-            return;
-        }
         for(int i = 0; i<speedMultiplier; i++){
+            if(isPaused){
+                return;
+            }
             age++;
             ArrayList<Plot> plots = plotsNeedingUpdate.remove(age);
             if(plots!=null){
@@ -37,6 +39,9 @@ public class World{
             }
             for(Aircraft aircraft : (ArrayList<Aircraft>)this.aircraft.clone()){
                 aircraft.update();
+            }
+            for(Civilian civilian : (ArrayList<Civilian>)civilians.clone()){
+                civilian.update();
             }
         }
     }
