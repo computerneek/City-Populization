@@ -9,10 +9,12 @@ public class StartingHellicopter extends Helicopter{
     public StartingHellicopter(Player player){
         super(player, "initial");
         passengerCapacity = 4;
-        cargoCapacity = 2000;
+        cargoCapacity = 3000;
+        maxFuelLevel = 49;
     }
     @Override
     public ArrayList<LandingSequenceEvent> getLandingSequence(){
+        passengerCapacity = 2;
         ArrayList<LandingSequenceEvent> lst = new ArrayList<>();
         lst.add(new LSEStartingPoint(7, 4, topSpeed));
         lst.add(new LSEMovement(131, 1));

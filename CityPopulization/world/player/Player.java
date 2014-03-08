@@ -5,13 +5,13 @@ import CityPopulization.world.civillian.CivillianManager;
 import CityPopulization.world.civillian.WorkerTaskManager;
 import CityPopulization.world.resource.ResourceManager;
 public abstract class Player{
-    private Race race;
+    public Race race;
     private ResourceManager resourceManager;
     private WorkerTaskManager workerTaskManager;
     private CivillianManager civillianManager;
-    private double cameraX;
-    private double cameraY;
-    private double cameraZ;
+    public double cameraX;
+    public double cameraY;
+    public int cameraZ;
     public final World world;
     public Player(World world){
         this.world = world;
@@ -39,12 +39,10 @@ public abstract class Player{
     public double getCameraY(){
         return cameraY;
     }
-    public double getCameraZ(){
+    public int getCameraZ(){
         return cameraZ;
     }
     public abstract void summonInitialWorkers();
     public abstract Player createNew(World world);
-    public void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    public abstract void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button);
 }

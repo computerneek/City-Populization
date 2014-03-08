@@ -13,10 +13,10 @@ public enum GameDifficulty{
     INSANE("Insane", 0.2),
     NUTS_OF_STEEL("Nuts of Steel", 0.1);
     private String name;
-    private double incomeModifier;
-    private double moveSpeedModifier;
-    private double homeOccupantModifier;
-    private double stabilityModifier;
+    public final double incomeModifier;//Modifier for income
+    public final double moveSpeedModifier;//Modifier for things move speed
+    public final double homeOccupantModifier;//Modifier for the number of people in one house
+    public final double stabilityModifier;//Modifier for how often people like staying in their house
     private GameDifficulty(String name, double modifier){
         this.name = name;
         this.incomeModifier = modifier;

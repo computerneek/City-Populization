@@ -50,6 +50,22 @@ public class AircraftPath {
         }
         return null;
     }
+    public static AircraftPath findPath(Terminal terminal, Runway runway){
+        ArrayList<AircraftPath> paths = new ArrayList<>();
+        Plot startPlot = terminal.getPlot();
+        Plot endPlot = runway.getStartPlot();
+        if(startPlot.getFrontPlot().getType()!=PlotType.AirportJetway){
+            return null;
+        }
+        ArrayList<Plot> plotsCovered = new ArrayList<>();
+        AircraftPath path = new AircraftPath().start(startPlot, startPlot.front);
+        paths.add(path);
+        path = null;
+        while(path==null&&!paths.isEmpty()){
+            path = path(paths, endPlot, plotsCovered, Terminal.OUT);
+        }
+        return path;
+    }
     private Plot startPlot;
     private Plot currentPlot;
     private Side currentSide;

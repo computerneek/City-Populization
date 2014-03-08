@@ -4,11 +4,11 @@ import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
 public class Path{
-    public static void findPotentialTasks(ArrayList<TaskPotential> tasks, Plot startPlot){
+    public static void findPotentialTasks(ArrayList<WorkerTask> tasks, Plot startPlot){
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         if(startPlot.task!=null){
-            tasks.add(new TaskPotential(startPlot.task, new Path().start(startPlot)));
+            tasks.add(startPlot.task);
         }
         coveredPlots.add(startPlot);
         paths.add(new Path().start(startPlot));
@@ -21,7 +21,7 @@ public class Path{
             if(coveredPlots.contains(plot)){
                 continue;
             }else if(plot.task!=null){
-                tasks.add(new TaskPotential(plot.task, path));
+                tasks.add(plot.task);
                 continue;
             }else if(plot.getType()!=PlotType.Road){
                 continue;

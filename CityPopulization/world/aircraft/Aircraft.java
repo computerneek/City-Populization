@@ -17,10 +17,10 @@ public abstract class Aircraft{
     public final Player player;
     public ArrayList<AircraftPassenger> passengers = new ArrayList<>();
     public ArrayList<AircraftCargo> cargo = new ArrayList<>();
-    protected int passengerCapacity;
-    protected int cargoCapacity;
-    private int departureTime;
-    private int cargoOccupied;
+    public int passengerCapacity;
+    public int cargoCapacity;
+    public int departureTime;
+    int cargoOccupied;
     public Runway runway;
     private Terminal terminal;
     private ArrayList<LandingSequenceEvent> landingSequence = new ArrayList<>();
@@ -41,6 +41,8 @@ public abstract class Aircraft{
     private int tick;
     private AircraftPath path;
     private ArrayList<TaxiEvent> taxiSequence;
+    public int fuelLevel = 0;
+    public int maxFuelLevel = 50;
     public Aircraft(Player player, String textureFolder){
         this.player = player;
         this.textureFolder=textureFolder;
@@ -82,6 +84,18 @@ public abstract class Aircraft{
             }
         }
         return this;
+    }
+    public boolean loadOneCargo(ArrayList<AircraftCargo> resources){
+        for(Iterator<AircraftCargo> it=resources.iterator(); it.hasNext();){
+            AircraftCargo cargo=it.next();
+            if(cargoCapacity-cargoOccupied>=cargo.getSpaceOccupied()){
+                this.cargo.add(cargo);
+                cargoOccupied+=cargo.getSpaceOccupied();
+                it.remove();
+                return true;
+            }
+        }
+        return false;
     }
     public abstract int getRequiredRunwayLength();
     public void setRunway(Runway runway){
@@ -128,6 +142,7 @@ public abstract class Aircraft{
         }
         switch(state){
             case "Landing":
+            case "Takeoff":
                 landingUpdate();
                 break;
             case "Landed":
@@ -137,6 +152,9 @@ public abstract class Aircraft{
             case "TaxiOut":
                 taxiUpdate();
                 break;
+            case "Departure":
+                departureUpdate();
+                break;
             default:
                 throw new AssertionError(state);
         }
@@ -144,7 +162,12 @@ public abstract class Aircraft{
     }
     private void landingUpdate(){
         if(landingSequence.isEmpty()){
-            state="Landed";
+            if(state.equals("Landing")){
+                state="Landed";
+            }else{
+                runway.getStartPlot().terminal.occupied = 0;
+                player.world.aircraft.remove(this);
+            }
             return;
         }
         if(landingSequence.get(0).update(this)){
@@ -269,6 +292,22 @@ public abstract class Aircraft{
             state = "TaxiIn";
         }
     }
+    private void departureUpdate(){
+        ArrayList<Runway> runways = new ArrayList<>();
+        terminal.findRunways(runways);
+        for(Runway runway : runways){
+            if(runway.size()<getRequiredRunwayLength()){
+                continue;
+            }
+            AircraftPath path = AircraftPath.findPath(terminal, runway);
+            if(path!=null){
+                this.path = path;
+                taxiSequence = path.generateDirections();
+                runway.getStartPlot().terminal.occupied = Terminal.OUT;
+                state = "TaxiOut";
+            }
+        }
+    }
     private void taxiUpdate(){
         if(taxiSequence.isEmpty()){
             if(state.equals("TaxiIn")){
@@ -290,5 +329,9 @@ public abstract class Aircraft{
     }
     public void setTargetHeading(float targetHeading){
         this.targetHeading = targetHeading;
+    }
+    public void depart(){
+        player.world.aircraft.add(this);
+        state = "Departure";
     }
 }

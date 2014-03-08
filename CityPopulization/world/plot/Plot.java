@@ -5,11 +5,11 @@ import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.aircraft.Terminal;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.civillian.Civilian;
+import CityPopulization.world.civillian.EventSequence;
 import CityPopulization.world.civillian.Path;
-import CityPopulization.world.civillian.TaskPotential;
 import CityPopulization.world.civillian.Worker;
 import CityPopulization.world.civillian.WorkerTask;
-import CityPopulization.world.civillian.WorkerTaskManager;
+import CityPopulization.world.civillian.WorkerTaskSegment;
 import CityPopulization.world.player.Player;
 import java.util.ArrayList;
 import java.util.Random;
@@ -21,7 +21,7 @@ public class Plot{
     public final Random rand;
     private PlotType type;
     private int level;
-    private Player owner;
+    public Player owner;
     public final World world;
     private ArrayList<Player> playerVisibilities = new ArrayList<>();
     public boolean shouldRenderTopFace;
@@ -32,10 +32,10 @@ public class Plot{
     private int frameBoost;
     public Side front = Side.FRONT;
     public Terminal terminal;
-    private ArrayList<Civilian> civilians = new ArrayList<>();
-    private ArrayList<Civilian> civiliansPresent = new ArrayList<>();
-    private ArrayList<Civilian> workers = new ArrayList<>();
-    private ArrayList<Civilian> workersPresent = new ArrayList<>();
+    public ArrayList<Civilian> civilians = new ArrayList<>();
+    public ArrayList<Civilian> civiliansPresent = new ArrayList<>();
+    public ArrayList<Worker> workers = new ArrayList<>();
+    public ArrayList<Worker> workersPresent = new ArrayList<>();
     int timeSinceLastCivilianOperation = 0;
     int timeSinceLastWorkerOperation = 0;
     public WorkerTask task;
@@ -244,14 +244,25 @@ public class Plot{
         }
     }
     private void doWorkerUpdate(){
-        ArrayList<TaskPotential> tasks = new ArrayList<>();
+        ArrayList<WorkerTask> tasks = new ArrayList<>();
         findPotentialTasks(tasks);
-        for(TaskPotential potentialTask : tasks){
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for(WorkerTask potentialTask : tasks){
+            if(potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()){
+                continue;
+            }
+            Worker worker = workersPresent.get(0);
+            WorkerTaskSegment segment = potentialTask.getCurrentSegment();
+            EventSequence sequence = segment.generateEventSequence(worker, this);
+            if(sequence!=null){
+                worker.assign(sequence);
+                world.civilians.add(worker);
+                workersPresent.remove(worker);
+                timeSinceLastWorkerOperation = 0;
+            }
         }
     }
-    private void findPotentialTasks(ArrayList<TaskPotential> tasks){
-        if(!WorkerTaskManager.hasTasks()){
+    private void findPotentialTasks(ArrayList<WorkerTask> tasks){
+        if(owner==null||!owner.getWorkerTaskManager().hasTasks()){
             return;
         }
         Path.findPotentialTasks(tasks, this);
@@ -277,5 +288,13 @@ public class Plot{
             }
         }
         return sides;
+    }
+    public Side getDirectionToPlot(Plot plot){
+        for(Side side : Side.values()){
+            if(plot==side.getPlot(world, x, y, z)){
+                return side;
+            }
+        }
+        return null;
     }
 }
