@@ -37,7 +37,7 @@ public class ButtonSet {
         }
         menu.components.clear();
         if(addPreviousButton){
-            menu.add(new MenuComponentButtonIngame(buttonOffset, menu.screenBottom-buttonSize, buttonSize, buttonSize, new String[]{"Back"}, true, "gui/buttons/back.png", new ActionListener() {
+            menu.add(new MenuComponentButtonIngame(buttonOffset, menu.screenBottom-buttonSize, buttonSize, buttonSize, new String[]{"Back"}, true, "/gui/buttons/back.png", new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e){
                     display(buttonIndex-1, menu);

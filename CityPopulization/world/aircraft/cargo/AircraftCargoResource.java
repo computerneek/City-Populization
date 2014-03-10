@@ -9,4 +9,7 @@ public class AircraftCargoResource extends AircraftCargo{
     public int getSpaceOccupied(){
         return 1;
     }
+    public Resource getResource(){
+        return resource;
+    }
 }

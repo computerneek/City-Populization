@@ -51,7 +51,7 @@ public class MenuNewWorld extends Menu{
         gameSpeed = add(new MenuComponentOptionButton(-0.8, 0.02, 1.6, 0.16, "Game speed", true, 0, "1x", "2x", "4x", "8x", "16x", "32x", "64x"));
         gameMode = add(new MenuComponentOptionButton(-0.8, 0.22, 1.6, 0.16, "Mode", true, 0, "Standard", "Sandbox"));
         gameDifficulty = add(new MenuComponentOptionButton(-0.8, 0.42, 1.6, 0.16, "Difficulty", true, 5, difficultiesS));
-        create = add(new MenuComponentButton(-1.58, 0.62, 1.56, 0.16, "Create (NYI)", false));
+        create = add(new MenuComponentButton(-1.58, 0.62, 1.56, 0.16, "Create", false));
         cancel = add(new MenuComponentButton(0.02, 0.62, 1.56, 0.16, "Cancel", true));
     }
     @Override

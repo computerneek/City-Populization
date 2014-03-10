@@ -9,13 +9,6 @@ public abstract class AircraftCargo implements Comparable<AircraftCargo>{
         }
         return lst;
     }
-    public static ArrayList<AircraftCargo> tools(int quantity){
-        ArrayList<AircraftCargo> lst = new ArrayList<>(quantity);
-        for(int i = 0; i<quantity; i++){
-            lst.add(new AircraftCargoTool());
-        }
-        return lst;
-    }
     public abstract int getSpaceOccupied();
     @Override
     public int compareTo(AircraftCargo cargo){

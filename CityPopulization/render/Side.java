@@ -33,11 +33,11 @@ public enum Side{
     LEFT(-1, 0, 0){
         @Override
         public Side right(){
-            return FRONT;
+            return BACK;
         }
         @Override
         public Side left(){
-            return BACK;
+            return FRONT;
         }
         @Override
         public Side reverse(){

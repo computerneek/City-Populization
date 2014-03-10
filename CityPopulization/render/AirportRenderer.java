@@ -2,6 +2,7 @@ package CityPopulization.render;
 import CityPopulization.world.aircraft.Terminal;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
+import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.ImageStash;
 public class AirportRenderer implements PlotRenderer{
@@ -38,13 +39,13 @@ public class AirportRenderer implements PlotRenderer{
         int z = plot.z;
         int levelCap = plot.getType().getMaximumLevel();
         int level = plot.getLevel()%levelCap;
-        int frameCap = plot.getType().getFrameCap(level+1);
-        int frame = plot.getFrameNumber()%frameCap;
         PlotType leftPlot = plot.getLeftPlot().getType();
         PlotType rightPlot = plot.getRightPlot().getType();
         boolean canLeft = leftPlot==PlotType.AirportTerminal;
         boolean canRight = rightPlot==PlotType.AirportTerminal;
         String specification = canLeft?(canRight?"dual":"left"):(canRight?"right":"lone");
+        int frameCap = plot.getType().getFrameCap(level+1, plot.getType().getTextureIndex("1:/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>/"+specification+".png"));
+        int frame = plot.getFrameNumber()%frameCap;
         String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+"/"+specification+".png";
         render(x, y, z, path, plot.front);
     }
@@ -54,8 +55,6 @@ public class AirportRenderer implements PlotRenderer{
         int z = plot.z;
         int levelCap = plot.getType().getMaximumLevel();
         int level = plot.getLevel()%levelCap;
-        int frameCap = plot.getType().getFrameCap(level+1);
-        int frame = plot.getFrameNumber()%frameCap;
         PlotType leftPlot = plot.getLeftPlot().getType();
         PlotType rightPlot = plot.getRightPlot().getType();
         boolean canLeft = leftPlot==PlotType.AirportTerminal||leftPlot==PlotType.AirportEntrance;
@@ -63,6 +62,8 @@ public class AirportRenderer implements PlotRenderer{
         String sideConnection = canLeft?(canRight?"dual":"left"):(canRight?"right":"lone");
         Terminal term = plot.terminal;
         String state = term.state==Terminal.UNLOADING?"unloading":(term.state==Terminal.LOADING?"loading":(term.state==Terminal.IDLE?"idle":(term.occupied>0?"pending":"empty")));
+        int frameCap = plot.getType().getFrameCap(level+1, plot.getType().getTextureIndex("1:/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>/"+sideConnection+" "+state+".png"));
+        int frame = plot.getFrameNumber()%frameCap;
         String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+"/"+sideConnection+" "+state+".png";
         render(x, y, z, path, plot.front);
     }
@@ -72,7 +73,7 @@ public class AirportRenderer implements PlotRenderer{
         int z = plot.z;
         int levelCap = plot.getType().getMaximumLevel();
         int level = plot.getLevel()%levelCap;
-        int frameCap = plot.getType().getFrameCap(level+1);
+        int frameCap = plot.getType().getFrameCap(level+1, plot.getType().getTextureIndex("1:/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png"));
         int frame = plot.getFrameNumber()%frameCap;
         String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+".png";
         render(x, y, z, path, plot.front);
@@ -103,7 +104,7 @@ public class AirportRenderer implements PlotRenderer{
         int z = plot.z;
         int levelCap = plot.getType().getMaximumLevel();
         int level = plot.getLevel()%levelCap;
-        int frameCap = plot.getType().getFrameCap(level+1);
+        int frameCap = plot.getType().getFrameCap(level+1, plot.getType().getTextureIndex("1:/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png"));
         int frame = plot.getFrameNumber()%frameCap;
         String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+".png";
         render(x, y, z, path, plot.front);
@@ -231,5 +232,36 @@ public class AirportRenderer implements PlotRenderer{
                 throw new AssertionError(facing.name());
         }
         GL11.glEnd();
+    }
+    @Override
+    public String[] getPaths(int levels, String textureFolder){
+        ArrayList<String> lst = new ArrayList<>();
+        String tex = levels+":/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>/<SPEC>.png";
+        String[] sides = {"dual", "left", "right", "lone"};
+        String[] states = {"unloading", "loading", "idle", "pending", "empty"};
+        switch(type){
+            case ENTRANCE:
+                for(String side : sides){
+                    lst.add(spec(tex, side));
+                }
+                break;
+            case TERMINAL:
+                for(String side : sides){
+                    for(String state : states){
+                        lst.add(spec(tex, side+" "+state));
+                    }
+                }
+                break;
+            case JETWAY:
+            case RUNWAY:
+                lst.add(levels+":/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png");
+                break;
+            default:
+                throw new AssertionError(type);
+        }
+        return lst.toArray(new String[lst.size()]);
+    }
+    private String spec(String tex, String spec){
+        return tex.replaceAll("<SPEC>", spec);
     }
 }

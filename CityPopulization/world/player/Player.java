@@ -1,34 +1,32 @@
 package CityPopulization.world.player;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.world.World;
-import CityPopulization.world.civillian.CivillianManager;
-import CityPopulization.world.civillian.WorkerTaskManager;
-import CityPopulization.world.resource.ResourceManager;
+import CityPopulization.world.civilian.CivilianManager;
+import CityPopulization.world.civilian.WorkerTaskManager;
+import CityPopulization.world.plot.Plot;
+import java.util.ArrayList;
 public abstract class Player{
     public Race race;
-    private ResourceManager resourceManager;
     private WorkerTaskManager workerTaskManager;
-    private CivillianManager civillianManager;
+    private CivilianManager civillianManager;
     public double cameraX;
     public double cameraY;
     public int cameraZ;
     public final World world;
+    public static ArrayList<Plot> resourceStructures = new ArrayList<>();
+    private boolean sandbox;
     public Player(World world){
         this.world = world;
-    }
-    public ResourceManager getResourceManager(){
-        return resourceManager;
     }
     public WorkerTaskManager getWorkerTaskManager(){
         return workerTaskManager;
     }
-    public CivillianManager getCivillianManager(){
+    public CivilianManager getCivillianManager(){
         return civillianManager;
     }
     public void setRace(Race race){
         this.race = race;
         if(race!=null){
-            this.resourceManager = race.createResourceManager();
             this.workerTaskManager = race.createWorkerTaskManager();
             this.civillianManager = race.createCivillianManager();
         }
@@ -45,4 +43,7 @@ public abstract class Player{
     public abstract void summonInitialWorkers();
     public abstract Player createNew(World world);
     public abstract void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button);
+    public void setSandbox(boolean sandbox){
+        this.sandbox = sandbox;
+    }
 }

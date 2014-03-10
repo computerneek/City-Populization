@@ -4,13 +4,14 @@ import CityPopulization.world.World;
 import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.aircraft.Terminal;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
-import CityPopulization.world.civillian.Civilian;
-import CityPopulization.world.civillian.EventSequence;
-import CityPopulization.world.civillian.Path;
-import CityPopulization.world.civillian.Worker;
-import CityPopulization.world.civillian.WorkerTask;
-import CityPopulization.world.civillian.WorkerTaskSegment;
+import CityPopulization.world.civilian.Civilian;
+import CityPopulization.world.civilian.Path;
+import CityPopulization.world.civilian.Worker;
+import CityPopulization.world.civilian.WorkerTask;
+import CityPopulization.world.civilian.WorkerTaskSegment;
+import CityPopulization.world.civilian.event.EventSequence;
 import CityPopulization.world.player.Player;
+import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import java.util.Random;
 public class Plot{
@@ -39,6 +40,8 @@ public class Plot{
     int timeSinceLastCivilianOperation = 0;
     int timeSinceLastWorkerOperation = 0;
     public WorkerTask task;
+    public ResourceList resources = new ResourceList();
+    private ResourceList readyResources = new ResourceList();
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -152,6 +155,7 @@ public class Plot{
         for(Plot plot : terminals){
             plot.terminal.update(terminal);
         }
+        terminal.update(terminal);
     }
     private void attemptToLandAircraft(Aircraft aircraft){
         ArrayList<Plot> terminals = new ArrayList<>();
@@ -296,5 +300,23 @@ public class Plot{
             }
         }
         return null;
+    }
+    public ArrayList<Side> getTravelableSides(){
+        ArrayList<Side> sides = getPathableSides();
+        ArrayList<Side> val = new ArrayList<>();
+        for(Side side : sides){
+            Plot plot = side.getPlot(world, x, y, z);
+            if(plot==null){
+                continue;
+            }
+            if(plot.getPathableSides().contains(side.reverse())){
+                val.add(side);
+            }
+        }
+        return val;
+    }
+    public void readyResources(ResourceList resources){
+        readyResources.addAll(resources);
+        this.resources.removeAll(resources);
     }
 }
