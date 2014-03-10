@@ -1,6 +1,6 @@
 package CityPopulization.world;
 import CityPopulization.world.aircraft.Aircraft;
-import CityPopulization.world.civillian.Civilian;
+import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.plot.Plot;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 public class World{
     public long seed = new Random().nextLong();

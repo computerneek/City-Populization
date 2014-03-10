@@ -7,12 +7,13 @@ import CityPopulization.render.ForestRenderer;
 import CityPopulization.render.HouseRenderer;
 import CityPopulization.render.NonRenderer;
 import CityPopulization.render.PlotRenderer;
-import CityPopulization.render.PumpingStationRenderer;
 import CityPopulization.render.RoadRenderer;
 import CityPopulization.render.Side;
 import CityPopulization.render.StoreRenderer;
 import CityPopulization.render.WarehouseRenderer;
 import CityPopulization.render.WorkshopRenderer;
+import CityPopulization.texturepack.Texture;
+import CityPopulization.texturepack.TexturepackCreator;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
@@ -44,14 +45,14 @@ public enum PlotType{
     AirportRunway("Airport Runway", "airport/runway", new ResourceList(), new AirportRenderer(AirportRenderer.RUNWAY), 1, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}),
     Bank("Bank", "bank", new ResourceList(), new BankRenderer(), 10, false, true, new Side[]{Side.FRONT}),
     House("House", "house", new ResourceList(), new HouseRenderer(), 10, false, true, new Side[]{Side.FRONT}),
-    Elevator("Elevator", "elevator", new ResourceList(), new ElevatorRenderer(), 10, false, true, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK});
+    Elevator("Elevator", "elevator", new ResourceList(), new ElevatorRenderer(), 10, false, true, Side.values());
     public final String name;
     public final String textureFolder;
     public ResourceList resourceHarvested;
     private PlotRenderer renderer;
     private int highestLevel;
     private boolean isOpaque;
-    private int[] frameCaps;
+    private int[][] frameCaps;
     private final boolean causesAirlineCrash;
     private Side[] pathableSides;
     PlotType(String name, String textureFolder, ResourceList resourceHarvested, PlotRenderer renderer, int highestLevel, boolean isOpaque, boolean causesAirlineCrash, Side[] pathableSides){
@@ -74,22 +75,33 @@ public enum PlotType{
     public void render(Plot plot){
         renderer.render(plot, textureFolder);
     }
-    private int[] findFrameCaps(){
-        int[] frameCaps = new int[highestLevel];
+    private int[][] findFrameCaps(){
+        int[][] frameCaps = new int[highestLevel][];
         for(int i = 1; i<highestLevel+1; i++){
-            for(int j = 1; frameCaps[i-1]==0; j++){
-                String path = "/textures/plots/"+textureFolder+"/level "+i+"/frame "+j+".png";
-                try(InputStream in = PlotType.class.getResourceAsStream(path)){
-                    if(in==null){
-                        frameCaps[i-1] = j-1;
+            for(int j = 1; true; j++){
+                boolean skip = true;
+                String[] paths = renderer.getPaths(1, textureFolder);
+                frameCaps[i-1] = new int[paths.length];
+                for(int k = 0; k<paths.length; k++){
+                    String path = paths[k].substring(2).replaceAll("<LEVEL>", ""+i).replaceAll("<FRAME>", ""+j);
+                    try(InputStream in = PlotType.class.getResourceAsStream(path)){
+                        if(in==null){
+                            frameCaps[i-1][k] = j-1;
+                        }
+                    }catch(IOException ex){}
+                    if(frameCaps[i-1][k]<1){
+                        skip = false;
                     }
-                }catch(IOException ex){}
+                }
+                if(skip){
+                    break;
+                }
             }
         }
         return frameCaps;
     }
-    public int getFrameCap(int level){
-        return frameCaps[level-1];
+    public int getFrameCap(int level, int texture){
+        return frameCaps[level-1][texture];
     }
     public boolean causesAirlineCrash(){
         return causesAirlineCrash;
@@ -103,5 +115,18 @@ public enum PlotType{
     private static HashMap<PlotType, ResourceListList> constructionCosts = new HashMap<>();
     static{
         constructionCosts.put(Road, new ResourceListList(new ResourceList(Resource.Dirt, 25)));
+    }
+    public void loadAllTextures(){
+        for(String texture : renderer.getPaths(highestLevel, textureFolder)){
+            TexturepackCreator.addTexture(new Texture(texture));
+        }
+    }
+    public void loadAllSounds(){
+        for(PlotType type : values()){
+            
+        }
+    }
+    public int getTextureIndex(String string){
+        return new ArrayList<String>(Arrays.asList(renderer.getPaths(1, textureFolder))).indexOf(string);
     }
 }

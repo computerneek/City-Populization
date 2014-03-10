@@ -8,8 +8,8 @@ import CityPopulization.world.World;
 import CityPopulization.world.aircraft.StartingHellicopter;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
-import CityPopulization.world.civillian.WorkerTask;
-import CityPopulization.world.civillian.WorkerTaskSegment;
+import CityPopulization.world.civilian.WorkerTask;
+import CityPopulization.world.civilian.WorkerTaskSegment;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.Resource;
@@ -36,25 +36,19 @@ public class PlayerHuman extends Player {
         world.generateAndGetPlot(0, 0, 0).setType(PlotType.AirportEntrance).setOwner(this)
                 .addInboundAircraft(new StartingHellicopter(this))
                 .loadPassengers(AircraftPassenger.workers(4))
-                .loadCargo(AircraftCargo.resource(Resource.Cash, 100))
+                .loadCargo(AircraftCargo.resource(Resource.Tools, 1))
                 .loadCargo(AircraftCargo.resource(Resource.Dirt, 500))
-                .loadCargo(AircraftCargo.resource(Resource.Cash, 100))
                 .loadCargo(AircraftCargo.resource(Resource.Wood, 500))
-                .loadCargo(AircraftCargo.resource(Resource.Cash, 100))
                 .loadCargo(AircraftCargo.resource(Resource.Coal, 100))
-                .loadCargo(AircraftCargo.resource(Resource.Cash, 100))
                 .loadCargo(AircraftCargo.resource(Resource.Iron, 100))
-                .loadCargo(AircraftCargo.resource(Resource.Cash, 100))
                 .loadCargo(AircraftCargo.resource(Resource.Oil, 750))
-                .loadCargo(AircraftCargo.resource(Resource.Cash, 100))
-                .loadCargo(AircraftCargo.tools(1))
-                .loadCargo(AircraftCargo.resource(Resource.Cash, 100))
                 .loadCargo(AircraftCargo.resource(Resource.Fuel, 49))
-                .loadCargo(AircraftCargo.resource(Resource.Cash, 300))
-                .setDepartureTime(6000);
+                .setDepartureTime(20*60*15);
         world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(this).setFront(Side.BACK);
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(this);
         world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
+        resourceStructures.add(world.getPlot(0, 0, 0));
+        world.getPlot(0, 0, 0).resources.add(Resource.Cash, 1000);
     }
     @Override
     public void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button){
@@ -155,7 +149,7 @@ public class PlayerHuman extends Player {
     }
     private Button createConstructionButton(Plot plot, PlotType type){
         return new Button()
-                .setImage("/gui/buttons/build"+type.textureFolder+".png")
+                .setImage("/gui/buttons/"+race.getName()+"/build"+type.textureFolder+".png")
                 .setText("Construct", type.name)
                 .setEvent(new ButtonEvent()
                         .setType("Task")

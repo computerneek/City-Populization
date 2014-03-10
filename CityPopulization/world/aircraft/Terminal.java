@@ -1,8 +1,10 @@
 package CityPopulization.world.aircraft;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
+import CityPopulization.world.aircraft.cargo.AircraftCargoResource;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
+import CityPopulization.world.resource.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -13,7 +15,7 @@ public class Terminal {
     public static final int IDLE = 2;
     public static final int LOADING = 3;
     public int occupied;
-    private Plot plot;
+    public Plot plot;
     public int occupiers;
     private Aircraft aircraft;
     private int timeLanded;
@@ -22,6 +24,7 @@ public class Terminal {
     public ArrayList<AircraftCargo> cargo = new ArrayList<>();
     public ArrayList<AircraftPassenger> passengers = new ArrayList<>();
     private int fuel;
+    private int tick;
     public Terminal(Plot plot){
         this.plot = plot;
     }
@@ -72,6 +75,14 @@ public class Terminal {
         state = UNLOADING;
     }
     public void update(Terminal entrance){
+        tick++;
+        if(!cargo.isEmpty()&&tick%5==0){
+            plot.resources.add(((AircraftCargoResource)cargo.remove(0)).getResource(), 1);
+        }
+        if(plot.resources.get(Resource.Fuel)>0&&tick%20==0&&fuel<500){
+            fuel++;
+            plot.resources.remove(Resource.Fuel, 1);
+        }
         if(aircraft==null){
             return;
         }
@@ -84,7 +95,9 @@ public class Terminal {
         boolean canLoad = false;
         if(state==UNLOADING){
             if(!aircraft.cargo.isEmpty()){
-                entrance.cargo.add(aircraft.cargo.remove(0));
+                AircraftCargo cargo;
+                entrance.cargo.add(cargo = aircraft.cargo.remove(0));
+                aircraft.cargoOccupied-=cargo.getSpaceOccupied();
             }
             if(timeLanded%20==0&&!aircraft.passengers.isEmpty()){
                 entrance.plot.addPassenger(aircraft.passengers.remove(0));
@@ -98,6 +111,10 @@ public class Terminal {
                 timeWaiting = 0;
             }
         }else if(state==LOADING){
+            if(!entrance.plot.resources.listResources().isEmpty()&&entrance.cargo.isEmpty()&&aircraft.cargoOccupied<aircraft.cargoCapacity){
+                entrance.cargo.add(new AircraftCargoResource(entrance.plot.resources.listResources().get(0)));
+                entrance.plot.resources.remove(entrance.plot.resources.listResources().get(0), 1);
+            }
             if(!entrance.cargo.isEmpty()&&aircraft.cargoOccupied<aircraft.cargoCapacity){
                 canLoad = true;
                 Collections.sort(entrance.cargo);

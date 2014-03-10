@@ -28,7 +28,7 @@ public class AircraftPath {
         if(endPlot==path.currentPlot){
             Side side = path.startPlot.front;
             for(Integer num : path.instructions){
-                if(num==1){
+                if(num==LEFT){
                     side = side.left();
                 }else{
                     side = side.right();

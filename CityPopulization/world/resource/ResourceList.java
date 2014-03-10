@@ -1,7 +1,6 @@
 package CityPopulization.world.resource;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 public class ResourceList{
     private HashMap<Resource, Integer> list = new HashMap<>();
     public ResourceList(){}
@@ -17,11 +16,11 @@ public class ResourceList{
             }
         }
     }
-    public ResourceList add(Resource resource, int i){
+    public ResourceList add(Resource resource, int count){
         if(list.containsKey(resource)){
-            list.put(resource, list.get(resource)+i);
+            list.put(resource, list.get(resource)+count);
         }else{
-            list.put(resource, i);
+            list.put(resource, count);
         }
         return this;
     }
@@ -42,10 +41,37 @@ public class ResourceList{
         }
         return this;
     }
-    public Set<Resource> listResources(){
-        return list.keySet();
+    public ArrayList<Resource> listResources(){
+        return new ArrayList<>(list.keySet());
     }
     public int get(Resource resource){
-        return list.get(resource);
+        return list.containsKey(resource)?list.get(resource):0;
+    }
+    public void removeAll(ResourceList other){
+        for(Resource resource : other.list.keySet()){
+            remove(resource, other.list.get(resource));
+        }
+    }
+    public void remove(Resource resource, int count){
+        if(get(resource)>count){
+            list.put(resource, list.get(resource)-count);
+        }else{
+            list.remove(resource);
+        }
+    }
+    @Override
+    public String toString(){
+        if(list.isEmpty()){
+            return "Nothing";
+        }
+        String value = "";
+        ArrayList<Resource> resources = listResources();
+        for(Resource resource : resources){
+            if(!value.isEmpty()){
+                value+="; ";
+            }
+            value += get(resource)+" "+resource.name();
+        }
+        return value;
     }
 }

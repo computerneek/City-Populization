@@ -216,10 +216,10 @@ public abstract class Aircraft{
     public void setHeading(Side front){
         switch(front){
             case FRONT:
-                heading = 270;
+                heading = 90;
                 break;
             case BACK:
-                heading = 90;
+                heading = 270;
                 break;
             case LEFT:
                 heading = 180;
@@ -265,7 +265,7 @@ public abstract class Aircraft{
         GL11.glTranslatef(x+0.5f, -y-0.5f, z);
         GL11.glRotatef(-heading+90, 0, 0, 1);
         GL11.glRotatef(tilt, 0, 1, 0);
-        ImageStash.instance.bindTexture(ImageStash.instance.getTexture("/textures/aircraft/"+textureFolder+"/frame "+(tick%frameCap)+".png"));
+        ImageStash.instance.bindTexture(ImageStash.instance.getTexture("/textures/aircraft/"+textureFolder+"/frame "+(tick%frameCap+1)+".png"));
         GL11.glColor3f(1, 1, 1);
         render();
         GL11.glRotatef(tilt, 0, -1, 0);
@@ -304,6 +304,10 @@ public abstract class Aircraft{
                 this.path = path;
                 taxiSequence = path.generateDirections();
                 runway.getStartPlot().terminal.occupied = Terminal.OUT;
+                setLocation(terminal.plot);
+                setHeading(terminal.plot.front);
+                speed = 0;
+                targetSpeed = 0;
                 state = "TaxiOut";
             }
         }

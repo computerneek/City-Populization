@@ -1,5 +1,5 @@
 package CityPopulization.world.aircraft.passenger;
-import CityPopulization.world.civillian.Civilian;
+import CityPopulization.world.civilian.Civilian;
 import java.util.ArrayList;
 public abstract class AircraftPassenger {
     public static ArrayList<AircraftPassenger> workers(int quantity){

@@ -1,9 +1,13 @@
 package CityPopulization.world.aircraft;
 public class TaxiEventLeft implements TaxiEvent {
-    public TaxiEventLeft(){
-    }
+    private int tick;
+    public TaxiEventLeft(){}
     @Override
-    public boolean update(Aircraft aThis){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean update(Aircraft aircraft){
+        if(tick==0){
+            aircraft.setTargetHeading(aircraft.getHeading()-90);
+        }
+        tick++;
+        return tick>=40;
     }
 }

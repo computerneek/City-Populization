@@ -5,7 +5,7 @@ public class TaxiEventRight implements TaxiEvent {
     @Override
     public boolean update(Aircraft aircraft){
         if(tick==0){
-            aircraft.setTargetHeading(aircraft.getHeading()-90);
+            aircraft.setTargetHeading(aircraft.getHeading()+90);
         }
         tick++;
         return tick>=40;

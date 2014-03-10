@@ -1,5 +1,5 @@
 package CityPopulization.menu.buttons;
-import CityPopulization.world.civillian.WorkerTask;
+import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.plot.Plot;
 public class ButtonEvent {
     private String type;

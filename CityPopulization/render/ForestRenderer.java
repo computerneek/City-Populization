@@ -10,7 +10,7 @@ public class ForestRenderer implements PlotRenderer{
         int z = plot.z;
         int levelCap = plot.getType().getMaximumLevel();
         int level = plot.getLevel()%levelCap;
-        int frameCap = plot.getType().getFrameCap(level+1);
+        int frameCap = plot.getType().getFrameCap(level+1, plot.getType().getTextureIndex("1:/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png"));
         int frame = plot.getFrameNumber()%frameCap;
         String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+".png";
         int texture = ImageStash.instance.getTexture(path);
@@ -32,6 +32,10 @@ public class ForestRenderer implements PlotRenderer{
 //            }
 //        }
         GL11.glEnd();
+    }
+    @Override
+    public String[] getPaths(int levels, String textureFolder){
+        return new String[]{levels+":/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png"};
     }
     
 }

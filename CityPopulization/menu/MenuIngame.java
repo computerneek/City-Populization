@@ -3,6 +3,8 @@ import CityPopulization.Core;
 import CityPopulization.menu.buttons.ButtonSet;
 import CityPopulization.menu.buttons.MenuComponentButtonIngame;
 import CityPopulization.world.player.Player;
+import CityPopulization.world.plot.Plot;
+import CityPopulization.world.resource.ResourceList;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.gui.GUI;
@@ -24,6 +26,7 @@ public class MenuIngame extends Menu{
         GL11.glLoadIdentity();
         GL11.glTranslatef(0, 0, -1);
         GL11.glScalef(1, -1, 1);
+        GL11.glColor4f(1, 1, 1, 1);
         if(lastScreenWidth!=(double)Display.getWidth()/Display.getHeight()*gui.helper.guiScale){
             lastScreenWidth = (double)Display.getWidth()/Display.getHeight()*gui.helper.guiScale;
             if(set!=null){
@@ -31,6 +34,11 @@ public class MenuIngame extends Menu{
             }
         }
         screenBottom = gui.helper.guiScale;
+        ResourceList lst = new ResourceList();
+        for(Plot plot : Core.world.getLocalPlayer().resourceStructures){
+            lst.addAll(plot.resources);
+        }
+        drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.08, lst.toString());
     }
     @Override
     public void tick(){}

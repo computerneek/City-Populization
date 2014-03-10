@@ -1,9 +1,13 @@
 package CityPopulization;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.menu.MenuMain;
+import CityPopulization.texturepack.Texture;
+import CityPopulization.texturepack.TexturepackCreator;
 import CityPopulization.world.World;
 import CityPopulization.world.WorldData;
 import CityPopulization.world.WorldInfo;
+import CityPopulization.world.player.Race;
+import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.save.LocalSaveLoader;
 import CityPopulization.world.save.SaveLoader;
 import java.awt.Color;
@@ -24,6 +28,7 @@ import org.lwjgl.openal.Util;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.Sys;
+import simplelibrary.error.ErrorAdapter;
 import simplelibrary.error.ErrorCategory;
 import simplelibrary.error.ErrorLevel;
 import simplelibrary.font.FontManager;
@@ -45,10 +50,15 @@ public class Core{
     private static SaveLoader empireSaveLoader;
     //</editor-fold>
     public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, IOException, URISyntaxException{
-        Sys.initLWJGL(new File(getAppdataRoot()), null);
+        Sys.initLWJGL(new File(getAppdataRoot()), new ErrorAdapter(){
+            @Override
+            public void warningError(String message, Throwable error, ErrorCategory catagory){
+                System.err.println((error!=null?error.toString()+";  ":"")+message);
+            }
+        });
         empireSaveLoader = new LocalSaveLoader(new File(getAppdataRoot()+"\\Saves"));
         helper = new GameHelper();
-        helper.setBackground(Color.BLUE);
+        helper.setBackground(new Color(48, 160, 255));
         helper.setInitMethod(Core.class.getDeclaredMethod("init", new Class<?>[0]));
         helper.setTickMethod(Core.class.getDeclaredMethod("tick", boolean.class));
         helper.setRenderMethod(Core.class.getDeclaredMethod("render", int.class));
@@ -161,7 +171,7 @@ public class Core{
         world.setGoal(data.goal);
         world.setGameSpeed(data.gameSpeed);
         world.setDifficulty(data.difficulty);
-        world.getLocalPlayer().getResourceManager().setSandbox(true);
+        world.getLocalPlayer().setSandbox(data.sandbox);
         world.summonInitialWorker();
         playWorld(world);
     }
@@ -186,5 +196,36 @@ public class Core{
     public static void playWorld(World world){
         Core.world = world;
         gui.open(new MenuIngame(gui, gui.menu));
+    }
+    public static void loadAllSoundsAndTextures(){
+        loadAllSounds();
+        loadAllTextures();
+    }
+    private static void loadAllSounds(){
+        for(PlotType type : PlotType.values()){
+            type.loadAllSounds();
+        }
+    }
+    private static void loadAllTextures(){
+        TexturepackCreator.addTexture(new Texture("/gui/button.png"));
+        TexturepackCreator.addTexture(new Texture("/gui/buttonPressed.png"));
+        TexturepackCreator.addTexture(new Texture("/gui/buttonDisabled.png"));
+        TexturepackCreator.addTexture(new Texture("/gui/textBox.png"));
+        for(PlotType type : PlotType.values()){
+            type.loadAllTextures();
+        }
+        for(Race race : Race.values()){
+            for(PlotType type : PlotType.values()){
+                if(type.getConstructionCost(race)!=null){
+                    TexturepackCreator.addTexture(new Texture("/gui/buttons/"+race.getName()+"/build"+type.textureFolder+".png"));
+                }
+            }
+        }
+        TexturepackCreator.addTexture(new Texture("/gui/buttons/back.png"));
+        TexturepackCreator.addTexture(new Texture("/textures/aircraft/initial/frame <FRAME>.png"));
+        TexturepackCreator.addTexture(new Texture("/gui/buttons/background/pressed.png"));
+        TexturepackCreator.addTexture(new Texture("/gui/buttons/background/mouseover.png"));
+        TexturepackCreator.addTexture(new Texture("/gui/buttons/background/plain.png"));
+        TexturepackCreator.addTexture(new Texture("/gui/buttons/background/disabled.png"));
     }
 }
