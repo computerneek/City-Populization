@@ -1,4 +1,5 @@
 package CityPopulization.world.plot;
+import CityPopulization.menu.MenuIngame;
 import CityPopulization.render.Side;
 import CityPopulization.world.World;
 import CityPopulization.world.aircraft.Aircraft;
@@ -41,7 +42,8 @@ public class Plot{
     int timeSinceLastWorkerOperation = 0;
     public WorkerTask task;
     public ResourceList resources = new ResourceList();
-    private ResourceList readyResources = new ResourceList();
+    public ResourceList readyResources = new ResourceList();
+    public ResourceList inboundResources = new ResourceList();
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -62,7 +64,8 @@ public class Plot{
     }
     public Plot setType(PlotType type){
         this.type = type;
-        this.level = 1;
+        this.level = 0;
+        world.clearPlotUpdates(this);
         world.schedulePlotUpdate(this);
         for(int i = -1; i<2; i++){
             for(int j = -1; j<2; j++){
@@ -74,6 +77,7 @@ public class Plot{
                 }
             }
         }
+        onPlotChange();
         return this;
     }
     public PlotType getType(){
@@ -82,8 +86,12 @@ public class Plot{
     public int getLevel(){
         return level;
     }
-    public Plot setLevel(int i){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Plot setLevel(int level){
+        this.level = level;
+        world.clearPlotUpdates(this);
+        world.schedulePlotUpdate(this);
+        onPlotChange();
+        return this;
     }
     public void setTimeSinceLastBreakage(int get){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -103,10 +111,12 @@ public class Plot{
                 }
             }
         }
+        onPlotChange();
         return this;
     }
     public Plot setFront(Side front){
         this.front = front;
+        onPlotChange();
         return this;
     }
     public Aircraft addInboundAircraft(Aircraft aircraft){
@@ -145,6 +155,10 @@ public class Plot{
             world.schedulePlotUpdate(this);
             workerUpdate();
         }
+        if(task==null&&!inboundResources.listResources().isEmpty()){
+            resources.addAll(inboundResources);
+            inboundResources = new ResourceList();
+        }
     }
     private void doAirportUpdate(){
         if(world.age%20==0&&!inboundAircraft.isEmpty()){
@@ -175,8 +189,9 @@ public class Plot{
         shouldRenderTopFace = world.getPlot(x, y, z+1)==null||!world.getPlot(x, y, z+1).getType().isOpaque();
         shouldRenderLeftFace = world.getPlot(x-1, y, z)==null||!world.getPlot(x-1, y, z).getType().isOpaque();
         shouldRenderRightFace = world.getPlot(x+1, y, z)==null||!world.getPlot(x+1, y, z).getType().isOpaque();
-        shouldRenderFrontFace = world.getPlot(x, y-1, z)==null||!world.getPlot(x, y-1, z).getType().isOpaque();
-        shouldRenderBackFace = world.getPlot(x, y+1, z)==null||!world.getPlot(x, y+1, z).getType().isOpaque();
+        shouldRenderFrontFace = world.getPlot(x, y+1, z)==null||!world.getPlot(x, y+1, z).getType().isOpaque();
+        shouldRenderBackFace = world.getPlot(x, y-1, z)==null||!world.getPlot(x, y-1, z).getType().isOpaque();
+        
     }
     public void render(Player localPlayer){
         if(!playerVisibilities.contains(localPlayer)){
@@ -262,6 +277,7 @@ public class Plot{
                 world.civilians.add(worker);
                 workersPresent.remove(worker);
                 timeSinceLastWorkerOperation = 0;
+                break;
             }
         }
     }
@@ -318,5 +334,17 @@ public class Plot{
     public void readyResources(ResourceList resources){
         readyResources.addAll(resources);
         this.resources.removeAll(resources);
+    }
+    private MenuIngame menu;
+    public void select(MenuIngame menu){
+        this.menu = menu;
+    }
+    public void unselect(){
+        menu = null;
+    }
+    private void onPlotChange(){
+        if(menu!=null){
+            menu.onPlotUpdate();
+        }
     }
 }

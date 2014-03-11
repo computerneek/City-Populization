@@ -5,6 +5,8 @@ import CityPopulization.world.civilian.CivilianManager;
 import CityPopulization.world.civilian.WorkerTaskManager;
 import CityPopulization.world.plot.Plot;
 import java.util.ArrayList;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 public abstract class Player{
     public Race race;
     private WorkerTaskManager workerTaskManager;
@@ -45,5 +47,25 @@ public abstract class Player{
     public abstract void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button);
     public void setSandbox(boolean sandbox){
         this.sandbox = sandbox;
+    }
+    public void update(){
+        workerTaskManager.update();
+        if(Mouse.getX()<=30){
+            cameraX+=0.05;
+        }else if(Mouse.getX()>=Display.getWidth()-30){
+            cameraX-=0.05;
+        }
+        if(Mouse.getY()<=30){
+            cameraY+=0.05;
+        }else if(Mouse.getY()>=Display.getHeight()-30){
+            cameraY-=0.05;
+        }
+    }
+    public int getResourcesPerWarehouse(){
+        return 1000;
+    }
+    public void render(){}
+    public void mousewheel(int dist){
+        cameraZ-=dist;
     }
 }

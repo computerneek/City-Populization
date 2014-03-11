@@ -39,10 +39,11 @@ public class WorkerTask{
                 return false;
             }
         }
+        getCurrentSegment();
         return true;
     }
     public void prepare(){
-        segments.add(new WorkerTaskSegment().setType("Resource Returns"));
+        segments.add(new WorkerTaskSegment().setType("Resource Returns").setResources(revenue));
         for(WorkerTaskSegment segment : segments){
             segment.setParentTask(this);
         }
@@ -53,6 +54,9 @@ public class WorkerTask{
                 return segment;
             }
         }
+        targetPlot.task = null;
+        targetPlot.owner.getWorkerTaskManager().removeTask(this);
         return null;
     }
+    public void update(){}
 }

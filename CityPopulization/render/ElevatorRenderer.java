@@ -8,7 +8,7 @@ public class ElevatorRenderer implements PlotRenderer {
     @Override
     public void render(Plot plot, String textureFolder){
         int x = plot.x;
-        int y = plot.y;
+        int y = -plot.y;
         int z = plot.z;
         int levelCap = plot.getType().getMaximumLevel();
         int level = plot.getLevel()%levelCap;
@@ -21,7 +21,6 @@ public class ElevatorRenderer implements PlotRenderer {
         if(facing==null||facing==Side.UP||facing==Side.DOWN){
             facing = Side.FRONT;
         }
-        y=-y;
         int texture = ImageStash.instance.getTexture(path);
         ImageStash.instance.bindTexture(texture);
         GL11.glBegin(GL11.GL_QUADS);

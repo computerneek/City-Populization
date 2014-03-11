@@ -17,6 +17,8 @@ public class MenuIngame extends Menu{
     private int lastX;
     private int lastY;
     private double lastScreenWidth;
+    private int lastButton;
+    private Plot plot;
     public MenuIngame(GUI gui, Menu parent){
         super(gui, parent);
     }
@@ -52,17 +54,31 @@ public class MenuIngame extends Menu{
     @Override
     public void mouseEvent(int button, boolean pressed, float x, float y, float xChange, float yChange, int wheelChange){
         super.mouseEvent(button, pressed, x, y, xChange, yChange, wheelChange);
+        Player player = Core.world.getLocalPlayer();
         if(y<screenBottom-0.5f&&pressed){
-            Player player = Core.world.getLocalPlayer();
             x*=4;
             y*=4;
             x-=player.getCameraX();
-            y-=player.getCameraY();
+            y+=player.getCameraY();
             int plotX = (int)Math.round(Math.floor(x));
             int plotY = (int)Math.round(Math.floor(y));
+            if(plot!=null){
+                plot.unselect();
+            }
             lastX = plotX;
             lastY = plotY;
+            lastButton = button;
+            plot = null;
+            if(button==0){
+                plot = player.world.getPlot(plotX, plotY, player.cameraZ);
+            }
+            if(plot!=null){
+                plot.select(this);
+            }
             player.onPlotClicked(plotX, plotY, this, button);
+        }
+        if(wheelChange!=0){
+            player.mousewheel(wheelChange/120);
         }
     }
     public void setButtonSet(ButtonSet set){
@@ -73,6 +89,9 @@ public class MenuIngame extends Menu{
     @Override
     public void buttonClicked(MenuComponentButton button){
         ((MenuComponentButtonIngame)button).listener.actionPerformed(null);
-        Core.world.getLocalPlayer().onPlotClicked(lastX, lastY, this, 0);
+        Core.world.getLocalPlayer().onPlotClicked(lastX, lastY, this, lastButton);
+    }
+    public void onPlotUpdate(){
+        Core.world.getLocalPlayer().onPlotClicked(lastX, lastY, this, lastButton);
     }
 }

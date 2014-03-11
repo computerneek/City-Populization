@@ -12,4 +12,12 @@ public class WorkerTaskManager{
     public int getWorkerCarryingCapacity(){
         return 25;
     }
+    public void update(){
+        for(WorkerTask task : (ArrayList<WorkerTask>)tasks.clone()){
+            task.update();
+        }
+    }
+    public void removeTask(WorkerTask task){
+        tasks.remove(task);
+    }
 }

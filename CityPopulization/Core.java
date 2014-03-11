@@ -99,6 +99,8 @@ public class Core{
         gui.tick();
         if(isLastTick){
             AL.destroy();
+        }else if(tick%20==0){
+            helper.frame.validate();
         }
     }
     public static boolean render(int millisSinceLastTick){

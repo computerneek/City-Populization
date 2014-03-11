@@ -65,6 +65,59 @@ public class Path{
         }
         return null;
     }
+    public static ArrayList<Plot> findWarehouse(Plot startPlot){
+        ArrayList<Path> paths = new ArrayList<>();
+        ArrayList<Plot> coveredPlots = new ArrayList<>();
+        ArrayList<Plot> warehouses = new ArrayList<>();
+        coveredPlots.add(startPlot);
+        for(Side side : startPlot.getTravelableSides()){
+            paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
+        }
+        while(!paths.isEmpty()){
+            Path path = paths.remove(0);
+            Plot plot = path.currentPlot;
+            if(coveredPlots.contains(plot)){
+                continue;
+            }
+            coveredPlots.add(plot);
+            if(plot.getType()==PlotType.Warehouse){
+                warehouses.add(plot);
+            }
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator){
+                continue;
+            }
+            for(Side side : plot.getTravelableSides()){
+                paths.add(path.copy().path(side.getPlot(plot.world, plot.x, plot.y, plot.z)));
+            }
+        }
+        return warehouses;
+    }
+    public static Plot findAirportEntrance(Plot startPlot){
+        ArrayList<Path> paths = new ArrayList<>();
+        ArrayList<Plot> coveredPlots = new ArrayList<>();
+        coveredPlots.add(startPlot);
+        for(Side side : startPlot.getTravelableSides()){
+            paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
+        }
+        while(!paths.isEmpty()){
+            Path path = paths.remove(0);
+            Plot plot = path.currentPlot;
+            if(coveredPlots.contains(plot)){
+                continue;
+            }
+            coveredPlots.add(plot);
+            if(plot.getType()==PlotType.AirportEntrance){
+                return plot;
+            }
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator){
+                continue;
+            }
+            for(Side side : plot.getTravelableSides()){
+                paths.add(path.copy().path(side.getPlot(plot.world, plot.x, plot.y, plot.z)));
+            }
+        }
+        return null;
+    }
     public static Path findPath(Plot start, Plot end){
         if(start==end){
             return new Path().start(start);

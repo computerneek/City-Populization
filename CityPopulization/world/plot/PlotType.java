@@ -110,7 +110,7 @@ public enum PlotType{
         return new ArrayList<Side>(Arrays.asList(pathableSides));
     }
     public ResourceList getConstructionCost(Race race){
-        return constructionCosts.get(this)!=null?constructionCosts.get(this).get(0):null;
+        return constructionCosts.get(this)!=null?new ResourceList().addAll(constructionCosts.get(this).get(0)):null;
     }
     private static HashMap<PlotType, ResourceListList> constructionCosts = new HashMap<>();
     static{
