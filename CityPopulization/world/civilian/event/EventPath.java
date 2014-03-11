@@ -3,6 +3,7 @@ import CityPopulization.world.civilian.Path;
 import CityPopulization.world.civilian.Worker;
 public class EventPath implements Event{
     private Path path;
+    private Worker worker;
     public EventPath(Path path){
         this.path = path;
     }
@@ -15,5 +16,7 @@ public class EventPath implements Event{
         worker.path = path;
     }
     @Override
-    public void work(Worker worker){}
+    public void work(Worker worker){
+        this.worker = worker;
+    }
 }

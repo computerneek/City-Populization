@@ -17,7 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JOptionPane;
 public class Main{
-    private static String requiredSimpleLibraryVersion = "b52";
+    private static String requiredSimpleLibraryVersion = "b53";
     public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, IOException, URISyntaxException{
         args = update(args);
         if(args==null){
@@ -29,13 +29,13 @@ public class Main{
         return (System.getenv("APPDATA")==null?"C:":System.getenv("APPDATA"))+"\\Dolan Programmers\\City Populization";
     }
     private static String[] update(String[] args) throws URISyntaxException, IOException, InterruptedException{
-        Updater updater = Updater.read("https://dl.dropboxusercontent.com/s/uk6b1hjhewkz38i/versions?dl=1&token_hash=AAEgSI-u7D866OGd6vD50jwzBUVj0V967wsIkbv-UF7LAw", VersionManager.currentVersion, "City Populization");
-        if(updater!=null&&updater.getVersionsBehindLatestDownloadable()>0&&JOptionPane.showConfirmDialog(null, "Version "+updater.getLatestDownloadableVersion()+" is out!  Would you like to update City Populization now?", "Update Available", JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION){
-            startJava(new String[0], new String[]{"justUpdated"}, updater.update(updater.getLatestDownloadableVersion()));
-            System.exit(0);
-        }
         ArrayList<String> theargs = new ArrayList<>(Arrays.asList(args));
         if(args.length<1||!args[0].equals("Skip dependencies")){
+            Updater updater = Updater.read("https://dl.dropboxusercontent.com/s/uk6b1hjhewkz38i/versions?dl=1&token_hash=AAEgSI-u7D866OGd6vD50jwzBUVj0V967wsIkbv-UF7LAw", VersionManager.currentVersion, "City Populization");
+            if(updater!=null&&updater.getVersionsBehindLatestDownloadable()>0&&JOptionPane.showConfirmDialog(null, "Version "+updater.getLatestDownloadableVersion()+" is out!  Would you like to update City Populization now?", "Update Available", JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION){
+                startJava(new String[0], new String[]{"justUpdated"}, updater.update(updater.getLatestDownloadableVersion()));
+                System.exit(0);
+            }
             int OS_WINDOWS = 0;
             int OS_SOLARIS = 1;
             int OS_MACOSX = 2;

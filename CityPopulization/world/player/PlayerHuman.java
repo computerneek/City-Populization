@@ -14,7 +14,6 @@ import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
-import java.util.ArrayList;
 public class PlayerHuman extends Player {
     public PlayerHuman(){
         this(null);
@@ -104,7 +103,10 @@ public class PlayerHuman extends Player {
         }
     }
     private void onOwnedPlotClicked(Plot plot, ButtonSet set){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        switch(plot.getType()){
+            default:
+                System.err.println("Unrecognized plot type "+plot.getType().name()+"!  (PlayerHuman)");
+        }
     }
     private void onResourceMineClicked(Plot plot, ButtonSet set, String name, Resource resource){
         if(plot.task==null){
@@ -160,6 +162,10 @@ public class PlayerHuman extends Player {
                                 .setRevenue(new ResourceList().add(Resource.Tools, 1))
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
-                                        .setData(type, Side.FRONT))));
+                                        .setData(type, 1, Side.FRONT))));
+    }
+    @Override
+    public void update(){
+        super.update(); //To change body of generated methods, choose Tools | Templates.
     }
 }

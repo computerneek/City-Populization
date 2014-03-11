@@ -47,17 +47,19 @@ public class ResourceList{
     public int get(Resource resource){
         return list.containsKey(resource)?list.get(resource):0;
     }
-    public void removeAll(ResourceList other){
+    public ResourceList removeAll(ResourceList other){
         for(Resource resource : other.list.keySet()){
             remove(resource, other.list.get(resource));
         }
+        return this;
     }
-    public void remove(Resource resource, int count){
+    public ResourceList remove(Resource resource, int count){
         if(get(resource)>count){
             list.put(resource, list.get(resource)-count);
         }else{
             list.remove(resource);
         }
+        return this;
     }
     @Override
     public String toString(){
@@ -73,5 +75,12 @@ public class ResourceList{
             value += get(resource)+" "+resource.name();
         }
         return value;
+    }
+    public int count(){
+        int count = 0;
+        for(Resource resource : list.keySet()){
+            count+=list.get(resource);
+        }
+        return count;
     }
 }

@@ -8,13 +8,14 @@ import CityPopulization.world.plot.Template;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 public class World{
     public long seed = new Random().nextLong();
     private Player localPlayer;
-    private ArrayList<Player> otherPlayers = new ArrayList<Player>();
+    private ArrayList<Player> otherPlayers = new ArrayList<>();
     private Template template;
     private int speedMultiplier;
     private WinningCondition goal;
@@ -44,6 +45,10 @@ public class World{
             for(Civilian civilian : (ArrayList<Civilian>)civilians.clone()){
                 civilian.update();
             }
+            for(Player player : otherPlayers){
+                player.update();
+            }
+            localPlayer.update();
         }
     }
     public Player getLocalPlayer(){
@@ -116,6 +121,13 @@ public class World{
         players.addAll(otherPlayers);
         return players;
     }
+    public void clearPlotUpdates(Plot plot){
+        for(Map.Entry<Integer, ArrayList<Plot>> entry:plotsNeedingUpdate.entrySet()){
+            Integer key=entry.getKey();
+            ArrayList<Plot> value=entry.getValue();
+            value.remove(plot);
+        }
+    }
     public void schedulePlotUpdate(Plot plot){
         schedulePlotUpdate(plot, 1);
     }
@@ -133,12 +145,12 @@ public class World{
     }
     public void render(){
         GL11.glLoadIdentity();
-        GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -3);
+        GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -3-localPlayer.getCameraZ());
 //        GL11.glEnable(GL11.GL_DEPTH_TEST);
         int x = -(int)localPlayer.getCameraX();
         int y = (int)localPlayer.getCameraY();
-        int z = (int)localPlayer.getCameraZ();
-        for(int i = -10; i<4; i++){
+        int z = localPlayer.getCameraZ();
+        for(int i = -10; i<2; i++){
             GL11.glColor4d(1, 1, 1, i>0?0.2:1);
             HashMap<Float, ArrayList<Plot>> map = new HashMap<>();
             for(int j=-5; j<6; j++){
@@ -159,9 +171,6 @@ public class World{
                     }
                 }
             }
-        }
-        for(Aircraft aircraft : this.aircraft){
-            aircraft.render(localPlayer);
         }
 //        for(int i = -6; i<7; i++){
 //            HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x+i);
@@ -184,7 +193,16 @@ public class World{
 //            }
 //        }
 //        GL11.glDisable(GL11.GL_DEPTH_TEST);
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        for(Aircraft aircraft : this.aircraft){
+            aircraft.render(localPlayer);
+        }
+        localPlayer.render();
+        for(Player player : otherPlayers){
+            player.render();
+        }
+        for(Civilian civilian : civilians){
+            civilian.render(localPlayer);
+        }
     }
     public void setRace(Race race){
         localPlayer = race.createPlayer(this);
