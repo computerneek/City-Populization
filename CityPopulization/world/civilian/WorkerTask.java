@@ -1,6 +1,7 @@
 package CityPopulization.world.civilian;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
+import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 public class WorkerTask{
@@ -18,11 +19,11 @@ public class WorkerTask{
         return this;
     }
     public WorkerTask setCost(ResourceList cost){
-        this.cost = cost;
+        this.cost = new ResourceList().addAll(cost).add(Resource.Tools, 1);
         return this;
     }
     public WorkerTask setRevenue(ResourceList revenue){
-        this.revenue = revenue;
+        this.revenue = new ResourceList().addAll(revenue).multiply(targetPlot.world.difficulty.incomeModifier).add(Resource.Tools, 1);
         return this;
     }
     public WorkerTask addSegment(WorkerTaskSegment segment){

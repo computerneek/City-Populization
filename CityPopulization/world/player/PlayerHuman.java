@@ -16,7 +16,7 @@ import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 public class PlayerHuman extends Player {
     public PlayerHuman(){
-        this(null);
+        super(null);
     }
     public PlayerHuman(World world){
         super(world);
@@ -104,6 +104,15 @@ public class PlayerHuman extends Player {
     }
     private void onOwnedPlotClicked(Plot plot, ButtonSet set){
         switch(plot.getType()){
+            case AirportRunway:
+            case AirportJetway:
+            case Road:
+            case AirportTerminal:
+                onPlainOwnedPlotClicked(plot, set);
+                break;
+            case AirportEntrance:
+                onAirportClicked(plot, set);
+                break;
             default:
                 System.err.println("Unrecognized plot type "+plot.getType().name()+"!  (PlayerHuman)");
         }
@@ -132,11 +141,11 @@ public class PlayerHuman extends Player {
                         .setTask(new WorkerTask()
                                 .setOwner(this)
                                 .setPlot(plot)
-                                .setCost(new ResourceList(Resource.Cash, 100, Resource.Tools, 1))
-                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(world.difficulty.incomeModifier).add(Resource.Tools, 1))
+                                .setCost(new ResourceList(Resource.Cash, 100))
+                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(world.difficulty.incomeModifier))
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
-                                        .setData(PlotType.Air, Side.FRONT))));
+                                        .setData(PlotType.Air, 0, Side.FRONT))));
     }
     private void onAirClicked(Plot plot, ButtonSet set){
         if(plot.task==null){
@@ -158,14 +167,78 @@ public class PlayerHuman extends Player {
                         .setTask(new WorkerTask()
                                 .setOwner(this)
                                 .setPlot(plot)
-                                .setCost(type.getConstructionCost(race).add(Resource.Tools, 1))
-                                .setRevenue(new ResourceList().add(Resource.Tools, 1))
+                                .setCost(type.getConstructionCost(race))
+                                .setRevenue(new ResourceList())
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
-                                        .setData(type, 1, Side.FRONT))));
+                                        .setData(type, 0, Side.FRONT))));
     }
     @Override
     public void update(){
         super.update(); //To change body of generated methods, choose Tools | Templates.
+    }
+    private void onPlainOwnedPlotClicked(Plot plot, ButtonSet set){
+        if(plot.task==null){
+            if(plot.canUpgrade(race)){
+                set.add(createUpgradeButton(plot));
+            }
+            set.add(createDowngradeButton(plot));
+            set.add(createDestroyButton(plot));
+        }else if(!plot.task.started){
+            set.add(createCancelTaskButton(plot));
+        }
+    }
+    private void onAirportClicked(Plot plot, ButtonSet set){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    private Button createUpgradeButton(Plot plot){
+        return new Button()
+                .setImage("/gui/buttons/"+race.getName()+"/upgrade"+plot.getType().textureFolder+".png")
+                .setText("Upgrade")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(plot.getType().getCost(plot.getLevel()+1, race))
+                                .setRevenue(new ResourceList())
+                                .addSegment(new WorkerTaskSegment()
+                                        .setType("Plot Type")
+                                        .setData(plot.getType(), plot.getLevel()+1, plot.getFront()))));
+    }
+    private Button createDowngradeButton(Plot plot){
+        return new Button()
+                .setImage("/gui/buttions/"+race.getName()+"/downgrade"+plot.getType().textureFolder+".png")
+                .setText("Downgrade")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(new ResourceList())
+                                .setRevenue(plot.getType().getCost(plot.getLevel(), race))
+                                .addSegment(new WorkerTaskSegment()
+                                        .setType("Plot Type")
+                                        .setData(plot.getLevel()>0?plot.getType():PlotType.Air, plot.getLevel()>0?plot.getLevel()-1:0, plot.getLevel()>0?plot.getFront():Side.FRONT))));
+    }
+    private Button createDestroyButton(Plot plot){
+        ResourceList revenue = new ResourceList();
+        for(int i = 0; i<plot.getLevel()+1; i++){
+            revenue.addAll(plot.getType().getCost(i, race));
+        }
+        revenue.multiply(0.1);
+        return new Button()
+                .setImage("/gui/buttons/"+race.getName()+"/destroy"+plot.getType().textureFolder+".png")
+                .setText("Destroy")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(new ResourceList())
+                                .setRevenue(revenue)
+                                .addSegment(new WorkerTaskSegment()
+                                        .setType("Plot Type")
+                                        .setData(PlotType.Air, 0, Side.FRONT))));
     }
 }

@@ -5,8 +5,8 @@ import CityPopulization.world.civilian.WorkerTaskManager;
 import java.util.ArrayList;
 public class Race{
     private static final ArrayList<Race> races = new ArrayList<>();
-    public static final Race HUMAN = new Race("Human", new PlayerHuman(), 25),
-                             ZOMBIE = new Race("Zombie", null, 5);
+    public static final Race HUMAN = new Race("Human", new PlayerHuman(), 25);
+//                             ZOMBIE = new Race("Zombie", null, 5);
     public static Race[] values(){
         return races.toArray(new Race[races.size()]);
     }
