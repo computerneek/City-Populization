@@ -27,7 +27,7 @@ public class EventPlotSet implements Event{
         plot.setType(type);
         plot.setLevel(level);
         plot.setFront(front);
-        plot.setOwner(owner);
+        plot.setOwner(type==PlotType.Air?null:owner);
         started = true;
     }
     @Override
