@@ -12,6 +12,7 @@ import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.civilian.WorkerTaskSegment;
 import CityPopulization.world.civilian.event.EventSequence;
 import CityPopulization.world.player.Player;
+import CityPopulization.world.player.Race;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import java.util.Random;
@@ -346,5 +347,8 @@ public class Plot{
         if(menu!=null){
             menu.onPlotUpdate();
         }
+    }
+    public boolean canUpgrade(Race race){
+        return level+1<type.getMaximumLevel()&&type.getCost(level+1, race)!=null;
     }
 }

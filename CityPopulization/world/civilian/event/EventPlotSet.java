@@ -14,7 +14,7 @@ public class EventPlotSet implements Event{
     public EventPlotSet(Plot plot, PlotType type, int level, Side front, Player owner){
         this.plot = plot;
         this.type = type;
-        this.level = level-1;
+        this.level = level;
         this.front = front;
         this.owner = owner;
     }

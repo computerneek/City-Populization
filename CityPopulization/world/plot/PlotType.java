@@ -110,11 +110,13 @@ public enum PlotType{
         return new ArrayList<Side>(Arrays.asList(pathableSides));
     }
     public ResourceList getConstructionCost(Race race){
-        return constructionCosts.get(this)!=null?new ResourceList().addAll(constructionCosts.get(this).get(0)):null;
+        return getCost(0, race);
     }
-    private static HashMap<PlotType, ResourceListList> constructionCosts = new HashMap<>();
+    private static HashMap<Race, HashMap<PlotType, ResourceListList>> constructionCosts = new HashMap<>();
     static{
-        constructionCosts.put(Road, new ResourceListList(new ResourceList(Resource.Dirt, 25)));
+        HashMap<PlotType, ResourceListList> costs = new HashMap<>();
+        constructionCosts.put(Race.HUMAN, costs);
+        costs.put(Road, new ResourceListList(new ResourceList(Resource.Dirt, 25)));
     }
     public void loadAllTextures(){
         for(String texture : renderer.getPaths(highestLevel, textureFolder)){
@@ -128,5 +130,12 @@ public enum PlotType{
     }
     public int getTextureIndex(String string){
         return new ArrayList<String>(Arrays.asList(renderer.getPaths(1, textureFolder))).indexOf(string);
+    }
+    public ResourceList getCost(int level, Race race){
+        HashMap<PlotType, ResourceListList> costs = constructionCosts.get(race);
+        if(costs==null){
+            return null;
+        }
+        return costs.get(this)!=null?new ResourceList().addAll(costs.get(this).get(level)):null;
     }
 }
