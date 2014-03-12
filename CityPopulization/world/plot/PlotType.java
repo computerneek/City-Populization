@@ -136,6 +136,6 @@ public enum PlotType{
         if(costs==null){
             return null;
         }
-        return costs.get(this)!=null?new ResourceList().addAll(costs.get(this).get(level)):null;
+        return (costs.get(this)!=null&&costs.get(this).get(level)!=null)?new ResourceList().addAll(costs.get(this).get(level)):null;
     }
 }

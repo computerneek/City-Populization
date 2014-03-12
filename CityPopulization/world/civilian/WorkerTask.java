@@ -56,7 +56,7 @@ public class WorkerTask{
             }
         }
         targetPlot.task = null;
-        targetPlot.owner.getWorkerTaskManager().removeTask(this);
+        owner.getWorkerTaskManager().removeTask(this);
         return null;
     }
     public void update(){}
