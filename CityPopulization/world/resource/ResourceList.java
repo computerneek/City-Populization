@@ -25,6 +25,9 @@ public class ResourceList{
         return this;
     }
     public ResourceList addAll(ResourceList other){
+        if(other==null){
+            return this;
+        }
         for(Resource resource : other.list.keySet()){
             add(resource, other.list.get(resource));
         }

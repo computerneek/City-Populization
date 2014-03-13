@@ -34,7 +34,7 @@ public class MenuComponentButtonIngame extends MenuComponentButton{
             }
         }
         drawRect(x, y, x+width, y+height, texture);
-        double textHeight = 0.08;
+        double textHeight = 0.04;
         drawRect(x+0.02, y+0.02, x+width-0.02, y+height-0.01-textHeight*label.length-0.02, ImageStash.instance.getTexture(image));
         GL11.glColor3f(0, 0, 0);
         for(int i = 0; i<label.length; i++){

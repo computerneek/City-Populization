@@ -19,6 +19,7 @@ public class MenuIngame extends Menu{
     private double lastScreenWidth;
     private int lastButton;
     private Plot plot;
+    private boolean needsUpdate;
     public MenuIngame(GUI gui, Menu parent){
         super(gui, parent);
     }
@@ -40,12 +41,16 @@ public class MenuIngame extends Menu{
         for(Plot plot : Core.world.getLocalPlayer().resourceStructures){
             lst.addAll(plot.resources);
         }
-        drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.08, lst.toString());
+        drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.08, "$"+Core.world.getLocalPlayer().cash+"; "+lst.toString());
     }
     @Override
     public void tick(){}
     @Override
     public void render(int millisSinceLastTick){
+        if(needsUpdate){
+            Core.world.getLocalPlayer().onPlotClicked(lastX, lastY, this, lastButton);
+            needsUpdate = false;
+        }
         renderBackground();
         for(MenuComponent component : components){
             component.draw();
@@ -55,7 +60,7 @@ public class MenuIngame extends Menu{
     public void mouseEvent(int button, boolean pressed, float x, float y, float xChange, float yChange, int wheelChange){
         super.mouseEvent(button, pressed, x, y, xChange, yChange, wheelChange);
         Player player = Core.world.getLocalPlayer();
-        if(y<screenBottom-0.5f&&pressed){
+        if(y<screenBottom-0.25f&&pressed){
             x*=4;
             y*=4;
             x-=player.getCameraX();
@@ -89,7 +94,7 @@ public class MenuIngame extends Menu{
     @Override
     public void buttonClicked(MenuComponentButton button){
         ((MenuComponentButtonIngame)button).listener.actionPerformed(null);
-        Core.world.getLocalPlayer().onPlotClicked(lastX, lastY, this, lastButton);
+        needsUpdate = true;
     }
     public void onPlotUpdate(){
         Core.world.getLocalPlayer().onPlotClicked(lastX, lastY, this, lastButton);

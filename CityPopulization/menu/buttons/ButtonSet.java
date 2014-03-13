@@ -18,7 +18,7 @@ public class ButtonSet {
         if(buttonIndex<0){
             buttonIndex = 0;
         }
-        double buttonSize = 0.5;
+        double buttonSize = 0.25;
         double buttonOffset = 0.5;
         double screenWidth = (double)Display.getWidth()/Display.getHeight()*menu.gui.helper.guiScale;
         int buttonCount = (int)Math.floor((screenWidth-buttonOffset)/buttonSize);
@@ -56,6 +56,15 @@ public class ButtonSet {
                     button.onClicked();
                 }
             }));
+        }
+        if(addNextButton){
+            menu.add(new MenuComponentButtonIngame(buttonOffset, menu.screenBottom-buttonSize, buttonSize, buttonSize, new String[]{"Back"}, true, "/gui/buttons/back.png", new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    display(buttonIndex-1, menu);
+                }
+            }));
+            buttonOffset+=buttonSize;
         }
     }
 }

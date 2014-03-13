@@ -2,7 +2,7 @@ package CityPopulization.render;
 import CityPopulization.world.plot.Plot;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.ImageStash;
-public class BankRenderer implements PlotRenderer {
+public class BankRenderer implements PlotRenderer{
     public BankRenderer(){
     }
     @Override

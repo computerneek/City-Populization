@@ -17,7 +17,6 @@ import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import java.util.Random;
 public class Plot{
-    private ArrayList<Aircraft> inboundAircraft = new ArrayList<>();
     public final int x;
     public final int y;
     public final int z;
@@ -121,11 +120,8 @@ public class Plot{
         return this;
     }
     public Aircraft addInboundAircraft(Aircraft aircraft){
-        if(getType()==PlotType.AirportEntrance){
-            inboundAircraft.add(aircraft);
-            return aircraft;
-        }
-        return null;
+        owner.inboundAircraft.add(aircraft);
+        return aircraft;
     }
     private void updateVisibility(){
         playerVisibilities.clear();
@@ -162,8 +158,8 @@ public class Plot{
         }
     }
     private void doAirportUpdate(){
-        if(world.age%20==0&&!inboundAircraft.isEmpty()){
-            attemptToLandAircraft(inboundAircraft.remove(0));
+        if(world.age%20==0&&!owner.inboundAircraft.isEmpty()){
+            attemptToLandAircraft(owner.inboundAircraft.remove(0));
         }
         ArrayList<Plot> terminals = new ArrayList<>();
         findTerminals(terminals);
@@ -184,7 +180,7 @@ public class Plot{
                 }
             }
         }
-        inboundAircraft.add(aircraft);
+        owner.inboundAircraft.add(aircraft);
     }
     private void onNeighborPlotChange(){
         shouldRenderTopFace = world.getPlot(x, y, z+1)==null||!world.getPlot(x, y, z+1).getType().isOpaque();

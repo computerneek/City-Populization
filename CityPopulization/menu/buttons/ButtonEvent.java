@@ -1,4 +1,6 @@
 package CityPopulization.menu.buttons;
+import CityPopulization.Core;
+import CityPopulization.menu.MenuAirportSchedule;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.plot.Plot;
 public class ButtonEvent {
@@ -20,8 +22,13 @@ public class ButtonEvent {
     public void onClicked(){
         switch(type){
             case "Task":
-                task.targetPlot.task = task;
-                task.owner.getWorkerTaskManager().addTask(task);
+                if(task.owner.cash>=task.cash){
+                    task.targetPlot.task = task;
+                    task.owner.getWorkerTaskManager().addTask(task);
+                }
+                break;
+            case "Airport":
+                Core.gui.open(new MenuAirportSchedule(Core.gui, Core.gui.menu));
                 break;
             default:
                 throw new AssertionError(type);

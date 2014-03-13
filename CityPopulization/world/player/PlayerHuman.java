@@ -47,7 +47,7 @@ public class PlayerHuman extends Player {
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(this);
         world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
         resourceStructures.add(world.getPlot(0, 0, 0));
-        world.getPlot(0, 0, 0).resources.add(Resource.Cash, 1000);
+        cash = 1000;
     }
     @Override
     public void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button){
@@ -108,10 +108,22 @@ public class PlayerHuman extends Player {
             case AirportJetway:
             case Road:
             case AirportTerminal:
+            case Workshop:
+            case Store:
+            case Elevator:
                 onPlainOwnedPlotClicked(plot, set);
                 break;
             case AirportEntrance:
                 onAirportClicked(plot, set);
+                break;
+            case Warehouse:
+                onWarehouseClicked(plot, set);
+                break;
+            case Bank:
+                onBankClicked(plot, set);
+                break;
+            case House:
+                onHouseClicked(plot, set);
                 break;
             default:
                 System.err.println("Unrecognized plot type "+plot.getType().name()+"!  (PlayerHuman)");
@@ -141,8 +153,9 @@ public class PlayerHuman extends Player {
                         .setTask(new WorkerTask()
                                 .setOwner(this)
                                 .setPlot(plot)
-                                .setCost(new ResourceList(Resource.Cash, 100))
-                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(world.difficulty.incomeModifier))
+                                .setCost(new ResourceList())
+                                .setCash(100)
+                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested))
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
                                         .setData(PlotType.Air, 0, Side.FRONT))));
@@ -168,6 +181,7 @@ public class PlayerHuman extends Player {
                                 .setOwner(this)
                                 .setPlot(plot)
                                 .setCost(type.getConstructionCost(race))
+                                .setCash(100)
                                 .setRevenue(new ResourceList())
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
@@ -188,9 +202,6 @@ public class PlayerHuman extends Player {
             set.add(createCancelTaskButton(plot));
         }
     }
-    private void onAirportClicked(Plot plot, ButtonSet set){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     private Button createUpgradeButton(Plot plot){
         return new Button()
                 .setImage("/gui/buttons/"+race.getName()+"/upgrade"+plot.getType().textureFolder+".png")
@@ -201,6 +212,7 @@ public class PlayerHuman extends Player {
                                 .setOwner(this)
                                 .setPlot(plot)
                                 .setCost(plot.getType().getCost(plot.getLevel()+1, race))
+                                .setCash(100*(plot.getLevel()+1)*(plot.getLevel()+1))
                                 .setRevenue(new ResourceList())
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
@@ -216,6 +228,7 @@ public class PlayerHuman extends Player {
                                 .setOwner(this)
                                 .setPlot(plot)
                                 .setCost(new ResourceList())
+                                .setCash(100*(plot.getLevel()+1)*(plot.getLevel()+1))
                                 .setRevenue(plot.getType().getCost(plot.getLevel(), race))
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
@@ -236,9 +249,31 @@ public class PlayerHuman extends Player {
                                 .setOwner(this)
                                 .setPlot(plot)
                                 .setCost(new ResourceList())
+                                .setCash(500)
                                 .setRevenue(revenue)
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
                                         .setData(PlotType.Air, 0, Side.FRONT))));
+    }
+    private Button createAirportScheduleButton(Plot plot){
+        return new Button()
+                .setImage("/gui/buttons/"+race.getName()+"/airportSchedule.png")
+                .setText("Airline", "Schedule")
+                .setEvent(new ButtonEvent()
+                        .setType("Airport")
+                        .setPlot(plot));
+    }
+    private void onAirportClicked(Plot plot, ButtonSet set){
+        onPlainOwnedPlotClicked(plot, set);
+        set.add(createAirportScheduleButton(plot));
+    }
+    private void onWarehouseClicked(Plot plot, ButtonSet set){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    private void onBankClicked(Plot plot, ButtonSet set){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    private void onHouseClicked(Plot plot, ButtonSet set){
+        onPlainOwnedPlotClicked(plot, set);
     }
 }

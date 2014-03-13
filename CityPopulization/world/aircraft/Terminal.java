@@ -76,7 +76,7 @@ public class Terminal {
     }
     public void update(Terminal entrance){
         tick++;
-        if(!cargo.isEmpty()&&tick%5==0){
+        if(!cargo.isEmpty()){
             plot.resources.add(((AircraftCargoResource)cargo.remove(0)).getResource(), 1);
         }
         if(plot.resources.get(Resource.Fuel)>0&&tick%20==0&&fuel<500){
