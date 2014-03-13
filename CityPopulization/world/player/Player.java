@@ -1,6 +1,8 @@
 package CityPopulization.world.player;
+import CityPopulization.Core;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.world.World;
+import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.civilian.CivilianManager;
 import CityPopulization.world.civilian.WorkerTaskManager;
 import CityPopulization.world.plot.Plot;
@@ -17,6 +19,8 @@ public abstract class Player{
     public final World world;
     public static ArrayList<Plot> resourceStructures = new ArrayList<>();
     private boolean sandbox;
+    public int cash;
+    public ArrayList<Aircraft> inboundAircraft = new ArrayList<>();
     public Player(World world){
         this.world = world;
     }
@@ -50,15 +54,17 @@ public abstract class Player{
     }
     public void update(){
         workerTaskManager.update();
-        if(Mouse.getX()<=30){
-            cameraX+=0.05;
-        }else if(Mouse.getX()>=Display.getWidth()-30){
-            cameraX-=0.05;
-        }
-        if(Mouse.getY()<=30){
-            cameraY+=0.05;
-        }else if(Mouse.getY()>=Display.getHeight()-30){
-            cameraY-=0.05;
+        if(world.getLocalPlayer()==this&&Core.gui.menu instanceof MenuIngame){
+            if(Mouse.getX()<=30){
+                cameraX+=0.1;
+            }else if(Mouse.getX()>=Display.getWidth()-30){
+                cameraX-=0.1;
+            }
+            if(Mouse.getY()<=30){
+                cameraY+=0.1;
+            }else if(Mouse.getY()>=Display.getHeight()-30){
+                cameraY-=0.1;
+            }
         }
     }
     public int getResourcesPerWarehouse(){

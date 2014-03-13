@@ -11,6 +11,7 @@ public class WorkerTask{
     ResourceList cost;
     private ResourceList revenue;
     private ArrayList<WorkerTaskSegment> segments = new ArrayList<>();
+    public int cash;
     public WorkerTask(){
         segments.add(new WorkerTaskSegment().setType("Resource Collection"));
     }
@@ -44,6 +45,7 @@ public class WorkerTask{
         return true;
     }
     public void prepare(){
+        owner.cash-=cash;
         segments.add(new WorkerTaskSegment().setType("Resource Returns").setResources(revenue));
         for(WorkerTaskSegment segment : segments){
             segment.setParentTask(this);
@@ -60,4 +62,8 @@ public class WorkerTask{
         return null;
     }
     public void update(){}
+    public WorkerTask setCash(int cash){
+        this.cash = cash;
+        return this;
+    }
 }
