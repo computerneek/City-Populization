@@ -28,7 +28,7 @@ public class ButtonEvent {
                 }
                 break;
             case "Airport":
-                Core.gui.open(new MenuAirportSchedule(Core.gui, Core.gui.menu));
+                Core.gui.open(new MenuAirportSchedule(Core.gui, Core.gui.menu, plot.terminal.schedule));
                 break;
             default:
                 throw new AssertionError(type);

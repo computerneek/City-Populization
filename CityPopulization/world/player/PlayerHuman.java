@@ -5,9 +5,11 @@ import CityPopulization.menu.buttons.ButtonEvent;
 import CityPopulization.menu.buttons.ButtonSet;
 import CityPopulization.render.Side;
 import CityPopulization.world.World;
-import CityPopulization.world.aircraft.StartingHellicopter;
+import CityPopulization.world.aircraft.StartingHelicopter;
+import CityPopulization.world.aircraft.Template;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
+import CityPopulization.world.aircraft.schedule.ScheduleElement;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.civilian.WorkerTaskSegment;
 import CityPopulization.world.plot.Plot;
@@ -33,7 +35,7 @@ public class PlayerHuman extends Player {
         world.generatePlot(-1, -1, -1).setType(PlotType.Grass);
         world.generatePlot(0, -1, 0).setType(PlotType.Grass);
         world.generateAndGetPlot(0, 0, 0).setType(PlotType.AirportEntrance).setOwner(this)
-                .addInboundAircraft(new StartingHellicopter(this))
+                .addInboundAircraft(new StartingHelicopter(this))
                 .loadPassengers(AircraftPassenger.workers(4))
                 .loadCargo(AircraftCargo.resource(Resource.Tools, 1))
                 .loadCargo(AircraftCargo.resource(Resource.Dirt, 500))
@@ -42,12 +44,13 @@ public class PlayerHuman extends Player {
                 .loadCargo(AircraftCargo.resource(Resource.Iron, 100))
                 .loadCargo(AircraftCargo.resource(Resource.Oil, 750))
                 .loadCargo(AircraftCargo.resource(Resource.Fuel, 49))
-                .setDepartureTime(20*60*15);
+                .setDepartureTime(20*60*5);
         world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(this).setFront(Side.BACK);
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(this);
         world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
         resourceStructures.add(world.getPlot(0, 0, 0));
         cash = 1000;
+        world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_TINY, 10, 0, new ResourceList(), 12000, 300));
     }
     @Override
     public void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button){

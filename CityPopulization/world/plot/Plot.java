@@ -44,6 +44,7 @@ public class Plot{
     public ResourceList resources = new ResourceList();
     public ResourceList readyResources = new ResourceList();
     public ResourceList inboundResources = new ResourceList();
+    public ArrayList<Aircraft> inboundAircraft = new ArrayList<>();
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -120,7 +121,7 @@ public class Plot{
         return this;
     }
     public Aircraft addInboundAircraft(Aircraft aircraft){
-        owner.inboundAircraft.add(aircraft);
+        inboundAircraft.add(aircraft);
         return aircraft;
     }
     private void updateVisibility(){
@@ -158,8 +159,8 @@ public class Plot{
         }
     }
     private void doAirportUpdate(){
-        if(world.age%20==0&&!owner.inboundAircraft.isEmpty()){
-            attemptToLandAircraft(owner.inboundAircraft.remove(0));
+        if(world.age%20==0&&!inboundAircraft.isEmpty()){
+            attemptToLandAircraft(inboundAircraft.remove(0));
         }
         ArrayList<Plot> terminals = new ArrayList<>();
         findTerminals(terminals);
@@ -167,6 +168,7 @@ public class Plot{
             plot.terminal.update(terminal);
         }
         terminal.update(terminal);
+        terminal.schedule.update(this);
     }
     private void attemptToLandAircraft(Aircraft aircraft){
         ArrayList<Plot> terminals = new ArrayList<>();
@@ -180,7 +182,7 @@ public class Plot{
                 }
             }
         }
-        owner.inboundAircraft.add(aircraft);
+        inboundAircraft.add(aircraft);
     }
     private void onNeighborPlotChange(){
         shouldRenderTopFace = world.getPlot(x, y, z+1)==null||!world.getPlot(x, y, z+1).getType().isOpaque();
@@ -251,6 +253,12 @@ public class Plot{
         world.schedulePlotUpdate(this);
     }
     private void civilianUpdate(){
+        timeSinceLastCivilianOperation++;
+        if(timeSinceLastCivilianOperation>=20){
+            doCivilianUpdate();
+        }
+    }
+    private void doCivilianUpdate(){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     private void workerUpdate(){
