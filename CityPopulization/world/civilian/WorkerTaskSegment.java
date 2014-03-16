@@ -91,7 +91,7 @@ public class WorkerTaskSegment {
         }
         switch(type){
             case "Resource Collection":
-            case "Resoruce Returns":
+            case "Resource Returns":
                 if(resources.listResources().size()>0){
                     requiredWorkers++;
                 }

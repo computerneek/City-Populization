@@ -43,6 +43,7 @@ public abstract class Aircraft{
     private ArrayList<TaxiEvent> taxiSequence;
     public int fuelLevel = 0;
     public int maxFuelLevel = 50;
+    public int minimumRunwayLength = 1;
     public Aircraft(Player player, String textureFolder){
         this.player = player;
         this.textureFolder=textureFolder;
@@ -97,7 +98,9 @@ public abstract class Aircraft{
         }
         return false;
     }
-    public abstract int getRequiredRunwayLength();
+    public int getRequiredRunwayLength(){
+        return minimumRunwayLength;
+    }
     public void setRunway(Runway runway){
         this.runway = runway;
     }
@@ -330,6 +333,9 @@ public abstract class Aircraft{
     public abstract ArrayList<LandingSequenceEvent> getTakeoffSequence();
     public float getHeading(){
         return heading;
+    }
+    public void setHeading(float heading){
+        this.heading = heading;
     }
     public void setTargetHeading(float targetHeading){
         this.targetHeading = targetHeading;

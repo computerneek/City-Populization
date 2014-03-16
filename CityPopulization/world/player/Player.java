@@ -20,7 +20,6 @@ public abstract class Player{
     public static ArrayList<Plot> resourceStructures = new ArrayList<>();
     private boolean sandbox;
     public int cash;
-    public ArrayList<Aircraft> inboundAircraft = new ArrayList<>();
     public Player(World world){
         this.world = world;
     }
