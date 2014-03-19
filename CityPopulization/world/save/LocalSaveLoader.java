@@ -47,10 +47,9 @@ public class LocalSaveLoader implements SaveLoader{
     @Override
     public World loadWorld(WorldInfo info){
         switch(info.version){
-            case "3":
-                return load3(info);
+            case "3.0.1":
             default:
-                throw new AssertionError(info.version);
+                return load3(info);
         }
     }
     private World load3(WorldInfo info){
