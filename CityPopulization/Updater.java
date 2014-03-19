@@ -44,81 +44,11 @@ public class Updater{
     }
     public static Updater read(String fileURL, String currentVersion, String applicationName){
         Updater updater = new Updater();
-        //<editor-fold defaultstate="collapsed" desc="Downloading">
-        try {
-            URL[] urlList = {new URL(fileURL)};
-            int[] fileSizes = new int[urlList.length];
-            boolean[] skip = new boolean[urlList.length];
-            for (int j = 0; j < urlList.length; j++) {
-                URLConnection connection = urlList[j].openConnection();
-                connection.setDefaultUseCaches(false);
-                skip[j] = false;
-                if ((connection instanceof HttpURLConnection)) {
-                    ((HttpURLConnection)connection).setRequestMethod("HEAD");
-                    int code = ((HttpURLConnection)connection).getResponseCode();
-                    if (code / 100 == 3) {
-                        skip[j] = true;
-                    }
-                }
-                fileSizes[j] = connection.getContentLength();
-            }
-            byte[] buffer = new byte[65536];
-            for (int j = 0; j < urlList.length; j++) {
-                int unsuccessfulAttempts = 0;
-                int maxUnsuccessfulAttempts = 3;
-                boolean downloadFile = true;
-                while (downloadFile) {
-                    downloadFile = false;
-                    URLConnection urlconnection = urlList[j].openConnection();
-                    String etag = "";
-                    if ((urlconnection instanceof HttpURLConnection)) {
-                        urlconnection.setRequestProperty("Cache-Control", "no-cache");
-                        urlconnection.connect();
-                        etag = urlconnection.getHeaderField("ETag");
-                        etag = etag.substring(1, etag.length() - 1);
-                    }
-                    String targetFile = "version file";
-                    FileOutputStream fos;
-                    int fileSize;
-                    MessageDigest m;
-                    try (InputStream inputstream=getJarInputStream(targetFile, urlconnection)) {
-                        fos=new FileOutputStream("C:\\temp\\version.version");
-                        fileSize=0;
-                        m=MessageDigest.getInstance("MD5");
-                        int bufferSize;
-                        while ((bufferSize = inputstream.read(buffer, 0, buffer.length)) != -1) {
-                            fos.write(buffer, 0, bufferSize);
-                            m.update(buffer, 0, bufferSize);
-                            fileSize += bufferSize;
-                        }
-                    }
-                    fos.close();
-                    String md5 = new BigInteger(1, m.digest()).toString(16);
-                    while (md5.length() < 32) {
-                        md5 = "0"+md5;
-                    }
-                    boolean md5Matches = true;
-                    if (etag != null) {
-                        md5Matches = md5.equals(etag);
-                    }
-                    if (((urlconnection instanceof HttpURLConnection)) && (
-                        (!md5Matches) || ((fileSize != fileSizes[j]) && (fileSizes[j] > 0)))){
-                        unsuccessfulAttempts++;
-                        if (unsuccessfulAttempts < maxUnsuccessfulAttempts){
-                            downloadFile = true;
-                        }else{
-                            throw new Exception("failed to download "+targetFile);
-                        }
-                    }
-                }
-            }
-        }catch (Exception ex){
-            return null;
-        }//</editor-fold>
+        downloadFile(fileURL, new File("C:\\temp\\version.version"));
         try(BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File("C:\\temp\\version.version"))))){
             String line;
             while((line = in.readLine())!=null){
-                String[] spl = line.split("=");
+                String[] spl = line.split("=", 2);
                 if(spl.length!=2){
                     continue;
                 }
@@ -129,6 +59,63 @@ public class Updater{
         updater.setCurrentVersion(currentVersion);
         updater.applicationName = applicationName;
         return updater;
+    }
+    private static File downloadFile(String link, File destinationFile){
+        if(destinationFile.exists()||link==null){
+            return destinationFile;
+        }
+        destinationFile.getParentFile().mkdirs();
+        try {
+            URL url = new URL(link);
+            int fileSize;
+            URLConnection connection = url.openConnection();
+            connection.setDefaultUseCaches(false);
+            if ((connection instanceof HttpURLConnection)) {
+                ((HttpURLConnection)connection).setRequestMethod("HEAD");
+                int code = ((HttpURLConnection)connection).getResponseCode();
+                if (code / 100 == 3) {
+                    return null;
+                }
+            }
+            fileSize = connection.getContentLength();
+            byte[] buffer = new byte[65535];
+            int unsuccessfulAttempts = 0;
+            int maxUnsuccessfulAttempts = 3;
+            boolean downloadFile = true;
+            while (downloadFile) {
+                downloadFile = false;
+                URLConnection urlconnection = url.openConnection();
+                if ((urlconnection instanceof HttpURLConnection)) {
+                    urlconnection.setRequestProperty("Cache-Control", "no-cache");
+                    urlconnection.connect();
+                }
+                String targetFile = destinationFile.getName();
+                FileOutputStream fos;
+                int downloadedFileSize;
+                try (InputStream inputstream=getRemoteInputStream(targetFile, urlconnection)) {
+                    fos=new FileOutputStream(destinationFile);
+                    downloadedFileSize=0;
+                    int read;
+                    while ((read = inputstream.read(buffer)) != -1) {
+                        fos.write(buffer, 0, read);
+                        downloadedFileSize += read;
+                    }
+                }
+                fos.close();
+                if (((urlconnection instanceof HttpURLConnection)) && 
+                    ((downloadedFileSize != fileSize) && (fileSize > 0))){
+                    unsuccessfulAttempts++;
+                    if (unsuccessfulAttempts < maxUnsuccessfulAttempts){
+                        downloadFile = true;
+                    }else{
+                        throw new Exception("failed to download "+targetFile);
+                    }
+                }
+            }
+            return destinationFile;
+        }catch (Exception ex){
+            return null;
+        }
     }
     private void setCurrentVersion(String currentVersion){
         this.currentVersion = currentVersion;
@@ -199,7 +186,7 @@ public class Updater{
                         etag = etag.substring(1, etag.length() - 1);
                     }
                     String targetFile = temporaryFilename;
-                    InputStream inputstream = getJarInputStream(targetFile, urlconnection);
+                    InputStream inputstream = getRemoteInputStream(targetFile, urlconnection);
                     FileOutputStream fos = new FileOutputStream(targetFile);
                     int fileSize = 0;
                     MessageDigest m = MessageDigest.getInstance("MD5");
@@ -258,7 +245,7 @@ public class Updater{
         newFilename = temporaryFilename;
         return new File(temporaryFilename);
     }
-    public static InputStream getJarInputStream(String currentFile, final URLConnection urlconnection) throws Exception {
+    public static InputStream getRemoteInputStream(String currentFile, final URLConnection urlconnection) throws Exception {
         final InputStream[] is = new InputStream[1];
         for (int j = 0; (j < 3) && (is[0] == null); j++) {
             Thread t = new Thread() {
