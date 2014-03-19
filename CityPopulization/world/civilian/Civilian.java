@@ -93,6 +93,7 @@ public class Civilian{
             homePlot.civiliansPresent.add(this);
         }
         homePlot.world.civilians.remove(this);
+        homePlot.world.schedulePlotUpdate(homePlot);
     }
     public void render(Player localPlayer){
         player = homePlot.owner;

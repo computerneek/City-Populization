@@ -86,4 +86,7 @@ public class ResourceList{
         }
         return count;
     }
+    public void set(Resource resource, int value){
+        list.put(resource, value);
+    }
 }

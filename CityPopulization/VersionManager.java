@@ -21,7 +21,7 @@ public class VersionManager{
      */
     private static String backCompatibleTo;
     static{
-        addVersion("3");
+        addVersion("3.0");
         breakBackCompatability();
         currentVersion = versions.get(versions.size()-1);
     }
