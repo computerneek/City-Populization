@@ -4,6 +4,8 @@ import CityPopulization.world.World;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
 import CityPopulization.world.aircraft.landingSequence.LandingSequenceEvent;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
+import CityPopulization.world.aircraft.passenger.AircraftPassengerCivilian;
+import CityPopulization.world.aircraft.schedule.ScheduleElement;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
@@ -44,6 +46,7 @@ public abstract class Aircraft{
     public int fuelLevel = 0;
     public int maxFuelLevel = 50;
     public int minimumRunwayLength = 1;
+    public ScheduleElement schedule;
     public Aircraft(Player player, String textureFolder){
         this.player = player;
         this.textureFolder=textureFolder;
@@ -170,6 +173,17 @@ public abstract class Aircraft{
             }else{
                 runway.getStartPlot().terminal.occupied = 0;
                 player.world.aircraft.remove(this);
+                if(schedule!=null){
+                    for(AircraftPassenger pass : passengers){
+                        if(pass instanceof AircraftPassengerCivilian){
+                            if(schedule.civilians>1){
+                                schedule.civilians--;
+                            }
+                            return;
+                        }
+                    }
+                    schedule.civilians++;
+                }
             }
             return;
         }
@@ -271,8 +285,8 @@ public abstract class Aircraft{
         ImageStash.instance.bindTexture(ImageStash.instance.getTexture("/textures/aircraft/"+textureFolder+"/frame "+(tick%frameCap+1)+".png"));
         GL11.glColor3f(1, 1, 1);
         render();
-        GL11.glRotatef(tilt, 0, -1, 0);
-        GL11.glRotatef(heading-90, 0, 0, -1);
+        GL11.glRotatef(-tilt, 0, 1, 0);
+        GL11.glRotatef(heading-90, 0, 0, 1);
         GL11.glTranslatef(-x-0.5f, y+0.5f, -z);
     }
     private void render(){

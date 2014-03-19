@@ -8,33 +8,32 @@ import simplelibrary.opengl.gui.GUI;
 import simplelibrary.opengl.gui.Menu;
 import simplelibrary.opengl.gui.components.MenuComponent;
 import simplelibrary.opengl.gui.components.MenuComponentButton;
-import simplelibrary.opengl.gui.components.MenuComponentList;
 import simplelibrary.opengl.gui.components.MenuComponentMulticolumnList;
 public class MenuAirportSchedule extends Menu{
     private double screenWidth;
     private float screenHeight;
-    private final MenuComponentList list;
-    private final MenuComponentButton add;
-    private final MenuComponentButton remove;
-    private final MenuComponentButton done;
-    private final MenuComponentButton cancel;
-    private AircraftSchedule schedule;
+    private MenuComponentMulticolumnList list;
+    private MenuComponentButton add;
+    private MenuComponentButton remove;
+    private MenuComponentButton done;
+    private MenuComponentButton cancel;
+    public final AircraftSchedule schedule;
+    private final AircraftSchedule originalSchedule;
     public MenuAirportSchedule(GUI gui, Menu menu, AircraftSchedule schedule){
         super(gui, menu);
         this.schedule = schedule.copy();
+        originalSchedule = schedule;
         screenHeight = gui.helper.guiScale;
         list = add(new MenuComponentMulticolumnList(-1.0, -screenHeight, 2, screenHeight*2-0.2, 1, 0.2));
         add = add(new MenuComponentButton(-1, screenHeight-0.18, 0.98, 0.06, "Add Aircraft", true));
-        remove = add(new MenuComponentButton(0, screenHeight-0.18, 0.98, 0.06, "Remove Aircraft", false));
-        done = add(new MenuComponentButton(-1, screenHeight-0.08, 0.98, 0.06, "Done", true));
+        remove = add(new MenuComponentButton(0, screenHeight-0.18, 0.98, 0.06, "Remove Aircraft (NYI)", false));
+        done = add(new MenuComponentButton(-1, screenHeight-0.08, 0.98, 0.06, "Done (NYI)", true));
         cancel = add(new MenuComponentButton(0, screenHeight-0.08, 0.98, 0.06, "Cancel", true));
-        for(ScheduleElement element : schedule.elements){
-            list.add(new ListComponentAircraftSchedule(element));
-        }
+        refresh();
     }
     @Override
     public void render(int millisSinceLastTick){
-        remove.enabled = list.selectedIndex>=0;
+        remove.enabled = list.selectedIndex>-1;
         parent.render(millisSinceLastTick);
         GL11.glColor4d(0, 0, 0, 0.2);
         screenWidth = (double)Display.getWidth()/Display.getHeight()*gui.helper.guiScale;
@@ -61,15 +60,25 @@ public class MenuAirportSchedule extends Menu{
         }
     }
     private void add(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        gui.open(new MenuAirportSchedule_NewAircraft(gui, this));
     }
     private void remove(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        schedule.elements.remove(list.selectedIndex);
+        refresh();
     }
     private void done(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        originalSchedule.elements.clear();
+        originalSchedule.elements.addAll(schedule.elements);
+        gui.open(parent);
     }
     private void cancel(){
         gui.open(parent);
+    }
+    public MenuAirportSchedule refresh(){
+        list.components.clear();
+        for(ScheduleElement element : schedule.elements){
+            list.add(new ListComponentAircraftSchedule(element));
+        }
+        return this;
     }
 }

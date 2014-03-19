@@ -259,7 +259,24 @@ public class Plot{
         }
     }
     private void doCivilianUpdate(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        owner.cash+=civiliansPresent.size();
+        timeSinceLastCivilianOperation = 0;
+        if(getType()!=PlotType.House){
+            Plot house = findEmptyHouse();
+            if(house!=null){
+                Civilian civilian = civiliansPresent.get(0);
+                Path path = Path.findPath(this, house);
+                if(path==null){
+                    return;
+                }
+                civilian.homePlot = house;
+                house.civilians.add(civilian);
+                civilians.remove(civilian);
+                civiliansPresent.remove(civilian);
+                civilian.path = path;
+                world.civilians.add(civilian);
+            }
+        }
     }
     private void workerUpdate(){
         timeSinceLastWorkerOperation++;
@@ -268,6 +285,25 @@ public class Plot{
         }
     }
     private void doWorkerUpdate(){
+        if(getType()!=PlotType.House){
+            Plot house = findEmptyHouse();
+            if(house!=null){
+                Worker worker = workersPresent.get(0);
+                Path path = Path.findPath(this, house);
+                if(path==null){
+                    return;
+                }
+                worker.homePlot = house;
+                house.workers.add(worker);
+                workers.remove(worker);
+                workersPresent.remove(worker);
+                worker.path = path;
+                world.civilians.add(worker);
+                timeSinceLastWorkerOperation = 0;
+                timeSinceLastCivilianOperation = 0;
+                return;
+            }
+        }
         ArrayList<WorkerTask> tasks = new ArrayList<>();
         findPotentialTasks(tasks);
         for(WorkerTask potentialTask : tasks){
@@ -354,5 +390,11 @@ public class Plot{
     }
     public boolean canUpgrade(Race race){
         return level+1<type.getMaximumLevel()&&type.getCost(level+1, race)!=null;
+    }
+    private Plot findEmptyHouse(){
+        return Path.findHouseWithSpace(this);
+    }
+    public int getMaximumCivilianCapacity(){
+        return (int)Math.round(Math.max((level+1)*(level+1)*world.difficulty.homeOccupantModifier, 1));
     }
 }

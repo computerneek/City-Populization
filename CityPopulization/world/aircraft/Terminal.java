@@ -120,16 +120,18 @@ public class Terminal {
                     timeWaiting = 0;
                 }
             }
-            if(timeLanded%20==0&&aircraft.passengers.size()<aircraft.passengerCapacity&&(!entrance.plot.workers.isEmpty()||!entrance.plot.civilians.isEmpty())){
+            if(aircraft.passengers.size()<aircraft.passengerCapacity&&(!entrance.plot.workers.isEmpty()||!entrance.plot.civilians.isEmpty())){
                 canLoad = true;
-                if(!entrance.plot.civiliansPresent.isEmpty()){
-                    aircraft.loadPassengers(AircraftPassenger.civilians(1));
-                    entrance.plot.civilians.remove(entrance.plot.civiliansPresent.remove(0));
-                    timeWaiting = 0;
-                }else if(!entrance.plot.workersPresent.isEmpty()){
-                    aircraft.loadPassengers(AircraftPassenger.workers(1));
-                    entrance.plot.workers.remove(entrance.plot.workersPresent.remove(0));
-                    timeWaiting = 0;
+                if(timeLanded%20==0){
+                    if(!entrance.plot.civiliansPresent.isEmpty()){
+                        aircraft.loadPassengers(AircraftPassenger.civilians(1));
+                        entrance.plot.civilians.remove(entrance.plot.civiliansPresent.remove(0));
+                        timeWaiting = 0;
+                    }else if(!entrance.plot.workersPresent.isEmpty()){
+                        aircraft.loadPassengers(AircraftPassenger.workers(1));
+                        entrance.plot.workers.remove(entrance.plot.workersPresent.remove(0));
+                        timeWaiting = 0;
+                    }
                 }
             }
             if((timeWaiting>=200||!canLoad)&&aircraft.fuelLevel==aircraft.maxFuelLevel){

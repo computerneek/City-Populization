@@ -8,40 +8,48 @@ import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 public class ScheduleElement {
     private final Template template;
-    private final int civilians;
+    public int civilians;
     private final int workers;
     private final ResourceList resourceList;
     private final int timeBetweenArrivals;
-    private final int departureTime;
     private int tick;
-    public ScheduleElement(Template template, int civilians, int workers, ResourceList resourceList, int timeBetweenArrivals, int departureTime){
+    private int cost;
+    public ScheduleElement(Template template, int civilians, int workers, ResourceList resourceList, int timeBetweenArrivals, int cost){
         this.template=template;
         this.civilians=civilians;
         this.workers=workers;
         this.resourceList=resourceList;
         this.timeBetweenArrivals=timeBetweenArrivals;
-        this.departureTime=departureTime;
+        this.cost = Math.max(cost, template.cost);
     }
     public String getAircraftName(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return template.name;
     }
     public int getAircraftCost(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if(workers+civilians>template.passengers){
+            civilians=template.passengers-workers;
+        }
+        return cost+5*template.passengers-10*civilians+5*workers-resourceList.count();
     }
     public int getFuelCost(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return template.fuel;
     }
     public int getMaxPassengerCount(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return template.passengers;
     }
     public int getPassengerCount(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return civilians;
     }
     public ResourceList getCargo(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new ResourceList().addAll(resourceList);
     }
     public String getTimeUntilNextArrival(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int ticks = timeBetweenArrivals-tick;
+        int seconds = ticks/20;
+        ticks%=20;
+        int minutes = seconds/60;
+        seconds%=60;
+        return minutes+":"+(seconds<10?"0":"")+seconds;
     }
     public void update(){
         tick++;
@@ -51,11 +59,12 @@ public class ScheduleElement {
     }
     public Aircraft getAircraft(Player player){
         tick = 0;
-        Aircraft aircraft = template.createAircraft(player).loadPassengers(AircraftPassenger.civilians(civilians)).loadPassengers(AircraftPassenger.workers(workers)).setDepartureTime(departureTime);
+        Aircraft aircraft = template.createAircraft(player).loadPassengers(AircraftPassenger.workers(workers)).loadPassengers(AircraftPassenger.civilians(civilians)).setDepartureTime(template.departureTime);
+        player.cash-=getAircraftCost();
         for(Resource resource : resourceList.listResources()){
             aircraft.loadCargo(AircraftCargo.resource(resource, resourceList.get(resource)));
         }
+        aircraft.schedule = this;
         return aircraft;
     }
-
 }

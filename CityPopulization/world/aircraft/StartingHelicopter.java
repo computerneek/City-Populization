@@ -11,7 +11,7 @@ public class StartingHelicopter extends Helicopter{
     }
     @Override
     public ArrayList<LandingSequenceEvent> getLandingSequence(){
-        passengerCapacity = 2;
+        passengerCapacity = 0;
         return super.getLandingSequence();
     }
 }

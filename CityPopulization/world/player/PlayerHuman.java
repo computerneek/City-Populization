@@ -44,13 +44,13 @@ public class PlayerHuman extends Player {
                 .loadCargo(AircraftCargo.resource(Resource.Iron, 100))
                 .loadCargo(AircraftCargo.resource(Resource.Oil, 750))
                 .loadCargo(AircraftCargo.resource(Resource.Fuel, 49))
-                .setDepartureTime(20*60*5);
+                .setDepartureTime(20*60*2);
         world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(this).setFront(Side.BACK);
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(this);
         world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
         resourceStructures.add(world.getPlot(0, 0, 0));
         cash = 1000;
-        world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_TINY, 10, 0, new ResourceList(), 12000, 300));
+        world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_TINY, 1, 0, new ResourceList(), 12000, 300));
     }
     @Override
     public void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button){
