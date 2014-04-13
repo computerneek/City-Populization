@@ -63,7 +63,8 @@ public class Core{
         helper.setTickMethod(Core.class.getDeclaredMethod("tick", boolean.class));
         helper.setRenderMethod(Core.class.getDeclaredMethod("render", int.class));
         helper.setMode(GameHelper.MODE_3D);
-        helper.setFrameOfView(90);
+        helper.setFrameOfView(45);
+        Main.dist = 1/Math.tan(Math.toRadians(45/2));
         helper.setUsesControllers(true);
         helper.setWindowTitle("City Populization "+VersionManager.currentVersion);
         helper.start();
@@ -85,6 +86,7 @@ public class Core{
         Keyboard.enableRepeatEvents(true);
         new TexturePackManager(new File(getAppdataRoot(), "Texture packs"), new TexturePack());
         gui = new GUI(GameHelper.MODE_3D, helper);
+        gui.distBack = (float)Main.dist;
         gui.open(new MenuMain(gui, null));
     }
     public static void tick(boolean isLastTick){

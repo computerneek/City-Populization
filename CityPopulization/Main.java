@@ -18,6 +18,7 @@ import java.util.zip.ZipInputStream;
 import javax.swing.JOptionPane;
 public class Main{
     private static String requiredSimpleLibraryVersion = "8.2.0.0";
+    static double dist;
     public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, IOException, URISyntaxException{
         args = update(args);
         if(args==null){

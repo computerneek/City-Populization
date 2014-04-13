@@ -7,7 +7,8 @@ public class LSEAircraftRotation implements LandingSequenceEvent {
     }
     @Override
     public boolean update(Aircraft aircraft){
-        aircraft.setHeading(aircraft.getHeading()+180);
+        aircraft.setHeading(aircraft.getHeading()+rotation);
+        aircraft.setTargetHeading(aircraft.getHeading());
         return true;
     }
 }

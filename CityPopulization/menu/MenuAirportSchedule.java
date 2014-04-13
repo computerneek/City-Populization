@@ -26,8 +26,8 @@ public class MenuAirportSchedule extends Menu{
         screenHeight = gui.helper.guiScale;
         list = add(new MenuComponentMulticolumnList(-1.0, -screenHeight, 2, screenHeight*2-0.2, 1, 0.2));
         add = add(new MenuComponentButton(-1, screenHeight-0.18, 0.98, 0.06, "Add Aircraft", true));
-        remove = add(new MenuComponentButton(0, screenHeight-0.18, 0.98, 0.06, "Remove Aircraft (NYI)", false));
-        done = add(new MenuComponentButton(-1, screenHeight-0.08, 0.98, 0.06, "Done (NYI)", true));
+        remove = add(new MenuComponentButton(0, screenHeight-0.18, 0.98, 0.06, "Remove Aircraft", false));
+        done = add(new MenuComponentButton(-1, screenHeight-0.08, 0.98, 0.06, "Done", true));
         cancel = add(new MenuComponentButton(0, screenHeight-0.08, 0.98, 0.06, "Cancel", true));
         refresh();
     }

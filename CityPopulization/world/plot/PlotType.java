@@ -118,6 +118,8 @@ public enum PlotType{
         constructionCosts.put(Race.HUMAN, costs);
         costs.put(Road, new ResourceListList(new ResourceList(Resource.Dirt, 25)));
         costs.put(House, new ResourceListList(new ResourceList(Resource.Wood, 50), new ResourceList(Resource.Wood, 100)));
+        costs.put(Warehouse, new ResourceListList(new ResourceList(Resource.Wood, 50)));
+        costs.put(Elevator, new ResourceListList(new ResourceList(Resource.Iron, 100)));
     }
     public void loadAllTextures(){
         for(String texture : renderer.getPaths(highestLevel, textureFolder)){
