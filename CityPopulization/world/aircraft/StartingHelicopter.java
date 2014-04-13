@@ -6,7 +6,7 @@ public class StartingHelicopter extends Helicopter{
     public StartingHelicopter(Player player){
         super(player, "initial");
         passengerCapacity = 4;
-        cargoCapacity = 2000;
+        cargoCapacity = 3000;
         maxFuelLevel = 9;
     }
     @Override

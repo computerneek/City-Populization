@@ -27,7 +27,7 @@ public class MenuIngame extends Menu{
     public void renderBackground(){
         Core.world.render();
         GL11.glLoadIdentity();
-        GL11.glTranslatef(0, 0, -1);
+        GL11.glTranslatef(0, 0, -gui.distBack);
         GL11.glScalef(1, -1, 1);
         GL11.glColor4f(1, 1, 1, 1);
         if(lastScreenWidth!=(double)Display.getWidth()/Display.getHeight()*gui.helper.guiScale){

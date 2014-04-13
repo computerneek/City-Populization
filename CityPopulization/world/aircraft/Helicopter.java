@@ -31,7 +31,7 @@ public class Helicopter extends Aircraft{
     @Override
     public ArrayList<LandingSequenceEvent> getTakeoffSequence(){
         ArrayList<LandingSequenceEvent> lst = new ArrayList<>();
-        lst.add(new LSEStartingPoint(0, 0, 0));
+        lst.add(new LSEStartingPoint(0, 0, -1));
         lst.add(new LSEAircraftRotation(180));
         lst.add(new LSEMovement(20, 1));
         lst.add(new LSEPitch(90));

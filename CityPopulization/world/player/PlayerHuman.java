@@ -41,7 +41,7 @@ public class PlayerHuman extends Player {
                 .loadCargo(AircraftCargo.resource(Resource.Dirt, 500))
                 .loadCargo(AircraftCargo.resource(Resource.Wood, 500))
                 .loadCargo(AircraftCargo.resource(Resource.Coal, 100))
-                .loadCargo(AircraftCargo.resource(Resource.Iron, 100))
+                .loadCargo(AircraftCargo.resource(Resource.Iron, 1100))
                 .loadCargo(AircraftCargo.resource(Resource.Oil, 750))
                 .loadCargo(AircraftCargo.resource(Resource.Fuel, 49))
                 .setDepartureTime(20*60*2);

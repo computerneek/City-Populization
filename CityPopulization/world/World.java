@@ -1,4 +1,5 @@
 package CityPopulization.world;
+import CityPopulization.Core;
 import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.player.Player;
@@ -145,7 +146,7 @@ public class World{
     }
     public void render(){
         GL11.glLoadIdentity();
-        GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -3-localPlayer.getCameraZ());
+        GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -4*Core.gui.distBack+1-localPlayer.getCameraZ());
 //        GL11.glEnable(GL11.GL_DEPTH_TEST);
         int x = -(int)localPlayer.getCameraX();
         int y = (int)localPlayer.getCameraY();
