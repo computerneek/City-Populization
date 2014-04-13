@@ -48,8 +48,7 @@ public class PlayerHuman extends Player {
         world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(this).setFront(Side.BACK);
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(this);
         world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
-        resourceStructures.add(world.getPlot(0, 0, 0));
-        cash = 1000;
+        cash = 2000;
         world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_TINY, 1, 0, new ResourceList(), 12000, 300));
     }
     @Override

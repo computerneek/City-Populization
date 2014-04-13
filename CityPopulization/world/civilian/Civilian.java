@@ -1,4 +1,5 @@
 package CityPopulization.world.civilian;
+import CityPopulization.Core;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
@@ -98,7 +99,7 @@ public class Civilian{
     public void render(Player localPlayer){
         player = homePlot.owner;
         boolean canPlayerSeePlane = player==localPlayer;
-        Plot currentPlot = player.world.getPlot(Math.round(x), Math.round(y), Math.round(z));
+        Plot currentPlot = Core.world.getPlot(Math.round(x), Math.round(y), Math.round(z));
         if(currentPlot!=null&&localPlayer==currentPlot.getOwner()){
             canPlayerSeePlane = true;
         }

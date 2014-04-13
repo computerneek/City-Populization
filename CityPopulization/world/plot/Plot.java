@@ -79,6 +79,12 @@ public class Plot{
             }
         }
         onPlotChange();
+        if(owner!=null){
+            owner.resourceStructures.remove(this);
+            if(type==PlotType.AirportEntrance||type==PlotType.Warehouse){
+                owner.resourceStructures.add(this);
+            }
+        }
         return this;
     }
     public PlotType getType(){
@@ -104,6 +110,9 @@ public class Plot{
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     public Plot setOwner(Player player){
+        if(owner!=null){
+            owner.resourceStructures.remove(this);
+        }
         owner = player;
         for(int i = -1; i<2; i++){
             for(int j = -1; j<2; j++){
@@ -113,6 +122,9 @@ public class Plot{
             }
         }
         onPlotChange();
+        if(type==PlotType.AirportEntrance||type==PlotType.Warehouse){
+            owner.resourceStructures.add(this);
+        }
         return this;
     }
     public Plot setFront(Side front){
