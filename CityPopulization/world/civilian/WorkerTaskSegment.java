@@ -156,7 +156,7 @@ public class WorkerTaskSegment {
     }
     private ResourceList getResourcesToOffload(Plot plot){
         ResourceList list = new ResourceList();
-        int maxResources = Math.min(task.owner.race.getWorkerResourceCapacity(), plot.getType()==PlotType.Warehouse?(task.owner.getResourcesPerWarehouse()*plot.getLevel()-plot.resources.count()):10);
+        int maxResources = Math.min(task.owner.race.getWorkerResourceCapacity(), plot.getType()==PlotType.Warehouse?(task.owner.getResourcesPerWarehouse()*(plot.getLevel()+1)-plot.resources.count()):10);
         list.addAll(resources);
         while(list.count()>maxResources){
             list.remove(list.listResources().get(0), 1);

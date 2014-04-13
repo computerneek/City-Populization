@@ -17,7 +17,7 @@ public abstract class Player{
     public double cameraY;
     public int cameraZ;
     public final World world;
-    public static ArrayList<Plot> resourceStructures = new ArrayList<>();
+    public ArrayList<Plot> resourceStructures = new ArrayList<>();
     private boolean sandbox;
     public int cash;
     public Player(World world){
