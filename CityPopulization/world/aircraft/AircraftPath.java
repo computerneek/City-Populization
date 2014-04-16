@@ -3,6 +3,7 @@ import CityPopulization.render.Side;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
+import simplelibrary.config2.Config;
 public class AircraftPath {
     private static final int LEFT = 1;
     private static final int STRAIGHT = 2;
@@ -122,5 +123,8 @@ public class AircraftPath {
         copy.currentSide = currentSide;
         copy.instructions = new ArrayList<>(instructions);
         return copy;
+    }
+    Config save(){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

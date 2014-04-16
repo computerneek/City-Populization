@@ -28,50 +28,50 @@ public class BankRenderer implements PlotRenderer{
             case FRONT:
                 {
                     GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x, y, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x+1, y, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y-1, z);
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
                 }
                 break;
             case BACK:
                 {
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x, y, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x+1, y, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y-1, z);
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
                 }
                 break;
             case RIGHT:
                 {
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x, y, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x+1, y, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y-1, z);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
                     GL11.glTexCoord2d(0, 0.5);
                 }
                 break;
             case LEFT:
                 {
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x, y, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x+1, y, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y-1, z);
                     GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
                 }
                 break;
             default:

@@ -1,5 +1,6 @@
 package CityPopulization.world.aircraft;
 import CityPopulization.world.plot.Plot;
+import simplelibrary.config2.Config;
 public class TaxiEventRelease implements TaxiEvent {
     private Plot plot;
     public TaxiEventRelease(Plot plot){
@@ -12,5 +13,9 @@ public class TaxiEventRelease implements TaxiEvent {
             plot.terminal.occupied = 0;
         }
         return true;
+    }
+    @Override
+    public Config save(){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

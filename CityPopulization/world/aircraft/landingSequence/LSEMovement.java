@@ -1,5 +1,6 @@
 package CityPopulization.world.aircraft.landingSequence;
 import CityPopulization.world.aircraft.Aircraft;
+import simplelibrary.config2.Config;
 public class LSEMovement implements LandingSequenceEvent {
     private final int time;
     private final int speed;
@@ -13,5 +14,14 @@ public class LSEMovement implements LandingSequenceEvent {
         aircraft.setTargetSpeed(speed);
         this.ticks++;
         return ticks>time;
+    }
+    @Override
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("type", "movement");
+        config.set("time", time);
+        config.set("speed", speed);
+        config.set("ticks", ticks);
+        return config;
     }
 }

@@ -16,8 +16,8 @@ public class MenuEmpireMode extends Menu{
     public MenuEmpireMode(GUI gui, Menu parent){
         super(gui, parent);
         missionList = add(new MenuComponentMulticolumnList(-1.6, -1, 3.2, 1.6, 0.8, 0.4));
-        play = add(new MenuComponentButton(-1.56, 0.62, 1.56, 0.16, "Play (NYI)", false));
-        delete = add(new MenuComponentButton(-1.56, 0.82, 1.56, 0.16, "Delete (NYI)", false));
+        play = add(new MenuComponentButton(-1.56, 0.62, 1.56, 0.16, "Play", false));
+        delete = add(new MenuComponentButton(-1.56, 0.82, 1.56, 0.16, "Delete", false));
         newMission = add(new MenuComponentButton(0.02, 0.62, 1.56, 0.16, "New", true));
         back = add(new MenuComponentButton(0.02, 0.82, 1.56, 0.16, "Back", true));
         WorldInfo[] worlds = Core.getSingleplayerSaveLoader().listWorlds();
@@ -47,7 +47,9 @@ public class MenuEmpireMode extends Menu{
         Core.playWorld(world);
     }
     private void delete(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        WorldInfo info = ((ListComponentWorld)missionList.components.get(missionList.selectedIndex)).info;
+        info.file.delete();
+        gui.open(new MenuEmpireMode(gui, parent));
     }
     private void newMission(){
         gui.open(new MenuNewWorld(gui, this));

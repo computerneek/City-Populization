@@ -63,8 +63,8 @@ public class Core{
         helper.setTickMethod(Core.class.getDeclaredMethod("tick", boolean.class));
         helper.setRenderMethod(Core.class.getDeclaredMethod("render", int.class));
         helper.setMode(GameHelper.MODE_3D);
-        helper.setFrameOfView(45);
-        Main.dist = 1/Math.tan(Math.toRadians(45/2));
+        helper.setFrameOfView(90);
+        Main.dist = 1;
         helper.setUsesControllers(true);
         helper.setWindowTitle("City Populization "+VersionManager.currentVersion);
         helper.start();
@@ -75,7 +75,6 @@ public class Core{
                 helper.running = false;
             }
         });
-        GL11.glEnable(org.lwjgl.opengl.GL11.GL_TEXTURE_2D);
         FontManager.addFont("/simplelibrary/font");
         FontManager.setFont("font");
         GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -101,6 +100,9 @@ public class Core{
         gui.tick();
         if(isLastTick){
             AL.destroy();
+            if(world!=null){
+                world.save();
+            }
         }else if(tick%20==0){
             helper.frame.validate();
         }
@@ -179,7 +181,7 @@ public class Core{
         world.summonInitialWorker();
         playWorld(world);
     }
-    private static String getNow(){
+    public static String getNow(){
         GregorianCalendar calendar = new GregorianCalendar();
         StringBuilder buff = new StringBuilder(13);
         buff.append(calendar.getDisplayName(Calendar.MONTH, GregorianCalendar.SHORT, Locale.US));
@@ -191,10 +193,6 @@ public class Core{
         buff.append(calendar.get(Calendar.HOUR)+(calendar.get(Calendar.HOUR)==0?12:0));
         buff.append(":");
         buff.append(calendar.get(Calendar.MINUTE));
-        buff.append(":");
-        buff.append(calendar.get(Calendar.SECOND));
-        buff.append(".");
-        buff.append(calendar.get(Calendar.MILLISECOND));
         return buff.toString();
     }
     public static void playWorld(World world){
@@ -221,11 +219,14 @@ public class Core{
         for(Race race : Race.values()){
             for(PlotType type : PlotType.values()){
                 if(type.getConstructionCost(race)!=null){
-                    TexturepackCreator.addTexture(new Texture("/gui/buttons/"+race.getName()+"/build"+type.textureFolder+".png"));
+                    for(int i = 0; i<type.getMaximumLevel(); i++){
+                        TexturepackCreator.addTexture(new Texture("/gui/buttons/"+race.getName()+"/build"+type.textureFolder+i+".png"));
+                    }
                 }
             }
         }
         TexturepackCreator.addTexture(new Texture("/gui/buttons/back.png"));
+        TexturepackCreator.addTexture(new Texture("/gui/buttons/next.png"));
         TexturepackCreator.addTexture(new Texture("/textures/aircraft/initial/frame <FRAME>.png"));
         TexturepackCreator.addTexture(new Texture("/gui/buttons/background/pressed.png"));
         TexturepackCreator.addTexture(new Texture("/gui/buttons/background/mouseover.png"));

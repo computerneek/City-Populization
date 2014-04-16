@@ -30,6 +30,14 @@ public class ButtonEvent {
             case "Airport":
                 Core.gui.open(new MenuAirportSchedule(Core.gui, Core.gui.menu, plot.terminal.schedule));
                 break;
+            case "Cancel Task":
+                task = plot.task;
+                if(task!=null&&!task.started){
+                    plot.task = null;
+                    task.owner.getWorkerTaskManager().removeTask(task);
+                    task.segments.clear();
+                }
+                break;
             default:
                 throw new AssertionError(type);
         }

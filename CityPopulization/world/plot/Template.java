@@ -1,7 +1,6 @@
 package CityPopulization.world.plot;
 import CityPopulization.world.World;
 import CityPopulization.world.resource.Resource;
-import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,8 +67,17 @@ public enum Template{
                     world.getPlot(x, y, z).setType(PlotType.CoalDeposit);
                     break;
                 case Wood:
-                    world.getPlot(x, y, z).setType(PlotType.Woods);
+                {   world.getPlot(x, y, z).setType(PlotType.Woods);
+                    int dist = rand.nextInt(7);
+                    for(int i = -dist+1; i<dist; i++){
+                        for(int j = -dist+1+Math.abs(i); j<dist-Math.abs(i); j++){
+                            if(world.getPlot(x+i, y+j, z)==null&&rand.nextGaussian()<5){
+                                world.generateAndGetPlot(x+i, y+j, z).setType(PlotType.Woods);
+                            }
+                        }
+                    }
                     break;
+                }
                 case Stone:
                     world.getPlot(x, y, z).setType(PlotType.Stone);
                     break;
@@ -77,8 +85,22 @@ public enum Template{
                     world.getPlot(x, y, z).setType(PlotType.IronDeposit);
                     break;
                 case Sand:
+                {
                     world.getPlot(x, y, z).setType(PlotType.Sand);
+                    int dist = rand.nextInt(5);
+                    for(int i = -dist+1; i<dist; i++){
+                        int dist2 = dist-Math.abs(i);
+                        for(int j = -dist2+1; j<dist2; j++){
+                            int dist3 = dist2-Math.abs(j);
+                            for(int k = -dist3+1; k<dist3; k++){
+                                if(world.getPlot(x+i, y+j, z)==null&&rand.nextGaussian()<5){
+                                    world.generateAndGetPlot(x+i, y+j, z).setType(PlotType.Sand);
+                                }
+                            }
+                        }
+                    }
                     break;
+                }
                 case Clay:
                     world.getPlot(x, y, z).setType(PlotType.ClayDeposit);
                     break;

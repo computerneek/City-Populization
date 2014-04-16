@@ -1,11 +1,11 @@
 package CityPopulization.world.civilian.event;
-import CityPopulization.world.civilian.Worker;
+import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 public class EventLoad implements Event{
     private ResourceList resources;
-    private Worker worker;
+    private Civilian worker;
     private boolean complete;
     public EventLoad(ResourceList resources){
         this.resources = resources;
@@ -15,11 +15,11 @@ public class EventLoad implements Event{
         return complete;
     }
     @Override
-    public void start(Worker worker){
+    public void start(Civilian worker){
         this.worker = worker;
     }
     @Override
-    public void work(Worker worker){
+    public void work(Civilian worker){
         ResourceList list = new ResourceList().addAll(resources).removeAll(worker.resources);
         ArrayList<Resource> lst = list.listResources();
         complete = lst.isEmpty();

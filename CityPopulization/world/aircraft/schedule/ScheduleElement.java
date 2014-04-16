@@ -6,21 +6,26 @@ import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
+import simplelibrary.config2.Config;
 public class ScheduleElement {
     private final Template template;
     public int civilians;
     private final int workers;
     private final ResourceList resourceList;
     private final int timeBetweenArrivals;
-    private int tick;
+    public int tick;
     private int cost;
+    private int index;
+    private static int index2;
     public ScheduleElement(Template template, int civilians, int workers, ResourceList resourceList, int timeBetweenArrivals, int cost){
         this.template=template;
         this.civilians=civilians;
         this.workers=workers;
         this.resourceList=resourceList;
         this.timeBetweenArrivals=timeBetweenArrivals;
-        this.cost = Math.max(cost, template.cost);
+        this.cost = cost;
+        index = index2;
+        index2++;
     }
     public String getAircraftName(){
         return template.name;
@@ -29,7 +34,7 @@ public class ScheduleElement {
         if(workers+civilians>template.passengers){
             civilians=template.passengers-workers;
         }
-        return cost+5*template.passengers-10*civilians+5*workers-resourceList.count();
+        return cost+5*template.passengers-10*civilians+5*workers+resourceList.count()*2;
     }
     public int getFuelCost(){
         return template.fuel;
@@ -66,5 +71,21 @@ public class ScheduleElement {
         }
         aircraft.schedule = this;
         return aircraft;
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("template", template.name());
+        config.set("civilians", civilians);
+        config.set("workers", workers);
+        config.set("resources", resourceList.save());
+        config.set("time", timeBetweenArrivals);
+        config.set("tick", tick);
+        config.set("cost", cost);
+        config.set("index", index);
+        config.set("index2", index2);
+        return config;
+    }
+    public int getIndex(){
+        return index;
     }
 }
