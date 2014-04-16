@@ -16,7 +16,7 @@ public class CubeRenderer implements PlotRenderer{
         int texture = ImageStash.instance.getTexture(path);
         ImageStash.instance.bindTexture(texture);
         GL11.glBegin(GL11.GL_QUADS);
-        if(plot.shouldRenderTopFace){
+        if(plot.shouldRenderTopFace||plot.z>=plot.world.getLocalPlayer().getCameraZ()){
             GL11.glTexCoord2d(0, 0);
             GL11.glVertex3d(x, y, z);
             GL11.glTexCoord2d(1/3d, 0);

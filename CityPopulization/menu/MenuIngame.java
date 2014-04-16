@@ -5,6 +5,7 @@ import CityPopulization.menu.buttons.MenuComponentButtonIngame;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.resource.ResourceList;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.gui.GUI;
@@ -38,10 +39,13 @@ public class MenuIngame extends Menu{
         }
         screenBottom = gui.helper.guiScale;
         ResourceList lst = new ResourceList();
+        int space = 0;
         for(Plot plot : Core.world.getLocalPlayer().resourceStructures){
             lst.addAll(plot.resources);
+            space += (plot.getLevel()+1)*Core.world.getLocalPlayer().getResourcesPerWarehouse()-plot.coming-plot.readyResources.count();
         }
-        drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.08, "$"+Core.world.getLocalPlayer().cash+"; "+lst.toString());
+        space-= lst.count();
+        drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.08, (Core.world.getLocalPlayer().sandbox?"":"$"+Core.world.getLocalPlayer().cash+"; ")+lst.toString()+"; "+space+" space");
     }
     @Override
     public void tick(){}
@@ -98,5 +102,17 @@ public class MenuIngame extends Menu{
     }
     public void onPlotUpdate(){
         Core.world.getLocalPlayer().onPlotClicked(lastX, lastY, this, lastButton);
+    }
+    @Override
+    public void keyboardEvent(char character, int key, boolean pressed, boolean repeat){
+        if(key==Keyboard.KEY_PAUSE&&pressed&&!repeat){
+            Core.world.isPaused = !Core.world.isPaused;
+        }
+        if(key==Keyboard.KEY_G&&pressed&&!repeat){
+            Core.world.getLocalPlayer().cameraX = 0;
+            Core.world.getLocalPlayer().cameraY = 0;
+            Core.world.getLocalPlayer().cameraZ = 0;
+        }
+        super.keyboardEvent(character, key, pressed, repeat);
     }
 }

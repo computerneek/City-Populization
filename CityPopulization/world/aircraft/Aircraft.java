@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import org.lwjgl.opengl.GL11;
+import simplelibrary.config2.Config;
 import simplelibrary.opengl.ImageStash;
 public abstract class Aircraft{
     public final Player player;
@@ -184,6 +185,7 @@ public abstract class Aircraft{
                     }
                     schedule.civilians++;
                 }
+                player.cash+=cargoOccupied;
             }
             return;
         }
@@ -279,7 +281,7 @@ public abstract class Aircraft{
         if(!canPlayerSeePlane){
             return;
         }
-        GL11.glTranslatef(x+0.5f, -y-0.5f, z);
+        GL11.glTranslatef(x+0.5f, -y-0.5f, z+1);
         GL11.glRotatef(-heading+90, 0, 0, 1);
         GL11.glRotatef(tilt, 0, 1, 0);
         ImageStash.instance.bindTexture(ImageStash.instance.getTexture("/textures/aircraft/"+textureFolder+"/frame "+(tick%frameCap+1)+".png"));
@@ -287,18 +289,18 @@ public abstract class Aircraft{
         render();
         GL11.glRotatef(-tilt, 0, 1, 0);
         GL11.glRotatef(heading-90, 0, 0, 1);
-        GL11.glTranslatef(-x-0.5f, y+0.5f, -z);
+        GL11.glTranslatef(-x-0.5f, y+0.5f, -z-1);
     }
     private void render(){
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glTexCoord2f(0, 0);
-        GL11.glVertex3d(-0.3, -0.3, 0);
-        GL11.glTexCoord2f(1, 0);
-        GL11.glVertex3d(0.3, -0.3, 0);
-        GL11.glTexCoord2f(1, 1);
-        GL11.glVertex3d(0.3, 0.3, 0);
-        GL11.glTexCoord2f(0, 1);
         GL11.glVertex3d(-0.3, 0.3, 0);
+        GL11.glTexCoord2f(1, 0);
+        GL11.glVertex3d(0.3, 0.3, 0);
+        GL11.glTexCoord2f(1, 1);
+        GL11.glVertex3d(0.3, -0.3, 0);
+        GL11.glTexCoord2f(0, 1);
+        GL11.glVertex3d(-0.3, -0.3, 0);
         GL11.glEnd();
     }
     private void landedUpdate(){
@@ -322,6 +324,7 @@ public abstract class Aircraft{
                 taxiSequence = path.generateDirections();
                 runway.getStartPlot().terminal.occupied = Terminal.OUT;
                 setLocation(terminal.plot);
+                z-=1;
                 setHeading(terminal.plot.front);
                 speed = 0;
                 targetSpeed = 0;
@@ -357,5 +360,67 @@ public abstract class Aircraft{
     public void depart(){
         player.world.aircraft.add(this);
         state = "Departure";
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("player", player.world.otherPlayers.indexOf(player));
+        Config two = Config.newConfig();
+        two.set("count", passengers.size());
+        for(int i = 0; i<passengers.size(); i++){
+            two.set(i+"", passengers.get(i).save());
+        }
+        config.set("passengers", two);
+        two = Config.newConfig();
+        two.set("count", cargo.size());
+        for(int i = 0; i<cargo.size(); i++){
+            two.set(i+"", cargo.get(i).save());
+        }
+        config.set("cargo", two);
+        config.set("passCapacity", passengerCapacity);
+        config.set("cargoCapacity", cargoCapacity);
+        config.set("departureTime", departureTime);
+        config.set("cargo", cargoOccupied);
+        if(runway!=null){
+            config.set("runwayx", runway.getStartPlot().x);
+            config.set("runwayy", runway.getStartPlot().y);
+            config.set("runwayz", runway.getStartPlot().z);
+        }
+        config.set("terminalx", terminal.plot.x);
+        config.set("terminaly", terminal.plot.y);
+        config.set("terminalz", terminal.plot.z);
+        if(landingSequence!=null){
+            two = Config.newConfig();
+            two.set("count", landingSequence.size());
+            for(int i = 0; i<landingSequence.size(); i++){
+                two.set(i+"", landingSequence.get(i).save());
+            }
+            config.set("sequence", two);
+        }
+        config.set("state", state);
+        config.set("x", x);
+        config.set("y", y);
+        config.set("y", y);
+        config.set("heading", heading);
+        config.set("targetHeading", targetHeading);
+        config.set("pitch", pitch);
+        config.set("tilt", tilt);
+        config.set("speed", speed);
+        config.set("targetSpeed", targetSpeed);
+        config.set("targetPitch", targetPitch);
+        config.set("tick", tick);
+        if(path!=null){
+            config.set("path", path.save());
+        }
+        if(taxiSequence!=null){
+            two = Config.newConfig();
+            two.set("count", taxiSequence.size());
+            for(int i = 0; i<taxiSequence.size(); i++){
+                two.set(i+"", taxiSequence.get(i).save());
+            }
+            config.set("taxiSequence", two);
+        }
+        config.set("fuelLevel", fuelLevel);
+        config.set("schedule", schedule.getIndex());
+        return config;
     }
 }

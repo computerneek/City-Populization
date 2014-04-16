@@ -4,4 +4,5 @@ import CityPopulization.world.WorldInfo;
 public interface SaveLoader{
     public WorldInfo[] listWorlds();
     public World loadWorld(WorldInfo info);
+    public void saveWorld(World world);
 }

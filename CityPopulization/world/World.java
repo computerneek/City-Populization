@@ -11,24 +11,26 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
+import simplelibrary.config2.Config;
 public class World{
     public long seed = new Random().nextLong();
     private Player localPlayer;
-    private ArrayList<Player> otherPlayers = new ArrayList<>();
+    public ArrayList<Player> otherPlayers = new ArrayList<>();
     private Template template;
     private int speedMultiplier;
     private WinningCondition goal;
     public int age;
-    private boolean isPaused;
+    public boolean isPaused;
     public GameDifficulty difficulty;
     private HashMap<Integer, HashMap<Integer, HashMap<Integer, Plot>>> plots = new HashMap<>();
     private HashMap<Integer, ArrayList<Plot>> plotsNeedingUpdate = new HashMap<>();
     public ArrayList<Aircraft> aircraft = new ArrayList<>();
     public ArrayList<Civilian> civilians = new ArrayList<>();
+    public WorldInfo info;
     public World(){}
     public void tick(){
+        localPlayer.motion();
         for(int i = 0; i<speedMultiplier; i++){
             if(isPaused){
                 return;
@@ -50,6 +52,9 @@ public class World{
                 player.update();
             }
             localPlayer.update();
+        }
+        if((age/speedMultiplier)%6000==0){
+            save();
         }
     }
     public Player getLocalPlayer(){
@@ -146,16 +151,19 @@ public class World{
     }
     public void render(){
         GL11.glLoadIdentity();
-        GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -4*Core.gui.distBack+1-localPlayer.getCameraZ());
+        GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -4*Core.gui.distBack);
+        GL11.glScalef(1, 1, 0.25f);
+        GL11.glTranslated(0, 0, -localPlayer.getCameraZ());
 //        GL11.glEnable(GL11.GL_DEPTH_TEST);
         int x = -(int)localPlayer.getCameraX();
         int y = (int)localPlayer.getCameraY();
         int z = localPlayer.getCameraZ();
-        for(int i = -10; i<2; i++){
-            GL11.glColor4d(1, 1, 1, i>0?0.2:1);
+        int renderWidth = 10;
+        for(int i = -30; i<6; i++){
+            GL11.glColor4d(1, 1, 1, i>0?0.2:1*Math.pow(0.9, -i));
             HashMap<Float, ArrayList<Plot>> map = new HashMap<>();
-            for(int j=-5; j<6; j++){
-                for(int k = -5; k<6; k++){
+            for(int j=-renderWidth; j<renderWidth+1; j++){
+                for(int k = -renderWidth; k<renderWidth+1; k++){
                     float dist = (float)Math.sqrt(j*j+k*k);
                     if(!map.containsKey(dist)){
                         map.put(dist, new ArrayList<Plot>());
@@ -207,5 +215,80 @@ public class World{
     }
     public void setRace(Race race){
         localPlayer = race.createPlayer(this);
+    }
+    public void save(){
+        info.saveLoader.saveWorld(this);
+    }
+    public String size(){
+        int count = 0;
+        for(Integer key : plots.keySet()){
+            HashMap<Integer, HashMap<Integer, Plot>> plots = this.plots.get(key);
+            for(Integer key2 : plots.keySet()){
+                count+=plots.get(key2).size();
+            }
+        }
+        return count+" plots";
+    }
+    public void save(Config config){
+        config.set("seed", ""+seed);
+        config.set("localPlayer", localPlayer.save());
+        Config two = Config.newConfig();
+        two.set("count", otherPlayers.size());
+        for(int i = 0; i<otherPlayers.size(); i++){
+            two.set(i+"", otherPlayers.get(i).save());
+        }
+        config.set("otherPlayers", two);
+        config.set("template", template.name());
+        config.set("speed", speedMultiplier);
+        config.set("goal", goal.save());
+        config.set("paused", isPaused);
+        config.set("difficutly",difficulty.name());
+        ArrayList<Plot> lst = new ArrayList<Plot>();
+        for(Integer key : plots.keySet()){
+            HashMap<Integer, HashMap<Integer, Plot>> plots = this.plots.get(key);
+            for(Integer key2 : plots.keySet()){
+                lst.addAll(plots.get(key2).values());
+            }
+        }
+        two = Config.newConfig();
+        two.set("count", lst.size());
+        for(int i = 0; i<lst.size(); i++){
+            two.set(i+"",lst.get(i).save());
+        }
+        config.set("plots", two);
+        two = Config.newConfig();
+        two.set("count", 0);
+        for(Integer key : plotsNeedingUpdate.keySet()){
+            if(key>age){
+                Config three = Config.newConfig();
+                ArrayList<Plot> plts = plotsNeedingUpdate.get(key);
+                three.set("time", key);
+                three.set("count", plts.size());
+                for(int i = 0; i<plts.size(); i++){
+                    Plot plot = plts.get(i);
+                    three.set(i+"x", plot.x);
+                    three.set(i+"y", plot.y);
+                    three.set(i+"z", plot.z);
+                }
+                two.set(two.get("count")+"",three);
+                two.set("count", (int)two.get("count")+1);
+            }
+        }
+        config.set("updates",two);
+        two = Config.newConfig();
+        two.set("count", aircraft.size());
+        for(int i = 0; i<aircraft.size(); i++){
+            two.set(i+"",aircraft.get(i).save());
+        }
+        config.set("aircraft",two);
+        two = Config.newConfig();
+        two.set("count", civilians.size());
+        for(int i = 0; i<civilians.size(); i++){
+            two.set(i+"",civilians.get(i).save());
+        }
+        config.set("civilians",two);
+    }
+    public void load3_1(Config config){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

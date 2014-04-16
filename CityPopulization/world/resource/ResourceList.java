@@ -1,6 +1,8 @@
 package CityPopulization.world.resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import simplelibrary.config2.Config;
 public class ResourceList{
     private HashMap<Resource, Integer> list = new HashMap<>();
     public ResourceList(){}
@@ -45,7 +47,9 @@ public class ResourceList{
         return this;
     }
     public ArrayList<Resource> listResources(){
-        return new ArrayList<>(list.keySet());
+        ArrayList<Resource> val = new ArrayList<>(list.keySet());
+        Collections.sort(val);
+        return val;
     }
     public int get(Resource resource){
         return list.containsKey(resource)?list.get(resource):0;
@@ -71,6 +75,8 @@ public class ResourceList{
         }
         String value = "";
         ArrayList<Resource> resources = listResources();
+        Resource.Wood.compareTo(Resource.Oil);
+        Collections.sort(resources);
         for(Resource resource : resources){
             if(!value.isEmpty()){
                 value+="; ";
@@ -88,5 +94,26 @@ public class ResourceList{
     }
     public void set(Resource resource, int value){
         list.put(resource, value);
+    }
+    public ResourceList split(int resources){
+        ResourceList lst = new ResourceList();
+        if(resources>=count()){
+            lst.addAll(this);
+            list.clear();
+            return lst;
+        }
+        for(int i=0; i<resources&&count()>0; i++){
+            Resource resource = listResources().get(0);
+            remove(resource, 1);
+            lst.add(resource, 1);
+        }
+        return lst;
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        for(Resource res : Resource.values()){
+            config.set(res.name(), get(res));
+        }
+        return config;
     }
 }

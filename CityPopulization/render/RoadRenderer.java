@@ -18,7 +18,7 @@ public class RoadRenderer implements PlotRenderer{
         render(x, y, z, path, plot.front);
         for(Side side : new Side[]{plot.front, plot.front.right(), plot.front.left(), plot.front.reverse()}){
             Plot other = side.getPlot(plot.world, plot.x, plot.y, plot.z);
-            boolean can = plot.getPathableSides().contains(side)&&other!=null&&other.getPathableSides().contains(side.reverse())&&plot.owner==other.owner;
+            boolean can = plot.getPathableSides(false).contains(side)&&other!=null&&other.getPathableSides(false).contains(side.reverse())&&plot.owner==other.owner;
             if(can){
                 renderPath(x, y, z, path, side);
             }
@@ -35,50 +35,50 @@ public class RoadRenderer implements PlotRenderer{
             case FRONT:
                 {
                     GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x, y, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x+1, y, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y-1, z);
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
                 }
                 break;
             case BACK:
                 {
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x, y, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x+1, y, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y-1, z);
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
                 }
                 break;
             case RIGHT:
                 {
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x, y, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x+1, y, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y-1, z);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
                     GL11.glTexCoord2d(0, 0.5);
                 }
                 break;
             case LEFT:
                 {
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x, y, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x+1, y, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y-1, z);
                     GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
                 }
                 break;
             default:
@@ -92,54 +92,46 @@ public class RoadRenderer implements PlotRenderer{
         }
         int texture = ImageStash.instance.getTexture(path);
         ImageStash.instance.bindTexture(texture);
-        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glBegin(GL11.GL_TRIANGLES);
         switch(facing){
             case FRONT:
                 {
-                    GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x, y, z-0.99);
-                    GL11.glTexCoord2d(1, 0);
-                    GL11.glVertex3d(x+1, y, z-0.99);
-                    GL11.glTexCoord2d(1, 0.5);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
+                    GL11.glTexCoord2d(1, 0.5);
+                    GL11.glVertex3d(x+1, y-1, z);
+                    GL11.glTexCoord2d(0.75, 0.25);
+                    GL11.glVertex3d(x+0.5, y-0.5, z);
                 }
                 break;
             case BACK:
                 {
-                    GL11.glTexCoord2d(1, 0.5);
-                    GL11.glVertex3d(x, y, z-0.99);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x+1, y, z-0.99);
-                    GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
-                    GL11.glTexCoord2d(1, 0);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x+1, y, z);
+                    GL11.glTexCoord2d(1, 0.5);
+                    GL11.glVertex3d(x, y, z);
+                    GL11.glTexCoord2d(0.75, 0.25);
+                    GL11.glVertex3d(x+0.5, y-0.5, z);
+                }
+                break;
+            case RIGHT:
+                {
+                    GL11.glTexCoord2d(0.5, 0.5);
+                    GL11.glVertex3d(x+1, y-1, z);
+                    GL11.glTexCoord2d(1, 0.5);
+                    GL11.glVertex3d(x+1, y, z);
+                    GL11.glTexCoord2d(0.75, 0.25);
+                    GL11.glVertex3d(x+0.5, y-0.5, z);
                 }
                 break;
             case LEFT:
                 {
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x, y, z-0.99);
-                    GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x+1, y, z-0.99);
-                    GL11.glTexCoord2d(1, 0);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(1, 0.5);
-                    GL11.glVertex3d(x, y-1, z-0.99);
-                }
-                break;
-            case RIGHT:
-                {
-                    GL11.glTexCoord2d(1, 0);
-                    GL11.glVertex3d(x, y, z-0.99);
-                    GL11.glTexCoord2d(1, 0.5);
-                    GL11.glVertex3d(x+1, y, z-0.99);
-                    GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x+1, y-1, z-0.99);
-                    GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x, y-1, z-0.99);
+                    GL11.glVertex3d(x, y-1, z);
+                    GL11.glTexCoord2d(0.75, 0.25);
+                    GL11.glVertex3d(x+0.5, y-0.5, z);
                 }
                 break;
             default:

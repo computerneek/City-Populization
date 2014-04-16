@@ -1,7 +1,12 @@
 package CityPopulization.world.save;
+import CityPopulization.Core;
 import CityPopulization.world.World;
 import CityPopulization.world.WorldInfo;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,17 +52,41 @@ public class LocalSaveLoader implements SaveLoader{
     @Override
     public World loadWorld(WorldInfo info){
         switch(info.version){
-            case "3.0.1":
             default:
-                return load3(info);
+                return load3_1(info);
         }
     }
-    private World load3(WorldInfo info){
+    private World load3_1(WorldInfo info){
         World world = new World();
-        Config config = Config.newConfig(info.file).load();
-        if(config==null){
-            return world;
+        world.info = info;
+        try(FileInputStream in = new FileInputStream(info.file)){
+            Config config = Config.newConfig(in).load().load();
+            if(config==null){
+                return world;
+            }
+            world.load3_1(config);
+        }catch(IOException|NullPointerException ex){}
+        return world;
+    }
+    @Override
+    public void saveWorld(World world){
+        WorldInfo info = world.info;
+        info.file.getParentFile().mkdirs();
+        try(FileOutputStream out = new FileOutputStream(info.file)){
+            Config config = Config.newConfig();
+            config.set("name", info.name);
+            config.set("type", info.type);
+            config.set("last played", Core.getNow());
+            config.set("created", info.created);
+            config.set("size", world.size());
+            config.set("template", info.template);
+            config.set("version", info.version);
+            config.save(out);
+            config = Config.newConfig();
+            world.save(config);
+            config.save(out);
+        }catch(IOException ex){
+            throw new RuntimeException(ex);
         }
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

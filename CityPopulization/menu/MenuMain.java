@@ -17,7 +17,7 @@ public class MenuMain extends Menu{
         customstory = add(new MenuComponentButton(-0.8f, -0.48f, 1.6f, 0.16f, "Custom Story (NYI)", false));
         multiplayer = add(new MenuComponentButton(-0.8f, -0.28f, 1.6f, 0.16f, "Multiplayer (NYI)", false));
         quickmap = add(new MenuComponentButton(-0.8f, -0.08f, 1.6f, 0.16f, "Empire Mode", true));
-        texturepacks = add(new MenuComponentButton(-0.8f, 0.12f, 1.6f, 0.16f, "Texturepacks (NYI)", false));
+        texturepacks = add(new MenuComponentButton(-0.8f, 0.12f, 1.6f, 0.16f, "Texturepacks (NYI)", true));
         options = add(new MenuComponentButton(-0.8f, 0.32f, 1.6f, 0.16f, "Options (NYI)", false));
         exit = add(new MenuComponentButton(-0.8f, 0.52f, 1.6f, 0.16f, "Exit", true));
     }

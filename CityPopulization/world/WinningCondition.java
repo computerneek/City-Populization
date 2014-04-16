@@ -1,8 +1,10 @@
 package CityPopulization.world;
 import java.util.ArrayList;
+import simplelibrary.config2.Config;
 public abstract class WinningCondition{
     private static ArrayList<WinningCondition> types = new ArrayList<>();
     private static ArrayList<String> names = new ArrayList<>();
+    private String name;
     public WinningCondition(){}
     public WinningCondition(String name){
         if(names.contains(name)){
@@ -10,6 +12,7 @@ public abstract class WinningCondition{
         }
         names.add(name);
         types.add(this);
+        this.name = name;
     }
     public static String[] listTypes(){
         return names.toArray(new String[names.size()]);
@@ -25,6 +28,11 @@ public abstract class WinningCondition{
     }
     static{
         new NoWinningCondition("None");
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("name", name);
+        return config;
     }
     private static class NoWinningCondition extends WinningCondition{
         public NoWinningCondition(String name){

@@ -1,21 +1,21 @@
 package CityPopulization.world.civilian.event;
-import CityPopulization.world.civilian.Worker;
+import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 public class EventUnload implements Event{
     private boolean complete;
-    private Worker worker;
+    private Civilian worker;
     @Override
     public boolean isComplete(){
         return complete;
     }
     @Override
-    public void start(Worker worker){
+    public void start(Civilian worker){
         this.worker = worker;
     }
     @Override
-    public void work(Worker worker){
+    public void work(Civilian worker){
         ResourceList list = new ResourceList().addAll(worker.resources);
         ArrayList<Resource> lst = list.listResources();
         complete = lst.isEmpty();

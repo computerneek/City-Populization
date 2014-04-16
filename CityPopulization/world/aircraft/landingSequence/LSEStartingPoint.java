@@ -3,6 +3,7 @@ import CityPopulization.render.Side;
 import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.aircraft.Runway;
 import CityPopulization.world.plot.Plot;
+import simplelibrary.config2.Config;
 public class LSEStartingPoint implements LandingSequenceEvent {
     private final int distanceBack;
     private final int height;
@@ -29,5 +30,14 @@ public class LSEStartingPoint implements LandingSequenceEvent {
         aircraft.setHeading(touchdown.front);
         aircraft.setSpeed(speed);
         return true;
+    }
+    @Override
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("type", "startingPoint");
+        config.set("dist", distanceBack);
+        config.set("height", height);
+        config.set("speed", speed);
+        return config;
     }
 }

@@ -1,6 +1,7 @@
 package CityPopulization.world.aircraft.schedule;
 import CityPopulization.world.plot.Plot;
 import java.util.ArrayList;
+import simplelibrary.config2.Config;
 public class AircraftSchedule {
     public ArrayList<ScheduleElement> elements = new ArrayList<>();
     private AircraftSchedule parent;
@@ -20,5 +21,13 @@ public class AircraftSchedule {
                 plot.addInboundAircraft(element.getAircraft(plot.owner));
             }
         }
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("count", elements.size());
+        for(int i = 0; i<elements.size(); i++){
+            config.set(i+"", elements.get(i).save());
+        }
+        return config;
     }
 }

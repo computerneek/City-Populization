@@ -6,6 +6,7 @@ import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.aircraft.Terminal;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.civilian.Civilian;
+import CityPopulization.world.civilian.CivilianTask;
 import CityPopulization.world.civilian.Path;
 import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.civilian.WorkerTask;
@@ -13,9 +14,12 @@ import CityPopulization.world.civilian.WorkerTaskSegment;
 import CityPopulization.world.civilian.event.EventSequence;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
+import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import java.util.Random;
+import org.lwjgl.opengl.GL11;
+import simplelibrary.config2.Config;
 public class Plot{
     public final int x;
     public final int y;
@@ -45,6 +49,8 @@ public class Plot{
     public ResourceList readyResources = new ResourceList();
     public ResourceList inboundResources = new ResourceList();
     public ArrayList<Aircraft> inboundAircraft = new ArrayList<>();
+    public int coming;
+    public int fallProgress = 0;
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -81,7 +87,7 @@ public class Plot{
         onPlotChange();
         if(owner!=null){
             owner.resourceStructures.remove(this);
-            if(type==PlotType.AirportEntrance||type==PlotType.Warehouse){
+            if(type==PlotType.Warehouse){
                 owner.resourceStructures.add(this);
             }
         }
@@ -100,15 +106,6 @@ public class Plot{
         onPlotChange();
         return this;
     }
-    public void setTimeSinceLastBreakage(int get){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    public void setBreakages(int i){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    public void setNextBreakageTime(int i){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     public Plot setOwner(Player player){
         if(owner!=null){
             owner.resourceStructures.remove(this);
@@ -122,7 +119,7 @@ public class Plot{
             }
         }
         onPlotChange();
-        if(type==PlotType.AirportEntrance||type==PlotType.Warehouse){
+        if(type==PlotType.Warehouse){
             owner.resourceStructures.add(this);
         }
         return this;
@@ -153,6 +150,17 @@ public class Plot{
         }
     }
     public void update(){
+        if(type.falls()&&world.getPlot(x, y, z-1)!=null&&!world.getPlot(x, y, z-1).type.supports()){
+            fallProgress++;
+            world.schedulePlotUpdate(this);
+            if(fallProgress==1){
+                world.getPlot(x, y, z-1).demolish();
+            }
+            if(fallProgress>=100){
+                world.getPlot(x, y, z-1).setType(type.getFallenType());
+                setType(PlotType.Air);
+            }
+        }
         if(getType()==PlotType.AirportEntrance){
             world.schedulePlotUpdate(this);
             doAirportUpdate();
@@ -165,9 +173,22 @@ public class Plot{
             world.schedulePlotUpdate(this);
             workerUpdate();
         }
-        if(task==null&&!inboundResources.listResources().isEmpty()){
+        if(getType()!=PlotType.AirportEntrance&&task==null&&!inboundResources.listResources().isEmpty()){
             resources.addAll(inboundResources);
+            coming = Math.max(0, coming-inboundResources.count());
             inboundResources = new ResourceList();
+        }
+        if(getType()==PlotType.Warehouse){
+            world.schedulePlotUpdate(this);
+            if(task==null&&resources.count()>(level+1)*owner.getResourcesPerWarehouse()){
+                ResourceList lst = resources.split(resources.count()-(level+1)*owner.getResourcesPerWarehouse());
+                task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
+                owner.getWorkerTaskManager().addTask(task);
+                task.cost.remove(Resource.Tools, 1);
+                task.revenue.remove(Resource.Tools, 1);
+                task.segments.remove(0);
+                resources = new ResourceList();
+            }
         }
     }
     private void doAirportUpdate(){
@@ -181,6 +202,28 @@ public class Plot{
         }
         terminal.update(terminal);
         terminal.schedule.update(this);
+        if(owner!=null&&task==null&&resources.count()>0&&!Path.findWarehouse(this, true).isEmpty()){
+            boolean OK = false;
+            for(Plot plot : Path.findWarehouse(this, true)){
+                if(plot.task==null&&plot.resources.count()<(plot.level+1)*owner.getResourcesPerWarehouse()&&plot.coming==0){
+                    OK = true;
+                }
+            }
+            if(!OK){
+                return;
+            }
+            ResourceList fuel = new ResourceList(Resource.Fuel, resources.get(Resource.Fuel));
+            fuel = fuel.split(500-terminal.fuel);
+            resources.removeAll(fuel);
+            if(resources.count()>0){
+                task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources.split(100));
+                owner.getWorkerTaskManager().addTask(task);
+                task.cost.remove(Resource.Tools, 1);
+                task.revenue.remove(Resource.Tools, 1);
+                task.segments.remove(0);
+            }
+            resources.addAll(fuel);
+        }
     }
     private void attemptToLandAircraft(Aircraft aircraft){
         ArrayList<Plot> terminals = new ArrayList<>();
@@ -202,13 +245,19 @@ public class Plot{
         shouldRenderRightFace = world.getPlot(x+1, y, z)==null||!world.getPlot(x+1, y, z).getType().isOpaque();
         shouldRenderFrontFace = world.getPlot(x, y+1, z)==null||!world.getPlot(x, y+1, z).getType().isOpaque();
         shouldRenderBackFace = world.getPlot(x, y-1, z)==null||!world.getPlot(x, y-1, z).getType().isOpaque();
-        
+        world.schedulePlotUpdate(this);
     }
     public void render(Player localPlayer){
         if(!playerVisibilities.contains(localPlayer)){
             return;
         }
+        if(fallProgress>0){
+            GL11.glTranslatef(0, 0, -fallProgress/100f);
+        }
         type.render(this);
+        if(fallProgress>0){
+            GL11.glTranslatef(0, 0, fallProgress/100f);
+        }
     }
     public int getFrameNumber(){
         return frameBoost+world.age;
@@ -271,13 +320,15 @@ public class Plot{
         }
     }
     private void doCivilianUpdate(){
-        owner.cash+=civiliansPresent.size();
+        if(owner!=null){
+            owner.cash+=civiliansPresent.size();
+        }
         timeSinceLastCivilianOperation = 0;
         if(getType()!=PlotType.House){
             Plot house = findEmptyHouse();
             if(house!=null){
                 Civilian civilian = civiliansPresent.get(0);
-                Path path = Path.findPath(this, house);
+                Path path = Path.findPath(this, house, false);
                 if(path==null){
                     return;
                 }
@@ -288,6 +339,45 @@ public class Plot{
                 civilian.path = path;
                 world.civilians.add(civilian);
             }
+        }else{
+            for(Civilian worker : civilians){
+                if(worker.timer<=0){
+                    Plot airport = Path.findAirportEntrance(this, false);
+                    if(airport!=null){
+                        Path path = Path.findPath(this, airport, false);
+                        if(path!=null){
+                            worker.path = path;
+                            worker.homePlot = airport;
+                            civilians.remove(worker);
+                            civiliansPresent.remove(worker);
+                            world.civilians.add(worker);
+                            airport.civilians.add(worker);
+                        }
+                    }
+                }
+            }
+            ArrayList<WorkerTask> tasks = new ArrayList<>();
+            findPotentialTasks(tasks, false);
+            ArrayList<Civilian> workersAvailable = new ArrayList<>();
+            for(Civilian worker : civiliansPresent){
+                if(worker.timer>0){
+                    workersAvailable.add(worker);
+                }
+            }
+            if(workersAvailable.isEmpty()){
+                return;
+            }
+            Civilian worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
+            if(task!=null&&task instanceof CivilianTask&&!(task.isFull()||task.getCurrentSegment().isFull()||!task.canReceiveFrom(this))){
+                WorkerTaskSegment segment = task.getCurrentSegment();
+                EventSequence sequence = segment.generateEventSequence(worker, this);
+                if(sequence!=null){
+                    worker.assign(sequence);
+                    world.civilians.add(worker);
+                    civiliansPresent.remove(worker);
+                    timeSinceLastCivilianOperation = 0;
+                }
+            }
         }
     }
     private void workerUpdate(){
@@ -297,32 +387,47 @@ public class Plot{
         }
     }
     private void doWorkerUpdate(){
+        if(timeSinceLastWorkerOperation%20==0){
+            owner.cash-=workersPresent.size();
+        }
         if(getType()!=PlotType.House){
-            Plot house = findEmptyHouse();
-            if(house!=null){
-                Worker worker = workersPresent.get(0);
-                Path path = Path.findPath(this, house);
-                if(path==null){
-                    return;
+            for(Worker worker : workers){
+                worker.timer--;
+            }
+        }else{
+            for(Worker worker : workers){
+                if(worker.timer<=0){
+                    Plot airport = Path.findAirportEntrance(this, true);
+                    if(airport!=null){
+                        Path path = Path.findPath(this, airport, true);
+                        if(path!=null){
+                            worker.path = path;
+                            worker.homePlot = airport;
+                            workers.remove(worker);
+                            workersPresent.remove(worker);
+                            world.civilians.add(worker);
+                            airport.workers.add(worker);
+                        }
+                    }
                 }
-                worker.homePlot = house;
-                house.workers.add(worker);
-                workers.remove(worker);
-                workersPresent.remove(worker);
-                worker.path = path;
-                world.civilians.add(worker);
-                timeSinceLastWorkerOperation = 0;
-                timeSinceLastCivilianOperation = 0;
-                return;
             }
         }
         ArrayList<WorkerTask> tasks = new ArrayList<>();
-        findPotentialTasks(tasks);
+        findPotentialTasks(tasks, true);
+        ArrayList<Worker> workersAvailable = new ArrayList<>();
+        for(Worker worker : workersPresent){
+            if(worker.timer>0){
+                workersAvailable.add(worker);
+            }
+        }
+        if(workersAvailable.isEmpty()){
+            return;
+        }
+        Worker worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
         for(WorkerTask potentialTask : tasks){
-            if(potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()){
+            if(potentialTask instanceof CivilianTask||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
                 continue;
             }
-            Worker worker = workersPresent.get(0);
             WorkerTaskSegment segment = potentialTask.getCurrentSegment();
             EventSequence sequence = segment.generateEventSequence(worker, this);
             if(sequence!=null){
@@ -334,15 +439,15 @@ public class Plot{
             }
         }
     }
-    private void findPotentialTasks(ArrayList<WorkerTask> tasks){
+    private void findPotentialTasks(ArrayList<WorkerTask> tasks, boolean isWorker){
         if(owner==null||!owner.getWorkerTaskManager().hasTasks()){
             return;
         }
-        Path.findPotentialTasks(tasks, this);
+        Path.findPotentialTasks(tasks, this, isWorker);
     }
-    public ArrayList<Side> getPathableSides(){
+    public ArrayList<Side> getPathableSides(boolean isWorker){
         ArrayList<Side> sides = new ArrayList<>();
-        for(Side side : type.getPathableSides()){
+        for(Side side : type.getPathableSides(isWorker)){
             switch(side){
                 case FRONT:
                     sides.add(front);
@@ -370,15 +475,15 @@ public class Plot{
         }
         return null;
     }
-    public ArrayList<Side> getTravelableSides(){
-        ArrayList<Side> sides = getPathableSides();
+    public ArrayList<Side> getTravelableSides(boolean isWorker){
+        ArrayList<Side> sides = getPathableSides(isWorker);
         ArrayList<Side> val = new ArrayList<>();
         for(Side side : sides){
             Plot plot = side.getPlot(world, x, y, z);
             if(plot==null){
                 continue;
             }
-            if(plot.getPathableSides().contains(side.reverse())){
+            if(plot.getPathableSides(isWorker).contains(side.reverse())){
                 val.add(side);
             }
         }
@@ -404,9 +509,52 @@ public class Plot{
         return level+1<type.getMaximumLevel()&&type.getCost(level+1, race)!=null;
     }
     private Plot findEmptyHouse(){
-        return Path.findHouseWithSpace(this);
+        return Path.findHouseWithSpace(this, false);
     }
     public int getMaximumCivilianCapacity(){
         return (int)Math.round(Math.max((level+1)*(level+1)*world.difficulty.homeOccupantModifier, 1));
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("x", x);
+        config.set("y", y);
+        config.set("z", z);
+        config.set("type", type.name());
+        config.set("level", level);
+        config.set("owner", world.otherPlayers.indexOf(owner));
+        config.set("frameBoost", frameBoost);
+        config.set("front", front.name());
+        config.set("terminal", terminal.save());
+        Config two = Config.newConfig();
+        two.set("count", civiliansPresent.size());
+        for(int i = 0; i<civiliansPresent.size(); i++){
+            two.set(i+"", civiliansPresent.get(i).save());
+        }
+        config.set("civilians", two);
+        two = Config.newConfig();
+        two.set("count", workersPresent.size());
+        for(int i = 0; i<workersPresent.size(); i++){
+            two.set(i+"", workersPresent.get(i).save());
+        }
+        config.set("workers", two);
+        config.set("timeCivilian", timeSinceLastCivilianOperation);
+        config.set("timeWorker", timeSinceLastWorkerOperation);
+        if(task!=null){
+            config.set("task", task.save());
+        }
+        config.set("resources", resources.save());
+        config.set("readyResources", readyResources.save());
+        config.set("inboundResources", inboundResources.save());
+        two = Config.newConfig();
+        two.set("count", inboundAircraft.size());
+        for(int i = 0; i<inboundAircraft.size(); i++){
+            two.set(i+"", inboundAircraft.get(i).save());
+        }
+        config.set("aircraft", two);
+        config.set("coming", coming);
+        return config;
+    }
+    private void demolish(){
+        setType(PlotType.Air);
     }
 }

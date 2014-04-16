@@ -1,5 +1,6 @@
 package CityPopulization.world.civilian.event;
 import java.util.ArrayList;
+import simplelibrary.config2.Config;
 public class EventSequence {
     public ArrayList<Event> events = new ArrayList<>();
     public void add(Event event){
@@ -18,5 +19,8 @@ public class EventSequence {
     }
     public boolean isComplete(){
         return events.isEmpty();
+    }
+    public Config save(){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

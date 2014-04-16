@@ -1,6 +1,6 @@
 package CityPopulization.world.civilian.event;
 import CityPopulization.render.Side;
-import CityPopulization.world.civilian.Worker;
+import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
@@ -23,7 +23,7 @@ public class EventPlotSet implements Event{
         return started;
     }
     @Override
-    public void start(Worker worker){
+    public void start(Civilian worker){
         plot.setType(type);
         plot.setLevel(level);
         plot.setFront(front);
@@ -31,5 +31,5 @@ public class EventPlotSet implements Event{
         started = true;
     }
     @Override
-    public void work(Worker worker){}
+    public void work(Civilian worker){}
 }

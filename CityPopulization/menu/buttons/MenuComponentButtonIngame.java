@@ -35,11 +35,11 @@ public class MenuComponentButtonIngame extends MenuComponentButton{
         }
         drawRect(x, y, x+width, y+height, texture);
         double textHeight = 0.04;
-        drawRect(x+0.02, y+0.02, x+width-0.02, y+height-0.01-textHeight*label.length-0.02, ImageStash.instance.getTexture(image));
+        drawRect(x+0.02+textHeight*label.length/2d, y+0.02, x+width-0.02-textHeight*label.length/2d, y+height-0.02-textHeight*label.length, ImageStash.instance.getTexture(image));
         GL11.glColor3f(0, 0, 0);
         for(int i = 0; i<label.length; i++){
             String text = label[label.length-i-1];
-            drawCenteredText(x+0.01, y+height-0.01-textHeight*(i+1), x+width-0.01, y+height-0.01-textHeight*i, text);
+            drawCenteredText(x+0.01, y+height-0.02-textHeight*(i+1), x+width-0.01, y+height-0.02-textHeight*i, text);
         } 
         GL11.glColor3f(1, 1, 1);
     }

@@ -17,7 +17,7 @@ public class MenuTexturepacks extends Menu {
     public MenuTexturepacks(GUI gui, Menu parent){
         super(gui, parent);
         list = add(new MenuComponentMulticolumnList(-1.6, -1.0, 3.2, 1.8, 1.5, 0.1));
-        newButton = add(new MenuComponentButton(-1.58, 0.82, 1.56, 0.16, "New Texturepack (NYI)", true));
+        newButton = add(new MenuComponentButton(-1.58, 0.82, 1.56, 0.16, "New Texturepack (NYI)", false));
         doneButton = add(new MenuComponentButton(0.02, 0.82, 1.56, 0.16, "Done", true));
         refreshTexturepacks();
     }

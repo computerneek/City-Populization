@@ -31,7 +31,7 @@ public class Race{
     public Player createPlayer(World world){
         return player.createNew(world);
     }
-    public int getWorkerResourceCapacity(){
-        return workerResourceCapacity;
+    public int getWorkerResourceCapacity(World world){
+        return (int)(workerResourceCapacity*world.difficulty.incomeModifier);
     }
 }

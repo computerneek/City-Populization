@@ -2,38 +2,32 @@ package CityPopulization.world.player;
 import CityPopulization.Core;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.world.World;
-import CityPopulization.world.aircraft.Aircraft;
-import CityPopulization.world.civilian.CivilianManager;
 import CityPopulization.world.civilian.WorkerTaskManager;
 import CityPopulization.world.plot.Plot;
 import java.util.ArrayList;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
+import simplelibrary.config2.Config;
 public abstract class Player{
     public Race race;
     private WorkerTaskManager workerTaskManager;
-    private CivilianManager civillianManager;
     public double cameraX;
     public double cameraY;
     public int cameraZ;
     public final World world;
     public ArrayList<Plot> resourceStructures = new ArrayList<>();
-    private boolean sandbox;
-    public int cash;
+    public boolean sandbox;
+    public long cash;
     public Player(World world){
         this.world = world;
     }
     public WorkerTaskManager getWorkerTaskManager(){
         return workerTaskManager;
     }
-    public CivilianManager getCivillianManager(){
-        return civillianManager;
-    }
     public void setRace(Race race){
         this.race = race;
         if(race!=null){
             this.workerTaskManager = race.createWorkerTaskManager();
-            this.civillianManager = race.createCivillianManager();
         }
     }
     public double getCameraX(){
@@ -52,7 +46,11 @@ public abstract class Player{
         this.sandbox = sandbox;
     }
     public void update(){
-        workerTaskManager.update();
+        if(sandbox){
+            cash = Long.MAX_VALUE;
+        }
+    }
+    public void motion(){
         if(world.getLocalPlayer()==this&&Core.gui.menu instanceof MenuIngame){
             if(Mouse.getX()<=30){
                 cameraX+=0.1;
@@ -67,10 +65,20 @@ public abstract class Player{
         }
     }
     public int getResourcesPerWarehouse(){
-        return 1000;
+        return (int)(1000*world.difficulty.incomeModifier);
     }
     public void render(){}
     public void mousewheel(int dist){
         cameraZ-=dist;
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("race", race.getName());
+        config.set("x", (int)cameraX);
+        config.set("y", (int)cameraY);
+        config.set("z", cameraZ);
+        config.set("sandbox", sandbox);
+        config.set("cash", cash);
+        return config;
     }
 }

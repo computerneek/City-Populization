@@ -1,5 +1,5 @@
 package CityPopulization.world.civilian.event;
-import CityPopulization.world.civilian.Worker;
+import CityPopulization.world.civilian.Civilian;
 public class EventWait implements Event{
     private int ticks;
     private int time;
@@ -11,9 +11,9 @@ public class EventWait implements Event{
         return this.time>=ticks;
     }
     @Override
-    public void start(Worker worker){}
+    public void start(Civilian worker){}
     @Override
-    public void work(Worker worker){
+    public void work(Civilian worker){
         time++;
     }
 }

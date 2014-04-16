@@ -2,7 +2,9 @@ package CityPopulization.world.aircraft;
 import CityPopulization.world.player.Player;
 import java.lang.reflect.InvocationTargetException;
 public enum Template {
-    HELICOPTER_TINY("Tiny Helicopter", "helicopter/tiny", Helicopter.class, 1, 10, 100, 10, 10, 200, 200, 12, 250, 5);
+    HELICOPTER_TOUR("Tour Helicopter", "helicopter/tour", Helicopter.class, 1, 2, 5, 5, 10, 200, 200, 12, 50, 5),
+    HELICOPTER_PASSENGER("Passenger Helicopter", "helicopter/passenger", Helicopter.class, 1, 5, 10, 10, 100, 1200, 200, 13, 250, 20),
+    HELICOPTER_CARGO("Cargo Helicopter", "helicopter/cargo", Helicopter.class, 1, 1, 30, 15, 100, 400, 200, 11, 50, 20);
     public final String name;
     public final String texture;
     public final Class<? extends Aircraft> clazz;

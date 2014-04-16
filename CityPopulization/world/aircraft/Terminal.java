@@ -3,12 +3,14 @@ import CityPopulization.world.aircraft.cargo.AircraftCargo;
 import CityPopulization.world.aircraft.cargo.AircraftCargoResource;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.aircraft.schedule.AircraftSchedule;
+import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import simplelibrary.config2.Config;
 public class Terminal {
     public static final int IN = 1;
     public static final int OUT = 2;
@@ -22,9 +24,7 @@ public class Terminal {
     private int timeLanded;
     private int timeWaiting;
     public int state;
-    public ArrayList<AircraftCargo> cargo = new ArrayList<>();
-    public ArrayList<AircraftPassenger> passengers = new ArrayList<>();
-    private int fuel;
+    public int fuel;
     private int tick;
     public AircraftSchedule schedule = new AircraftSchedule();
     public Terminal(Plot plot){
@@ -78,12 +78,9 @@ public class Terminal {
     }
     public void update(Terminal entrance){
         tick++;
-        if(!cargo.isEmpty()&&plot.getType()==PlotType.AirportEntrance){
-            plot.resources.add(((AircraftCargoResource)cargo.remove(0)).getResource(), 1);
-        }
-        if(plot.resources.get(Resource.Fuel)>0&&tick%20==0&&fuel<500){
+        if(entrance.plot.resources.get(Resource.Fuel)>0&&tick%20==0&&fuel<500){
             fuel++;
-            plot.resources.remove(Resource.Fuel, 1);
+            entrance.plot.resources.remove(Resource.Fuel, 1);
         }
         if(aircraft==null){
             return;
@@ -97,8 +94,8 @@ public class Terminal {
         boolean canLoad = false;
         if(state==UNLOADING){
             if(!aircraft.cargo.isEmpty()){
-                AircraftCargo cargo;
-                entrance.cargo.add(cargo = aircraft.cargo.remove(0));
+                AircraftCargoResource cargo;
+                entrance.plot.resources.add((cargo = (AircraftCargoResource)aircraft.cargo.remove(0)).getResource(), 1);
                 aircraft.cargoOccupied-=cargo.getSpaceOccupied();
             }
             if(timeLanded%20==0&&!aircraft.passengers.isEmpty()){
@@ -113,10 +110,10 @@ public class Terminal {
                 timeWaiting = 0;
             }
         }else if(state==LOADING){
-            if(!cargo.isEmpty()&&aircraft.cargoOccupied<aircraft.cargoCapacity){
+            if(entrance.plot.inboundResources.count()>0&&aircraft.cargoOccupied<aircraft.cargoCapacity){
                 canLoad = true;
-                Collections.sort(cargo);
-                if(aircraft.loadOneCargo(cargo)){
+                if(aircraft.loadOneCargo(AircraftCargo.resource(entrance.plot.inboundResources.listResources().get(0), 1))){
+                    entrance.plot.inboundResources.remove(entrance.plot.inboundResources.listResources().get(0), 1);
                     timeWaiting = 0;
                 }
             }
@@ -128,9 +125,14 @@ public class Terminal {
                         entrance.plot.civilians.remove(entrance.plot.civiliansPresent.remove(0));
                         timeWaiting = 0;
                     }else if(!entrance.plot.workersPresent.isEmpty()){
-                        aircraft.loadPassengers(AircraftPassenger.workers(1));
-                        entrance.plot.workers.remove(entrance.plot.workersPresent.remove(0));
-                        timeWaiting = 0;
+                        for(Worker worker : entrance.plot.workersPresent){
+                            if(worker.timer<=0){
+                                aircraft.loadPassengers(AircraftPassenger.workers(1));
+                                entrance.plot.workers.remove(entrance.plot.workersPresent.remove(0));
+                                timeWaiting = 0;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -142,5 +144,22 @@ public class Terminal {
                 state = 0;
             }
         }
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("occupied", occupied);
+        config.set("occupiers", occupiers);
+        config.set("tick", tick);
+        if(plot.getType()==PlotType.AirportEntrance||plot.getType()==PlotType.AirportTerminal){
+            if(aircraft!=null){
+                config.set("aircraft", aircraft.save());
+            }
+            config.set("landed", timeLanded);
+            config.set("waiting", timeWaiting);
+            config.set("state", state);
+            config.set("fuel", fuel);
+            config.set("schedule", schedule.save());
+        }
+        return config;
     }
 }
