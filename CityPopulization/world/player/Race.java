@@ -1,6 +1,5 @@
 package CityPopulization.world.player;
 import CityPopulization.world.World;
-import CityPopulization.world.civilian.CivilianManager;
 import CityPopulization.world.civilian.WorkerTaskManager;
 import java.util.ArrayList;
 public class Race{
@@ -24,9 +23,6 @@ public class Race{
     }
     public WorkerTaskManager createWorkerTaskManager(){
         return new WorkerTaskManager();
-    }
-    public CivilianManager createCivillianManager(){
-        return new CivilianManager();
     }
     public Player createPlayer(World world){
         return player.createNew(world);

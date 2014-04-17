@@ -25,7 +25,7 @@ public class Civilian{
     private int frameCap;
     public EventSequence eventSequence;
     public Event currentEvent;
-    public int timer = 24000;
+    public int timer = 12000;
     public ResourceList resources = new ResourceList();
     {
         this.frameCap = findFrameCap();
@@ -167,8 +167,12 @@ public class Civilian{
             config.set("desty", dest[1]);
             config.set("destz", dest[2]);
         }
-        config.set("path", path.save());
-        config.set("player", player.world.otherPlayers.indexOf(player));
+        if(path!=null){
+            config.set("path", path.save());
+        }
+        if(player!=null){
+            config.set("player", player.world.otherPlayers.indexOf(player));
+        }
         config.set("tick", tick);
         if(eventSequence!=null){
             config.set("events", eventSequence.save());

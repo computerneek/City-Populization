@@ -352,7 +352,7 @@ public class PlayerHuman extends Player {
     private void onHouseClicked(Plot plot, ButtonSet set){
         onRotatablePlotClicked(plot, set);
         Plot workshop = Path.findWorkshop(plot, false);
-        if(plot.civilians.size()>1&&plot.task==null&&workshop!=null){
+        if(!plot.civilians.isEmpty()&&plot.task==null&&workshop!=null){
             set.add(createNewWorkerButton(plot, workshop));
         }
     }

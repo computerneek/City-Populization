@@ -21,6 +21,11 @@ public class EventSequence {
         return events.isEmpty();
     }
     public Config save(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Config config = Config.newConfig();
+        config.set("count", events.size());
+        for(int i = 0; i<events.size(); i++){
+            config.set(i+"", events.get(i).save());
+        }
+        return config;
     }
 }

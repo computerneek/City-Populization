@@ -1,6 +1,7 @@
 package CityPopulization.world.civilian.event;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Worker;
+import simplelibrary.config2.Config;
 public class EventTrainWorker implements Event {
     public EventTrainWorker(){}
     boolean started = false;
@@ -29,4 +30,11 @@ public class EventTrainWorker implements Event {
     }
     @Override
     public void work(Civilian worker){}
+    @Override
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("type", "train");
+        config.set("started", started);
+        return config;
+    }
 }

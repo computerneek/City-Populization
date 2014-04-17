@@ -4,13 +4,14 @@ import CityPopulization.world.World;
 import CityPopulization.world.WorldInfo;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JOptionPane;
+import simplelibrary.Sys;
 import simplelibrary.config2.Config;
 public class LocalSaveLoader implements SaveLoader{
     private final File file;
@@ -60,12 +61,30 @@ public class LocalSaveLoader implements SaveLoader{
         World world = new World();
         world.info = info;
         try(FileInputStream in = new FileInputStream(info.file)){
-            Config config = Config.newConfig(in).load().load();
+            Config config = Config.newConfig(in).load();
+            if(config!=null){
+                config = config.load();
+            }
             if(config==null){
                 return world;
             }
             world.load3_1(config);
-        }catch(IOException|NullPointerException ex){}
+        }catch(IOException ex){
+        }catch(NullPointerException|UnsupportedOperationException ex){
+            new Thread(){
+                public void run(){
+                    try{
+                        Thread.sleep(1000);
+                    }catch(InterruptedException ex1){
+                        throw new RuntimeException(ex1);
+                    }
+                    JOptionPane.showMessageDialog(null, "World load failed due to programming error!\n"
+                                                        + "Please include this file in a bug report:\n"
+                                                        + Sys.errorLog.getAbsolutePath(), "Load Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            }.start();
+            return null;
+        }
         return world;
     }
     @Override
@@ -87,6 +106,22 @@ public class LocalSaveLoader implements SaveLoader{
             config.save(out);
         }catch(IOException ex){
             throw new RuntimeException(ex);
+        }catch(UnsupportedOperationException|NullPointerException ex){
+            info.file.delete();
+            new Thread(){
+                public void run(){
+                    try{
+                        Thread.sleep(1000);
+                    }catch(InterruptedException ex1){
+                        throw new RuntimeException(ex1);
+                    }
+                    JOptionPane.showMessageDialog(null, "World save failed due to programming error!\n"
+                                                        + "Please include this file in a bug report:\n"
+                                                        + Sys.errorLog.getAbsolutePath()
+                                                        +(Core.helper.running?"\nThis error will most likely recur when you close the game.":""), "Save Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            }.start();
+            throw ex;
         }
     }
 }

@@ -1,9 +1,8 @@
-package CityPopulization.world.plot;
-import CityPopulization.render.PlotRenderer;
-import CityPopulization.render.Side;
+package CityPopulization.render;
+import CityPopulization.world.plot.Plot;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.ImageStash;
-class DebrisRenderer implements PlotRenderer {
+public class DebrisRenderer implements PlotRenderer {
     public DebrisRenderer(){
     }
     @Override

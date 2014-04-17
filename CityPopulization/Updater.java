@@ -44,8 +44,10 @@ public class Updater{
     }
     public static Updater read(String fileURL, String currentVersion, String applicationName){
         Updater updater = new Updater();
-        downloadFile(fileURL, new File("C:\\temp\\version.version"));
-        try(BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File("C:\\temp\\version.version"))))){
+        File file = new File("C:\\temp\\version.version");
+        file.delete();
+        downloadFile(fileURL, file);
+        try(BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file)))){
             String line;
             while((line = in.readLine())!=null){
                 String[] spl = line.split("=", 2);

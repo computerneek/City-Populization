@@ -10,8 +10,8 @@ public class WorkerTask{
     public Plot altPlot;
     public boolean started;
     public Player owner;
-    public ResourceList cost;
-    public ResourceList revenue;
+    public ResourceList cost = new ResourceList();
+    public ResourceList revenue = new ResourceList();
     public ArrayList<WorkerTaskSegment> segments = new ArrayList<>();
     public int cash;
     private Plot plotRestriction;
@@ -81,6 +81,31 @@ public class WorkerTask{
         return plotRestriction==null||plotRestriction==plot;
     }
     public Config save(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Config config = Config.newConfig();
+        config.set("x", targetPlot.x);
+        config.set("y", targetPlot.y);
+        config.set("z", targetPlot.z);
+        if(altPlot!=null){
+            config.set("altx", altPlot.x);
+            config.set("alty", altPlot.y);
+            config.set("altz", altPlot.z);
+        }
+        config.set("started", started);
+        config.set("owner", owner.world.otherPlayers.indexOf(owner));
+        config.set("cost", cost.save());
+        config.set("revenue", revenue.save());
+        Config two = Config.newConfig();
+        two.set("count", segments.size());
+        for(int i = 0; i<segments.size(); i++){
+            two.set(i+"", segments.get(i).save());
+        }
+        config.set("segments", two);
+        config.set("cash", cash);
+        if(plotRestriction!=null){
+            config.set("resx", plotRestriction.x);
+            config.set("resy", plotRestriction.y);
+            config.set("resz", plotRestriction.z);
+        }
+        return config;
     }
 }

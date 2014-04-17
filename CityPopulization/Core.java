@@ -172,6 +172,9 @@ public class Core{
         info.template = data.template.getName();
         info.version = VersionManager.currentVersion;
         World world = info.saveLoader.loadWorld(info);
+        if(world==null){
+            return;
+        }
         world.setTemplate(data.template);
         world.setRace(data.race);
         world.setGoal(data.goal);
@@ -196,6 +199,9 @@ public class Core{
         return buff.toString();
     }
     public static void playWorld(World world){
+        if(world==null){
+            return;
+        }
         Core.world = world;
         gui.open(new MenuIngame(gui, gui.menu));
     }

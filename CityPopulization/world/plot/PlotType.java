@@ -2,6 +2,7 @@ package CityPopulization.world.plot;
 import CityPopulization.render.AirportRenderer;
 import CityPopulization.render.BankRenderer;
 import CityPopulization.render.CubeRenderer;
+import CityPopulization.render.DebrisRenderer;
 import CityPopulization.render.ElevatorRenderer;
 import CityPopulization.render.ForestRenderer;
 import CityPopulization.render.HouseRenderer;

@@ -15,11 +15,12 @@ import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import simplelibrary.config2.Config;
 public class WorkerTaskSegment {
-    private String type;
+    public String type;
     private Object[] data;
-    private ArrayList<Civilian> workers = new ArrayList<>();
-    private WorkerTask task;
+    private int workers = 0;
+    public WorkerTask task;
     public int workersSatisfied;
     private int requiredWorkers = 1;
     private ResourceList resources;
@@ -36,7 +37,7 @@ public class WorkerTaskSegment {
         return this;
     }
     public boolean isFull(){
-        return workers.size()>=getRequiredWorkers();
+        return workers>=getRequiredWorkers();
     }
     public EventSequence generateEventSequence(Civilian worker, Plot home){
         EventSequence sequence = new EventSequence();
@@ -105,7 +106,7 @@ public class WorkerTaskSegment {
                 }
         }
         task.started = true;
-        workers.add(worker);
+        workers++;
         return sequence;
     }
     private int getRequiredWorkers(){
@@ -173,5 +174,21 @@ public class WorkerTaskSegment {
             list.remove(list.listResources().get(0), 1);
         }
         return list;
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("type", type);
+        config.set("workers", workers);
+        config.set("finished", workersSatisfied);
+        config.set("required", requiredWorkers);
+        if(resources!=null){
+            config.set("resource", resources.save());
+        }
+        if(type.equals("Plot Type")){
+            config.set("totype", ((PlotType)data[0]).name());
+            config.set("tolevel", ((Integer)data[1]).intValue());
+            config.set("tofront", ((Side)data[2]).name());
+        }
+        return config;
     }
 }

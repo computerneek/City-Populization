@@ -1,14 +1,17 @@
 package CityPopulization.world.aircraft;
 import simplelibrary.config2.Config;
 public class TaxiEventStraight implements TaxiEvent {
-    public TaxiEventStraight(){
-    }
+    private int tick;
     @Override
-    public boolean update(Aircraft aThis){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean update(Aircraft aircraft){
+        tick++;
+        return tick>=50;
     }
     @Override
     public Config save(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Config config = Config.newConfig();
+        config.set("type", "straight");
+        config.set("tick", tick);
+        return config;
     }
 }
