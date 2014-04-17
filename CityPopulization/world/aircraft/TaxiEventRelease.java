@@ -16,6 +16,11 @@ public class TaxiEventRelease implements TaxiEvent {
     }
     @Override
     public Config save(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Config config = Config.newConfig();
+        config.set("type", "release");
+        config.set("x", plot.x);
+        config.set("y", plot.y);
+        config.set("z", plot.z);
+        return config;
     }
 }

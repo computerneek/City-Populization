@@ -10,6 +10,9 @@ public class TaxiEventStart implements TaxiEvent {
     }
     @Override
     public Config save(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Config config = Config.newConfig();
+        config.set("type", "start");
+        config.set("tick", tick);
+        return config;
     }
 }

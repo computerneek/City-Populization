@@ -124,7 +124,15 @@ public class AircraftPath {
         copy.instructions = new ArrayList<>(instructions);
         return copy;
     }
-    Config save(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("x", startPlot.x);
+        config.set("y", startPlot.y);
+        config.set("z", startPlot.z);
+        config.set("count", instructions.size());
+        for(int i = 0; i<instructions.size(); i++){
+            config.set(i+"", instructions.get(i).intValue());
+        }
+        return config;
     }
 }

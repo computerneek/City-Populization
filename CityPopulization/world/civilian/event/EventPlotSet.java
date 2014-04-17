@@ -4,6 +4,7 @@ import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
+import simplelibrary.config2.Config;
 public class EventPlotSet implements Event{
     private Plot plot;
     private PlotType type;
@@ -32,4 +33,18 @@ public class EventPlotSet implements Event{
     }
     @Override
     public void work(Civilian worker){}
+    @Override
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("type", "plot set");
+        config.set("x", plot.x);
+        config.set("y", plot.y);
+        config.set("z", plot.z);
+        config.set("type", type.name());
+        config.set("level", level);
+        config.set("front", front.name());
+        config.set("owner", owner.world.otherPlayers.indexOf(owner));
+        config.set("started", started);
+        return config;
+    }
 }

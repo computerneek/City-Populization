@@ -12,6 +12,7 @@ import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.civilian.WorkerTaskSegment;
 import CityPopulization.world.civilian.event.EventSequence;
+import CityPopulization.world.civilian.event.EventTrainWorker;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.resource.Resource;
@@ -425,7 +426,7 @@ public class Plot{
         }
         Worker worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
         for(WorkerTask potentialTask : tasks){
-            if(potentialTask instanceof CivilianTask||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
+            if((potentialTask instanceof CivilianTask&&potentialTask.getCurrentSegment().type.equals("Train Worker"))||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
                 continue;
             }
             WorkerTaskSegment segment = potentialTask.getCurrentSegment();
