@@ -4,7 +4,7 @@ import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.aircraft.Runway;
 import CityPopulization.world.plot.Plot;
 import simplelibrary.config2.Config;
-public class LSEStartingPoint implements LandingSequenceEvent {
+public class LSEStartingPoint extends LandingSequenceEvent {
     private final int distanceBack;
     private final int height;
     private final int speed;

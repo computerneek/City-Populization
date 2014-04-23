@@ -4,8 +4,8 @@ import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.ImageStash;
 import simplelibrary.opengl.gui.components.MenuComponentButton;
 public class MenuComponentButtonIngame extends MenuComponentButton{
-    private String[] label;
-    private String image;
+    public String[] label;
+    public String image;
     public ActionListener listener;
     public MenuComponentButtonIngame(double x, double y, double width, double height, String[] label, boolean enabled, String image, ActionListener listener){
         super(x, y, width, height, "", enabled);

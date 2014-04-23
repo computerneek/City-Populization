@@ -68,7 +68,7 @@ public class LocalSaveLoader implements SaveLoader{
             if(config==null){
                 return world;
             }
-            world.load3_1(config);
+            world.load(config);
         }catch(IOException ex){
         }catch(NullPointerException|UnsupportedOperationException ex){
             new Thread(){
@@ -83,7 +83,7 @@ public class LocalSaveLoader implements SaveLoader{
                                                         + Sys.errorLog.getAbsolutePath(), "Load Failed", JOptionPane.ERROR_MESSAGE);
                 }
             }.start();
-            return null;
+            throw ex;
         }
         return world;
     }
@@ -104,6 +104,7 @@ public class LocalSaveLoader implements SaveLoader{
             config = Config.newConfig();
             world.save(config);
             config.save(out);
+            System.out.println("World saved.");
         }catch(IOException ex){
             throw new RuntimeException(ex);
         }catch(UnsupportedOperationException|NullPointerException ex){

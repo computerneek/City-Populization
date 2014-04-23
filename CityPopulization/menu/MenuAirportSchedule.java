@@ -35,9 +35,9 @@ public class MenuAirportSchedule extends Menu{
     public void render(int millisSinceLastTick){
         remove.enabled = list.selectedIndex>-1;
         parent.render(millisSinceLastTick);
-        GL11.glColor4d(0, 0, 0, 0.2);
         screenWidth = (double)Display.getWidth()/Display.getHeight()*gui.helper.guiScale;
         screenHeight = gui.helper.guiScale;
+        GL11.glColor4d(0, 0, 0, 0.2);
         drawRect(-screenWidth, -screenHeight, screenWidth, screenHeight, 0);
         GL11.glColor4d(1, 1, 1, 1);
         for(MenuComponent component : components){

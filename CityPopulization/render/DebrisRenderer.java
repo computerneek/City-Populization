@@ -51,27 +51,27 @@ public class DebrisRenderer implements PlotRenderer {
                 break;
             case RIGHT:
                 {
-                    GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x, y, z);
-                    GL11.glTexCoord2d(0, 0);
-                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x+1, y-1, z);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x, y-1, z);
+                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0, 0.5);
+                    GL11.glVertex3d(x+1, y-1, z);
+                    GL11.glTexCoord2d(0, 0);
+                    GL11.glVertex3d(x, y-1, z);
                 }
                 break;
             case LEFT:
                 {
-                    GL11.glTexCoord2d(0.5, 0);
-                    GL11.glVertex3d(x, y, z);
-                    GL11.glTexCoord2d(0.5, 0.5);
-                    GL11.glVertex3d(x+1, y, z);
                     GL11.glTexCoord2d(0, 0.5);
-                    GL11.glVertex3d(x+1, y-1, z);
+                    GL11.glVertex3d(x, y, z);
                     GL11.glTexCoord2d(0, 0);
+                    GL11.glVertex3d(x+1, y, z);
+                    GL11.glTexCoord2d(0.5, 0);
+                    GL11.glVertex3d(x+1, y-1, z);
+                    GL11.glTexCoord2d(0.5, 0.5);
                     GL11.glVertex3d(x, y-1, z);
+                    GL11.glTexCoord2d(0, 0.5);
                 }
                 break;
             default:

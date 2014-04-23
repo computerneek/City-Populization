@@ -8,7 +8,7 @@ public class EventSequence {
     }
     public boolean validate(){
         for(Event event : events){
-            if(event==null){
+            if(event==null||!event.validate()){
                 return false;
             }
         }
@@ -27,5 +27,12 @@ public class EventSequence {
             config.set(i+"", events.get(i).save());
         }
         return config;
+    }
+    public static EventSequence load(Config config){
+        EventSequence seq = new EventSequence();
+        for(int i = 0; i<(int)config.get("count"); i++){
+            seq.events.add(Event.load((Config)config.get(i+"")));
+        }
+        return seq;
     }
 }

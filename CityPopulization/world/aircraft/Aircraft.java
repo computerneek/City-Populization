@@ -1,4 +1,5 @@
 package CityPopulization.world.aircraft;
+import CityPopulization.Core;
 import CityPopulization.render.Side;
 import CityPopulization.world.World;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
@@ -11,7 +12,9 @@ import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.config2.Config;
@@ -314,8 +317,9 @@ public abstract class Aircraft{
     private void departureUpdate(){
         ArrayList<Runway> runways = new ArrayList<>();
         terminal.findRunways(runways);
+        speed = 0;
         for(Runway runway : runways){
-            if(runway.size()<getRequiredRunwayLength()){
+            if(runway.size()<getRequiredRunwayLength()||runway.isOccupied()){
                 continue;
             }
             AircraftPath path = AircraftPath.findPath(terminal, runway);
@@ -326,9 +330,10 @@ public abstract class Aircraft{
                 setLocation(terminal.plot);
                 z-=1;
                 setHeading(terminal.plot.front);
-                speed = 0;
                 targetSpeed = 0;
                 state = "TaxiOut";
+                this.runway = runway;
+                break;
             }
         }
     }
@@ -363,6 +368,8 @@ public abstract class Aircraft{
     }
     public Config save(){
         Config config = Config.newConfig();
+        config.set("class", getClass().getCanonicalName());
+        config.set("texture", textureFolder);
         config.set("player", player.world.otherPlayers.indexOf(player));
         Config two = Config.newConfig();
         two.set("count", passengers.size());
@@ -385,9 +392,11 @@ public abstract class Aircraft{
             config.set("runwayy", runway.getStartPlot().y);
             config.set("runwayz", runway.getStartPlot().z);
         }
-        config.set("terminalx", terminal.plot.x);
-        config.set("terminaly", terminal.plot.y);
-        config.set("terminalz", terminal.plot.z);
+        if(terminal!=null){
+            config.set("terminalx", terminal.plot.x);
+            config.set("terminaly", terminal.plot.y);
+            config.set("terminalz", terminal.plot.z);
+        }
         if(landingSequence!=null){
             two = Config.newConfig();
             two.set("count", landingSequence.size());
@@ -396,10 +405,12 @@ public abstract class Aircraft{
             }
             config.set("sequence", two);
         }
-        config.set("state", state);
+        if(state!=null){
+            config.set("state", state);
+        }
         config.set("x", x);
         config.set("y", y);
-        config.set("y", y);
+        config.set("z", z);
         config.set("heading", heading);
         config.set("targetHeading", targetHeading);
         config.set("pitch", pitch);
@@ -420,7 +431,80 @@ public abstract class Aircraft{
             config.set("taxiSequence", two);
         }
         config.set("fuelLevel", fuelLevel);
-        config.set("schedule", schedule.getIndex());
+        if(schedule!=null){
+            config.set("schedule", schedule.getIndex());
+        }
         return config;
+    }
+    public static Aircraft load(Config config){
+        try{
+            int which = config.get("player");
+            Player player = which==-1?Core.loadingWorld.localPlayer:Core.loadingWorld.otherPlayers.get(which);
+            String texture = config.get("texture");
+            Aircraft air = (Aircraft)Class.forName((String)config.get("class")).getConstructor(Player.class, String.class).newInstance(player, texture);
+            Config two = config.get("passengers");
+            for(int i = 0; i<(int)two.get("count"); i++){
+                air.passengers.add(AircraftPassenger.load((Config)two.get(i+"")));
+            }
+            air.passengerCapacity = config.get("passCapacity");
+            air.cargoCapacity = config.get("cargoCapacity");
+            air.cargoOccupied = config.get("cargo");
+            if(config.hasProperty("runwayx")){
+                air.runway = Runway.findRunway(Core.loadingWorld.getPlot((int)config.get("runwayx"), (int)config.get("runwayy"), (int)config.get("runwayz")));
+            }
+            if(config.hasProperty("terminalx")){
+                air.terminal = Core.loadingWorld.getPlot((int)config.get("terminalx"), (int)config.get("terminaly"), (int)config.get("terminalz")).terminal;
+            }
+            if(config.hasProperty("sequence")){
+                two = config.get("sequence");
+                air.landingSequence = new ArrayList<>();
+                for(int i = 0; i<(int)two.get("count"); i++){
+                    air.landingSequence.add(LandingSequenceEvent.load((Config)two.get(i+"")));
+                }
+            }
+            if(config.hasProperty("state")){
+                air.state = config.get("state");
+            }
+            air.x = config.get("x");
+            air.y = config.get("y");
+            air.z = config.get("z");
+            air.heading = config.get("heading");
+            air.targetHeading = config.get("targetHeading");
+            air.pitch = config.get("pitch");
+            air.tilt = config.get("tilt");
+            air.speed = config.get("speed");
+            air.targetSpeed = config.get("targetSpeed");
+            air.targetPitch = config.get("targetPitch");
+            air.tick = config.get("tick");
+            if(config.hasProperty("path")){
+                air.path = AircraftPath.load((Config)config.get("path"));
+            }
+            if(config.hasProperty("taxiSequence")){
+                two = config.get("taxiSequence");
+                air.taxiSequence = new ArrayList<>();
+                for(int i = 0; i<(int)two.get("count"); i++){
+                    air.taxiSequence.add(TaxiEvent.load((Config)two.get(i+"")));
+                }
+            }
+            air.fuelLevel = config.get("fuelLevel");
+            if(config.hasProperty("schedule")){
+                int index = config.get("schedule");
+                FOR:for(HashMap<Integer, HashMap<Integer, Plot>> plts : Core.loadingWorld.plots.values()){
+                    for(HashMap<Integer, Plot> plots : plts.values()){
+                        for(Plot plot : plots.values()){
+                            for(ScheduleElement element : plot.terminal.schedule.elements){
+                                if(element.index==index){
+                                    air.schedule = element;
+                                    break FOR;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return air;
+        }catch(ClassNotFoundException|NoSuchMethodException|SecurityException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException ex){
+            throw new RuntimeException(ex);
+        }
     }
 }

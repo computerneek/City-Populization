@@ -30,4 +30,9 @@ public class AircraftSchedule {
         }
         return config;
     }
+    public void load(Config config){
+        for(int i = 0; i<(int)config.get("count"); i++){
+            elements.add(ScheduleElement.load((Config)config.get(i+"")));
+        }
+    }
 }

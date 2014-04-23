@@ -4,8 +4,8 @@ import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import simplelibrary.config2.Config;
-public class EventUnload implements Event{
-    private boolean complete;
+public class EventUnload extends Event{
+    boolean complete;
     private Civilian worker;
     @Override
     public boolean isComplete(){
@@ -21,8 +21,8 @@ public class EventUnload implements Event{
         ArrayList<Resource> lst = list.listResources();
         complete = lst.isEmpty();
         if(!complete){
-            worker.resources.remove(lst.get(0), 1);
             worker.homePlot.world.getPlot(Math.round(worker.x), Math.round(worker.y), Math.round(worker.z)).inboundResources.add(lst.get(0), 1);
+            worker.resources.remove(lst.get(0), 1);
         }
     }
     @Override
@@ -31,5 +31,9 @@ public class EventUnload implements Event{
         config.set("type", "unload");
         config.set("complete", complete);
         return config;
+    }
+    @Override
+    public boolean validate(){
+        return true;
     }
 }

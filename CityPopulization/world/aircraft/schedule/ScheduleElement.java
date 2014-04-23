@@ -15,7 +15,7 @@ public class ScheduleElement {
     private final int timeBetweenArrivals;
     public int tick;
     private int cost;
-    private int index;
+    public int index;
     private static int index2;
     public ScheduleElement(Template template, int civilians, int workers, ResourceList resourceList, int timeBetweenArrivals, int cost){
         this.template=template;
@@ -84,6 +84,21 @@ public class ScheduleElement {
         config.set("index", index);
         config.set("index2", index2);
         return config;
+    }
+    public static ScheduleElement load(Config config){
+        Template template = Template.valueOf((String)config.get("template"));
+        int civilians = config.get("civilians");
+        int workers = config.get("workers");
+        ResourceList list = ResourceList.load((Config)config.get("resources"));
+        int time = config.get("time");
+        int tick = config.get("tick");
+        int cost = config.get("cost");
+        int index = config.get("index");
+        ScheduleElement element = new ScheduleElement(template, civilians, workers, list, time, cost);
+        element.tick = tick;
+        element.index = index;
+        index2 = config.get("index2");
+        return element;
     }
     public int getIndex(){
         return index;

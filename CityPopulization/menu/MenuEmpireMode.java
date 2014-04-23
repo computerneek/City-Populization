@@ -16,7 +16,7 @@ public class MenuEmpireMode extends Menu{
     public MenuEmpireMode(GUI gui, Menu parent){
         super(gui, parent);
         missionList = add(new MenuComponentMulticolumnList(-1.6, -1, 3.2, 1.6, 0.8, 0.4));
-        play = add(new MenuComponentButton(-1.56, 0.62, 1.56, 0.16, "Play", false));
+        play = add(new MenuComponentButton(-1.56, 0.62, 1.56, 0.16, "Play (NYI)", false));
         delete = add(new MenuComponentButton(-1.56, 0.82, 1.56, 0.16, "Delete", false));
         newMission = add(new MenuComponentButton(0.02, 0.62, 1.56, 0.16, "New", true));
         back = add(new MenuComponentButton(0.02, 0.82, 1.56, 0.16, "Back", true));

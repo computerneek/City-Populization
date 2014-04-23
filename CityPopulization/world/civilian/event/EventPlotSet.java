@@ -5,13 +5,13 @@ import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import simplelibrary.config2.Config;
-public class EventPlotSet implements Event{
+public class EventPlotSet extends Event{
     private Plot plot;
     private PlotType type;
     private int level;
     private Side front;
     private Player owner;
-    private boolean started;
+    boolean started;
     public EventPlotSet(Plot plot, PlotType type, int level, Side front, Player owner){
         this.plot = plot;
         this.type = type;
@@ -40,11 +40,17 @@ public class EventPlotSet implements Event{
         config.set("x", plot.x);
         config.set("y", plot.y);
         config.set("z", plot.z);
-        config.set("type", type.name());
+        config.set("plottype", type.name());
         config.set("level", level);
         config.set("front", front.name());
-        config.set("owner", owner.world.otherPlayers.indexOf(owner));
+        if(owner!=null){
+            config.set("owner", owner.world.otherPlayers.indexOf(owner));
+        }
         config.set("started", started);
         return config;
+    }
+    @Override
+    public boolean validate(){
+        return plot!=null&&type!=null&&front!=null&&level>=0&&level<type.getMaximumLevel();
     }
 }

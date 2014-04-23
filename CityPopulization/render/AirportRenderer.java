@@ -5,6 +5,7 @@ import CityPopulization.world.plot.PlotType;
 import java.util.ArrayList;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.ImageStash;
+import simplelibrary.opengl.Renderer3D;
 public class AirportRenderer implements PlotRenderer{
     public static final int ENTRANCE = 1;
     public static final int TERMINAL = 2;
@@ -48,6 +49,9 @@ public class AirportRenderer implements PlotRenderer{
         int frame = plot.getFrameNumber()%frameCap;
         String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+"/"+specification+".png";
         render(x, y, z, path, plot.front);
+        GL11.glTranslated(0, 0, z);
+        Renderer3D.drawText(x, -y+0.8, x+1, -y+1, plot.civilians.size()+"-"+plot.workers.size());
+        GL11.glTranslated(0, 0, -z);
     }
     private void renderTerminal(Plot plot, String textureFolder){
         int x = plot.x;
@@ -141,7 +145,7 @@ public class AirportRenderer implements PlotRenderer{
                     GL11.glVertex3d(x, y-1, z);
                 }
                 break;
-            case LEFT:
+            case RIGHT:
                 {
                     GL11.glTexCoord2d(0.5, 0);
                     GL11.glVertex3d(x, y, z);
@@ -153,7 +157,7 @@ public class AirportRenderer implements PlotRenderer{
                     GL11.glVertex3d(x, y-1, z);
                 }
                 break;
-            case RIGHT:
+            case LEFT:
                 {
                     GL11.glTexCoord2d(0, 0.5);
                     GL11.glVertex3d(x, y, z);

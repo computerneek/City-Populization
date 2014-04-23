@@ -1,7 +1,7 @@
 package CityPopulization.world.aircraft;
 import simplelibrary.config2.Config;
-public class TaxiEventStart implements TaxiEvent {
-    private int tick;
+public class TaxiEventStart extends TaxiEvent {
+    int tick;
     @Override
     public boolean update(Aircraft aircraft){
         aircraft.setTargetSpeed(1);

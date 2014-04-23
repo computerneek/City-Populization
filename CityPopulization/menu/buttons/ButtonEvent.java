@@ -24,7 +24,7 @@ public class ButtonEvent {
             case "Task":
                 if(task.owner.cash>=task.cash){
                     task.targetPlot.task = task;
-                    task.owner.getWorkerTaskManager().addTask(task);
+                    task.prepare();
                 }
                 break;
             case "Airport":
@@ -34,7 +34,6 @@ public class ButtonEvent {
                 task = plot.task;
                 if(task!=null&&!task.started){
                     plot.task = null;
-                    task.owner.getWorkerTaskManager().removeTask(task);
                     task.segments.clear();
                 }
                 break;
