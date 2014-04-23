@@ -17,6 +17,16 @@ public abstract class AircraftPassenger {
         }
         return lst;
     }
+    public static AircraftPassenger load(Config config){
+        switch((String)config.get("type")){
+            case "civilian":
+                return new AircraftPassengerCivilian();
+            case "worker":
+                return new AircraftPassengerWorker();
+            default:
+                throw new AssertionError((String)config.get("type"));
+        }
+    }
     public abstract Civilian createCivilian();
     public abstract Config save();
 }

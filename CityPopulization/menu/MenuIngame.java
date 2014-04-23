@@ -4,6 +4,7 @@ import CityPopulization.menu.buttons.ButtonSet;
 import CityPopulization.menu.buttons.MenuComponentButtonIngame;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
+import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.ResourceList;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
@@ -34,7 +35,7 @@ public class MenuIngame extends Menu{
         if(lastScreenWidth!=(double)Display.getWidth()/Display.getHeight()*gui.helper.guiScale){
             lastScreenWidth = (double)Display.getWidth()/Display.getHeight()*gui.helper.guiScale;
             if(set!=null){
-                set.display(set.buttonIndex, this);
+                set.display(plot==null?PlotType.Air:plot.getType(), set.buttonIndex, this);
             }
         }
         screenBottom = gui.helper.guiScale;
@@ -92,7 +93,8 @@ public class MenuIngame extends Menu{
     }
     public void setButtonSet(ButtonSet set){
         lastScreenWidth = (double)Display.getWidth()/Display.getHeight()*gui.helper.guiScale;
-        set.display(this.set==null?0:this.set.buttonIndex, this);
+        screenBottom = gui.helper.guiScale;
+        set.display(plot==null?PlotType.Air:plot.getType(), this.set==null?0:this.set.buttonIndex, this);
         this.set = set;
     }
     @Override

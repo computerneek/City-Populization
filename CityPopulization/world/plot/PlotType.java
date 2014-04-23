@@ -131,7 +131,7 @@ public enum PlotType{
     static{
         HashMap<PlotType, ResourceListList> costs = new HashMap<>();
         constructionCosts.put(Race.HUMAN, costs);
-        costs.put(Road, new ResourceListList(new ResourceList(Resource.Dirt, 25)));
+        costs.put(Road, new ResourceListList(new ResourceList(Resource.Dirt, 25), new ResourceList(Resource.Dirt, 25)));
         costs.put(House, new ResourceListList(new ResourceList(Resource.Wood, 50), new ResourceList(Resource.Wood, 25), new ResourceList(Resource.Wood, 25, Resource.Coal, 5), new ResourceList(Resource.Wood, 25, Resource.Coal, 5, Resource.Sand, 25)));
         costs.put(Warehouse, new ResourceListList(new ResourceList(Resource.Wood, 50), new ResourceList(Resource.Stone, 50), new ResourceList(Resource.Iron, 100), new ResourceList(Resource.Iron, 100), new ResourceList(Resource.Iron, 100), new ResourceList(Resource.Iron, 100), new ResourceList(Resource.Iron, 100), new ResourceList(Resource.Iron, 100), new ResourceList(Resource.Iron, 100), new ResourceList(Resource.Iron, 100)));
         costs.put(Elevator, new ResourceListList(new ResourceList(Resource.Iron, 20)));

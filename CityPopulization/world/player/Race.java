@@ -1,6 +1,5 @@
 package CityPopulization.world.player;
 import CityPopulization.world.World;
-import CityPopulization.world.civilian.WorkerTaskManager;
 import java.util.ArrayList;
 public class Race{
     private static final ArrayList<Race> races = new ArrayList<>();
@@ -9,10 +8,18 @@ public class Race{
     public static Race[] values(){
         return races.toArray(new Race[races.size()]);
     }
+    public static Race getByName(String string){
+        for(Race race : races){
+            if(race.getName().equals(string)){
+                return race;
+            }
+        }
+        return null;
+    }
     private final String name;
     private final Player player;
     private int workerResourceCapacity;
-    Race(String name, Player player, int workerResourceCapacity){
+    private Race(String name, Player player, int workerResourceCapacity){
         this.name = name;
         this.player=player;
         this.workerResourceCapacity = workerResourceCapacity;
@@ -20,9 +27,6 @@ public class Race{
     }
     public String getName(){
         return name;
-    }
-    public WorkerTaskManager createWorkerTaskManager(){
-        return new WorkerTaskManager();
     }
     public Player createPlayer(World world){
         return player.createNew(world);

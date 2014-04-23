@@ -9,6 +9,7 @@ import CityPopulization.world.aircraft.Template;
 import CityPopulization.world.aircraft.schedule.ScheduleElement;
 import CityPopulization.world.civilian.CivilianTask;
 import CityPopulization.world.civilian.Path;
+import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.civilian.WorkerTaskSegment;
 import CityPopulization.world.plot.Plot;
@@ -29,10 +30,6 @@ public class PlayerHuman extends Player {
     }
     @Override
     public void summonInitialWorkers(){
-        world.generatePlot(0, 0, -1).setType(PlotType.Grass);
-        world.generatePlot(-1, 0, -1).setType(PlotType.Grass);
-        world.generatePlot(-1, -1, -1).setType(PlotType.Grass);
-        world.generatePlot(0, -1, 0).setType(PlotType.Grass);
         world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(this).setFront(Side.BACK);
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(this);
         world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
@@ -40,19 +37,28 @@ public class PlayerHuman extends Player {
         world.generateAndGetPlot(0, 1, 0).setType(PlotType.Road).setOwner(this);
         world.generateAndGetPlot(1, 1, 0).setType(PlotType.Road).setOwner(this);
         world.generateAndGetPlot(1, 0, 0).setType(PlotType.Warehouse).setLevel(0).setOwner(this).resources.addAll(new ResourceList(
-                Resource.Tools, 15,
+                Resource.Tools, 200,
                 Resource.Dirt, 250,
                 Resource.Wood, 250,
                 Resource.Iron, 250,
                 Resource.Coal, 50
         ));
-        world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_PASSENGER, 1, 1, new ResourceList(Resource.Fuel, 10), 1200, 0));
-        world.getPlot(0, 0, 0).addInboundAircraft(new ScheduleElement(Template.HELICOPTER_TOUR, 0, 2, new ResourceList(Resource.Fuel, 5), 120000, -160).getAircraft(this));
+        world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_PASSENGER, 1, 0, new ResourceList(Resource.Fuel, 10), 1200, 0));
+        for(int j = 0; j<10; j++){
+            Worker worker = new Worker();
+            worker.homePlot = world.getPlot(0, 0, 0);
+            worker.player = this;
+            worker.homePlot.workers.add(worker);
+            worker.homePlot.workersPresent.add(worker);
+        }
         cash = 5000;
     }
     @Override
     public void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button){
         Plot plot = world.getPlot(plotX, plotY, cameraZ);
+        if(plot==null||!plot.playerVisibilities.contains(this)){
+            plot = null;
+        }
         ButtonSet set = new ButtonSet();
         if(plot!=null&&button==0){
             if(plot.owner!=null&&plot.owner!=this||(plot.task!=null&&plot.task.owner!=this)){

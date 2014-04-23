@@ -1,7 +1,7 @@
 package CityPopulization.world.aircraft;
 import simplelibrary.config2.Config;
-public class TaxiEventStraight implements TaxiEvent {
-    private int tick;
+public class TaxiEventStraight extends TaxiEvent {
+    int tick;
     @Override
     public boolean update(Aircraft aircraft){
         tick++;

@@ -26,11 +26,11 @@ public class Plot{
     public final int y;
     public final int z;
     public final Random rand;
-    private PlotType type;
-    private int level;
+    public PlotType type;
+    public int level;
     public Player owner;
     public final World world;
-    private ArrayList<Player> playerVisibilities = new ArrayList<>();
+    public ArrayList<Player> playerVisibilities = new ArrayList<>();
     public boolean shouldRenderTopFace;
     public boolean shouldRenderLeftFace;
     public boolean shouldRenderRightFace;
@@ -52,6 +52,10 @@ public class Plot{
     public ArrayList<Aircraft> inboundAircraft = new ArrayList<>();
     public int coming;
     public int fallProgress = 0;
+    public int lastTaskTimeWorker = -1;
+    public ArrayList<WorkerTask> lastTasksWorker = new ArrayList<>();
+    public int lastTaskTimeCivilian = -1;
+    public ArrayList<WorkerTask> lastTasksCivilian = new ArrayList<>();
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -134,7 +138,7 @@ public class Plot{
         inboundAircraft.add(aircraft);
         return aircraft;
     }
-    private void updateVisibility(){
+    public void updateVisibility(){
         playerVisibilities.clear();
         PLAYER:for(Player player : world.listPlayers()){
             for(int i = -1; i<2; i++){
@@ -158,8 +162,9 @@ public class Plot{
                 world.getPlot(x, y, z-1).demolish();
             }
             if(fallProgress>=100){
-                world.getPlot(x, y, z-1).setType(type.getFallenType());
+                world.getPlot(x, y, z-1).setType(type.getFallenType()).setOwner(owner);
                 setType(PlotType.Air);
+                fallProgress=0;
             }
         }
         if(getType()==PlotType.AirportEntrance){
@@ -183,12 +188,11 @@ public class Plot{
             world.schedulePlotUpdate(this);
             if(task==null&&resources.count()>(level+1)*owner.getResourcesPerWarehouse()){
                 ResourceList lst = resources.split(resources.count()-(level+1)*owner.getResourcesPerWarehouse());
-                task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
-                owner.getWorkerTaskManager().addTask(task);
+                task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(lst);
+                task.prepare();
                 task.cost.remove(Resource.Tools, 1);
                 task.revenue.remove(Resource.Tools, 1);
                 task.segments.remove(0);
-                resources = new ResourceList();
             }
         }
     }
@@ -218,7 +222,7 @@ public class Plot{
             resources.removeAll(fuel);
             if(resources.count()>0){
                 task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources.split(100));
-                owner.getWorkerTaskManager().addTask(task);
+                task.prepare();
                 task.cost.remove(Resource.Tools, 1);
                 task.revenue.remove(Resource.Tools, 1);
                 task.segments.remove(0);
@@ -321,9 +325,10 @@ public class Plot{
         }
     }
     private void doCivilianUpdate(){
-        if(owner!=null){
-            owner.cash+=civiliansPresent.size();
+        if(owner==null){
+            return;
         }
+        owner.cash+=civiliansPresent.size();
         timeSinceLastCivilianOperation = 0;
         if(getType()!=PlotType.House){
             Plot house = findEmptyHouse();
@@ -388,6 +393,9 @@ public class Plot{
         }
     }
     private void doWorkerUpdate(){
+        if(owner==null){
+            return;
+        }
         if(timeSinceLastWorkerOperation%20==0){
             owner.cash-=workersPresent.size();
         }
@@ -396,7 +404,7 @@ public class Plot{
                 worker.timer--;
             }
         }else{
-            for(Worker worker : workers){
+            for(Worker worker : workersPresent){
                 if(worker.timer<=0){
                     Plot airport = Path.findAirportEntrance(this, true);
                     if(airport!=null){
@@ -408,6 +416,7 @@ public class Plot{
                             workersPresent.remove(worker);
                             world.civilians.add(worker);
                             airport.workers.add(worker);
+                            break;
                         }
                     }
                 }
@@ -426,7 +435,7 @@ public class Plot{
         }
         Worker worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
         for(WorkerTask potentialTask : tasks){
-            if((potentialTask instanceof CivilianTask&&potentialTask.getCurrentSegment().type.equals("Train Worker"))||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
+            if(potentialTask.getCurrentSegment()==null||((potentialTask instanceof CivilianTask)&&potentialTask.getCurrentSegment().type.equals("Train Worker"))||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
                 continue;
             }
             WorkerTaskSegment segment = potentialTask.getCurrentSegment();
@@ -441,7 +450,14 @@ public class Plot{
         }
     }
     private void findPotentialTasks(ArrayList<WorkerTask> tasks, boolean isWorker){
-        if(owner==null||!owner.getWorkerTaskManager().hasTasks()){
+        if(owner==null){
+            return;
+        }
+        if(isWorker&&lastTaskTimeWorker==world.age){
+            tasks.addAll(lastTasksWorker);
+            return;
+        }else if(!isWorker&&lastTaskTimeCivilian==world.age){
+            tasks.addAll(lastTasksCivilian);
             return;
         }
         Path.findPotentialTasks(tasks, this, isWorker);
@@ -522,7 +538,9 @@ public class Plot{
         config.set("z", z);
         config.set("type", type.name());
         config.set("level", level);
-        config.set("owner", world.otherPlayers.indexOf(owner));
+        if(owner!=null){
+            config.set("owner", world.otherPlayers.indexOf(owner));
+        }
         config.set("frameBoost", frameBoost);
         config.set("front", front.name());
         config.set("terminal", terminal.save());
@@ -557,5 +575,43 @@ public class Plot{
     }
     private void demolish(){
         setType(PlotType.Air);
+    }
+    public void load(Config get){
+        setType(PlotType.valueOf((String)get.get("type")));
+        setLevel((int)get.get("level"));
+        int whichOwner = get.hasProperty("owner")?(int)get.get("owner"):-2;
+        if(whichOwner==-1){
+            setOwner(world.localPlayer);
+        }else if(whichOwner>=0){
+            setOwner(world.otherPlayers.get(whichOwner));
+        }
+        frameBoost = get.get("frameBoost");
+        front = Side.valueOf((String)get.get("front"));
+        terminal.load((Config)get.get("terminal"));
+        Config two = get.get("civilians");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            Civilian civilian = Civilian.load((Config)two.get(i+""));
+            civiliansPresent.add(civilian);
+            civilians.add(civilian);
+        }
+        two = get.get("workers");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            Worker worker = (Worker)Civilian.load((Config)two.get(i+""));
+            workersPresent.add(worker);
+            workers.add(worker);
+        }
+        timeSinceLastCivilianOperation = get.get("timeCivilian");
+        timeSinceLastWorkerOperation = get.get("timeWorker");
+        if(get.hasProperty("task")){
+            task = WorkerTask.load((Config)get.get("task"));
+        }
+        resources = ResourceList.load((Config)get.get("resources"));
+        readyResources = ResourceList.load((Config)get.get("readyResources"));
+        inboundResources = ResourceList.load((Config)get.get("inboundResources"));
+        two = get.get("aircraft");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            inboundAircraft.add(Aircraft.load((Config)two.get(i+"")));
+        }
+        coming = get.get("coming");
     }
 }

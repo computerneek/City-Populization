@@ -1,4 +1,5 @@
 package CityPopulization.world.civilian;
+import CityPopulization.Core;
 import CityPopulization.render.Side;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
@@ -13,7 +14,6 @@ public class Path{
         if(startPlot.task!=null){
             tasks.add(startPlot.task);
         }
-        coveredPlots.add(startPlot);
         paths.add(new Path().start(startPlot));
         for(Side side : startPlot.getTravelableSides(isWorker)){
             paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
@@ -27,7 +27,18 @@ public class Path{
                 tasks.add(plot.task);
                 coveredPlots.add(plot);
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.Support||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(isWorker&&!plot.workers.isEmpty()){
+                plot.lastTaskTimeWorker = startPlot.world.age;
+                plot.lastTasksWorker = tasks;
+            }else if(!isWorker&&!plot.civilians.isEmpty()){
+                plot.lastTaskTimeCivilian = startPlot.world.age;
+                plot.lastTasksCivilian = tasks;
+            }
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&plot.getType()!=PlotType.AirportRunway))){
+                Plot plotUnder = plot.world.getPlot(plot.x, plot.y, plot.z-1);
+                if(isWorker&&plot.getType()==PlotType.Air&&plotUnder!=null&&plotUnder.task!=null&&plotUnder.getPathableSides(true).contains(Side.UP)){
+                    tasks.add(plotUnder.task);
+                }
                 continue;
             }
             coveredPlots.add(plot);
@@ -36,19 +47,22 @@ public class Path{
             }
         }
     }
-    public static Plot findResourcePlot(Plot startPlot, ResourceList resources, boolean isWorker){
+    public static Plot findResourcePlot(Plot start, ResourceList resources, boolean isWorker){
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
-        coveredPlots.add(startPlot);
-        for(Side side : startPlot.getTravelableSides(isWorker)){
-            paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
+        paths.add(new Path().start(start));
+        for(Side side : start.getTravelableSides(isWorker)){
+            paths.add(new Path().start(start).path(side.getPlot(start.world, start.x, start.y, start.z)));
+        }
+        if(isWorker&&!start.getTravelableSides(isWorker).contains(Side.UP)){
+            paths.add(new Path().start(start).path(Side.UP.getPlot(start.world, start.x, start.y, start.z)));
         }
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
             Plot plot = path.currentPlot;
             if(plot.getType()==PlotType.Warehouse){
                 for(Resource resource : resources.listResources()){
-                    if(plot.resources.get(resource)>0){
+                    if(plot.resources.get(resource)>0&&resources.get(resource)>0){
                         return plot;
                     }
                 }
@@ -57,7 +71,7 @@ public class Path{
                 continue;
             }
             coveredPlots.add(plot);
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.Support||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -66,13 +80,16 @@ public class Path{
         }
         return null;
     }
-    public static ArrayList<Plot> findWarehouse(Plot startPlot, boolean isWorker){
+    public static ArrayList<Plot> findWarehouse(Plot start, boolean isWorker){
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         ArrayList<Plot> warehouses = new ArrayList<>();
-        coveredPlots.add(startPlot);
-        for(Side side : startPlot.getTravelableSides(isWorker)){
-            paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
+        paths.add(new Path().start(start));
+        for(Side side : start.getTravelableSides(isWorker)){
+            paths.add(new Path().start(start).path(side.getPlot(start.world, start.x, start.y, start.z)));
+        }
+        if(isWorker&&!start.getTravelableSides(isWorker).contains(Side.UP)){
+            paths.add(new Path().start(start).path(Side.UP.getPlot(start.world, start.x, start.y, start.z)));
         }
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
@@ -84,7 +101,7 @@ public class Path{
             if(plot.getType()==PlotType.Warehouse&&plot.resources.count()<(plot.getLevel()+1)*plot.owner.getResourcesPerWarehouse()){
                 warehouses.add(plot);
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.Support||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -93,12 +110,11 @@ public class Path{
         }
         return warehouses;
     }
-    public static Plot findAirportEntrance(Plot startPlot, boolean isWorker){
+    public static Plot findAirportEntrance(Plot start, boolean isWorker){
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
-        coveredPlots.add(startPlot);
-        for(Side side : startPlot.getTravelableSides(isWorker)){
-            paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
+        for(Side side : start.getTravelableSides(isWorker)){
+            paths.add(new Path().start(start).path(side.getPlot(start.world, start.x, start.y, start.z)));
         }
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
@@ -110,7 +126,7 @@ public class Path{
             if(plot.getType()==PlotType.AirportEntrance){
                 return plot;
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.Support||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -119,12 +135,11 @@ public class Path{
         }
         return null;
     }
-    public static Plot findHouseWithSpace(Plot startPlot, boolean isWorker){
+    public static Plot findHouseWithSpace(Plot start, boolean isWorker){
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
-        coveredPlots.add(startPlot);
-        for(Side side : startPlot.getTravelableSides(isWorker)){
-            paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
+        for(Side side : start.getTravelableSides(isWorker)){
+            paths.add(new Path().start(start).path(side.getPlot(start.world, start.x, start.y, start.z)));
         }
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
@@ -136,7 +151,7 @@ public class Path{
             if(plot.getType()==PlotType.House&&plot.civilians.size()+plot.workers.size()<plot.getMaximumCivilianCapacity()){
                 return plot;
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.Support||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -145,12 +160,11 @@ public class Path{
         }
         return null;
     }
-    public static Plot findWorkshop(Plot startPlot, boolean isWorker){
+    public static Plot findWorkshop(Plot start, boolean isWorker){
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
-        coveredPlots.add(startPlot);
-        for(Side side : startPlot.getTravelableSides(isWorker)){
-            paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
+        for(Side side : start.getTravelableSides(isWorker)){
+            paths.add(new Path().start(start).path(side.getPlot(start.world, start.x, start.y, start.z)));
         }
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
@@ -162,7 +176,7 @@ public class Path{
             if(plot.getType()==PlotType.Workshop){
                 return plot;
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.Support||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -181,6 +195,9 @@ public class Path{
         for(Side side : start.getTravelableSides(isWorker)){
             paths.add(new Path().start(start).path(side.getPlot(start.world, start.x, start.y, start.z)));
         }
+        if(isWorker&&!start.getTravelableSides(isWorker).contains(Side.UP)){
+            paths.add(new Path().start(start).path(Side.UP.getPlot(start.world, start.x, start.y, start.z)));
+        }
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
             Plot plot = path.currentPlot;
@@ -190,7 +207,10 @@ public class Path{
                 continue;
             }
             coveredPlots.add(plot);
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.Support||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
+                if(isWorker&&plot.getType()==PlotType.Air&&end==plot.world.getPlot(plot.x, plot.y, plot.z-1)){
+                    paths.add(path.copy().path(Side.DOWN.getPlot(plot.world, plot.x, plot.y, plot.z)));
+                }
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -198,6 +218,9 @@ public class Path{
             }
         }
         return null;
+    }
+    public static Object findPlots(PlotType type, int i){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     private ArrayList<Plot> path = new ArrayList<>();
     private Plot currentPlot;
@@ -233,5 +256,12 @@ public class Path{
             config.set(i+"z", plt.z);
         }
         return config;
+    }
+    public static Path load(Config config){
+        Path path = new Path();
+        for(int i = 0; i<(int)config.get("count"); i++){
+            path.path.add(Core.loadingWorld.getPlot((int)config.get(i+"x"), (int)config.get(i+"y"), (int)config.get(i+"z")));
+        }
+        return path;
     }
 }

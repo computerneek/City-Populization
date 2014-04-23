@@ -2,10 +2,12 @@ package CityPopulization.world;
 import CityPopulization.Core;
 import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.civilian.Civilian;
+import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.Template;
+import CityPopulization.world.story.Goal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,24 +17,26 @@ import org.lwjgl.opengl.GL11;
 import simplelibrary.config2.Config;
 public class World{
     public long seed = new Random().nextLong();
-    private Player localPlayer;
+    public Player localPlayer;
     public ArrayList<Player> otherPlayers = new ArrayList<>();
-    private Template template;
-    private int speedMultiplier;
-    private WinningCondition goal;
+    public Template template;
+    public int speedMultiplier;
+    public WinningCondition goal;
     public int age;
     public boolean isPaused;
+    public boolean paused;
     public GameDifficulty difficulty;
-    private HashMap<Integer, HashMap<Integer, HashMap<Integer, Plot>>> plots = new HashMap<>();
-    private HashMap<Integer, ArrayList<Plot>> plotsNeedingUpdate = new HashMap<>();
+    public HashMap<Integer, HashMap<Integer, HashMap<Integer, Plot>>> plots = new HashMap<>();
+    public HashMap<Integer, ArrayList<Plot>> plotsNeedingUpdate = new HashMap<>();
     public ArrayList<Aircraft> aircraft = new ArrayList<>();
     public ArrayList<Civilian> civilians = new ArrayList<>();
     public WorldInfo info;
-    public World(){}
+    public ArrayList<Goal> goals = new ArrayList<>();
+    public boolean winFromGoals = false;
     public void tick(){
         localPlayer.motion();
         for(int i = 0; i<speedMultiplier; i++){
-            if(isPaused){
+            if(isPaused||paused){
                 return;
             }
             age++;
@@ -52,6 +56,14 @@ public class World{
                 player.update();
             }
             localPlayer.update();
+            boolean complete = true;
+            for(Goal goal : goals){
+                goal.update(this);
+                complete &= goal.isComplete();
+            }
+            if(winFromGoals&&complete){
+                victory();
+            }
         }
         if((age/speedMultiplier)%6000==0){
             save();
@@ -103,6 +115,9 @@ public class World{
         localPlayer.summonInitialWorkers();
     }
     public Plot generatePlot(int x, int y, int z){
+        if(getPlot(x, y, z)!=null){
+            return getPlot(x, y, z);
+        }
         HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x);
         if(plots2==null){
             plots2 = new HashMap<>();
@@ -242,7 +257,7 @@ public class World{
         config.set("speed", speedMultiplier);
         config.set("goal", goal.save());
         config.set("paused", isPaused);
-        config.set("difficutly",difficulty.name());
+        config.set("difficulty",difficulty.name());
         ArrayList<Plot> lst = new ArrayList<Plot>();
         for(Integer key : plots.keySet()){
             HashMap<Integer, HashMap<Integer, Plot>> plots = this.plots.get(key);
@@ -288,7 +303,59 @@ public class World{
         }
         config.set("civilians",two);
     }
-    public void load3_1(Config config){
+    public void load(Config config){
+        Core.loadingWorld = this;
+        seed = Long.parseLong((String)config.get("seed"));
+        localPlayer = Player.load((Config)config.get("localPlayer"));
+        Config two = config.get("otherPlayers");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            otherPlayers.add(Player.load((Config)two.get(""+i)));
+        }
+        template = Template.valueOf((String)config.get("template"));
+        speedMultiplier = config.get("speed");
+        goal = WinningCondition.load((Config)config.get("goal"));
+        isPaused = config.get("paused");
+        String diff = config.get("difficulty");
+        difficulty = GameDifficulty.valueOf((String)config.get("difficulty"));
+        two = config.get("plots");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            Config three = two.get(i+"");
+            generatePlot((int)three.get("x"), (int)three.get("y"), (int)three.get("z")).load(three);
+        }
+        two = config.get("updates");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            Config three = two.get(i+"");
+            int time = three.get("time");
+            ArrayList<Plot> plts = plotsNeedingUpdate.containsKey(time)?plotsNeedingUpdate.get(time):new ArrayList<Plot>();
+            plotsNeedingUpdate.put(time, plts);
+            for(int j = 0; j<(int)three.get("count"); j++){
+                plts.add(getPlot((int)three.get(j+"x"), (int)three.get(j+"y"), (int)three.get(j+"z")));
+            }
+        }
+        two = config.get("aircraft");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            aircraft.add(Aircraft.load((Config)two.get(i+"")));
+        }
+        two = config.get("civilians");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            Civilian civil = Civilian.load((Config)two.get(i+""));
+            civilians.add(civil);
+            if(civil instanceof Worker){
+                civil.homePlot.workers.add((Worker)civil);
+            }else{
+                civil.homePlot.civilians.add(civil);
+            }
+        }
+        for(HashMap<Integer, HashMap<Integer, Plot>> plots : this.plots.values()){
+            for(HashMap<Integer, Plot> plts : plots.values()){
+                for(Plot plot : plts.values()){
+                    plot.updateVisibility();
+                    schedulePlotUpdate(plot);
+                }
+            }
+        }
+    }
+    private void victory(){
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

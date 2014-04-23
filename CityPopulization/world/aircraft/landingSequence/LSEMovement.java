@@ -1,10 +1,10 @@
 package CityPopulization.world.aircraft.landingSequence;
 import CityPopulization.world.aircraft.Aircraft;
 import simplelibrary.config2.Config;
-public class LSEMovement implements LandingSequenceEvent {
+public class LSEMovement extends LandingSequenceEvent {
     private final int time;
     private final int speed;
-    private int ticks;
+    int ticks;
     public LSEMovement(int time, int speed){
         this.time = time;
         this.speed=speed;

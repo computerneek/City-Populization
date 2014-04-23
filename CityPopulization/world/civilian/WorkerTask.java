@@ -1,4 +1,5 @@
 package CityPopulization.world.civilian;
+import CityPopulization.Core;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.resource.Resource;
@@ -66,7 +67,6 @@ public class WorkerTask{
             }
         }
         targetPlot.task = null;
-        owner.getWorkerTaskManager().removeTask(this);
         return null;
     }
     public WorkerTask setCash(int cash){
@@ -107,5 +107,32 @@ public class WorkerTask{
             config.set("resz", plotRestriction.z);
         }
         return config;
+    }
+    public static WorkerTask load(Config get){
+        WorkerTask task = new WorkerTask();
+        task.segments.clear();
+        task.targetPlot = Core.loadingWorld.generatePlot((int)get.get("x"), (int)get.get("y"), (int)get.get("z"));
+        if(get.hasProperty("altx")){
+            task.altPlot = Core.loadingWorld.generatePlot((int)get.get("altx"), (int)get.get("alty"), (int)get.get("altz"));
+        }
+        task.started = get.get("started");
+        int which = get.get("owner");
+        task.owner = which==-1?Core.loadingWorld.localPlayer:Core.loadingWorld.otherPlayers.get(which);
+        task.cost = ResourceList.load((Config)get.get("cost"));
+        task.revenue = ResourceList.load((Config)get.get("revenue"));
+        Config two = get.get("segments");
+        for(int i = 0; i<(int)two.get("count"); i++){
+            WorkerTaskSegment seg = WorkerTaskSegment.load((Config)two.get(i+""));
+            task.segments.add(seg);
+            seg.task = task;
+        }
+        task.cash = get.get("cash");
+        if(get.hasProperty("resx")){
+            task.plotRestriction = Core.loadingWorld.generatePlot((int)get.get("resx"), (int)get.get("resy"), (int)get.get("resz"));
+        }
+        return task;
+    }
+    public void check(){
+        getCurrentSegment();
     }
 }

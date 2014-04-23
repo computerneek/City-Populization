@@ -1,4 +1,5 @@
 package CityPopulization.world.aircraft;
+import CityPopulization.Core;
 import CityPopulization.render.Side;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
@@ -31,7 +32,7 @@ public class AircraftPath {
             for(Integer num : path.instructions){
                 if(num==LEFT){
                     side = side.left();
-                }else{
+                }else if(num==RIGHT){
                     side = side.right();
                 }
             }
@@ -134,5 +135,13 @@ public class AircraftPath {
             config.set(i+"", instructions.get(i).intValue());
         }
         return config;
+    }
+    public static AircraftPath load(Config config){
+        AircraftPath path = new AircraftPath();
+        path.startPlot = Core.loadingWorld.getPlot((int)config.get("x"), (int)config.get("y"), (int)config.get("z"));
+        for(int i = 0; i<(int)config.get("count"); i++){
+            path.instructions.add((Integer)config.get(i+""));
+        }
+        return path;
     }
 }

@@ -1,8 +1,8 @@
 package CityPopulization.world.aircraft;
 import CityPopulization.world.plot.Plot;
 import simplelibrary.config2.Config;
-public class TaxiEventRelease implements TaxiEvent {
-    private Plot plot;
+public class TaxiEventRelease extends TaxiEvent {
+    Plot plot;
     public TaxiEventRelease(Plot plot){
         this.plot = plot;
     }

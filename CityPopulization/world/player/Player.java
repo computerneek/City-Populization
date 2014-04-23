@@ -2,7 +2,6 @@ package CityPopulization.world.player;
 import CityPopulization.Core;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.world.World;
-import CityPopulization.world.civilian.WorkerTaskManager;
 import CityPopulization.world.plot.Plot;
 import java.util.ArrayList;
 import org.lwjgl.input.Mouse;
@@ -10,7 +9,6 @@ import org.lwjgl.opengl.Display;
 import simplelibrary.config2.Config;
 public abstract class Player{
     public Race race;
-    private WorkerTaskManager workerTaskManager;
     public double cameraX;
     public double cameraY;
     public int cameraZ;
@@ -21,14 +19,8 @@ public abstract class Player{
     public Player(World world){
         this.world = world;
     }
-    public WorkerTaskManager getWorkerTaskManager(){
-        return workerTaskManager;
-    }
     public void setRace(Race race){
         this.race = race;
-        if(race!=null){
-            this.workerTaskManager = race.createWorkerTaskManager();
-        }
     }
     public double getCameraX(){
         return cameraX;
@@ -78,7 +70,21 @@ public abstract class Player{
         config.set("y", (int)cameraY);
         config.set("z", cameraZ);
         config.set("sandbox", sandbox);
-        config.set("cash", cash);
+        config.set("cash", ""+cash);
         return config;
+    }
+    public static Player load(Config get){
+        Race race = Race.getByName((String)get.get("race"));
+        Player player = race.createPlayer(Core.loadingWorld);
+        player.cameraX = (int)get.get("x");
+        player.cameraY = (int)get.get("y");
+        player.cameraZ = get.get("z");
+        player.sandbox = get.get("sandbox");
+        if(get.get("cash") instanceof String){
+            player.cash = Long.parseLong((String)get.get("cash"));
+        }else{
+            player.cash = (long)(float)get.get("cash");
+        }
+        return player;
     }
 }

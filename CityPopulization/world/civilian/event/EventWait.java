@@ -1,9 +1,9 @@
 package CityPopulization.world.civilian.event;
 import CityPopulization.world.civilian.Civilian;
 import simplelibrary.config2.Config;
-public class EventWait implements Event{
+public class EventWait extends Event{
     private int ticks;
-    private int time;
+    int time;
     public EventWait(int ticks){
         this.ticks = ticks;
     }
@@ -24,5 +24,9 @@ public class EventWait implements Event{
         config.set("ticks", ticks);
         config.set("time", time);
         return config;
+    }
+    @Override
+    public boolean validate(){
+        return ticks>0;
     }
 }

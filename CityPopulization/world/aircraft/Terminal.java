@@ -79,7 +79,7 @@ public class Terminal {
     public void update(Terminal entrance){
         tick++;
         if(entrance.plot.resources.get(Resource.Fuel)>0&&tick%20==0&&fuel<500){
-            fuel++;
+            entrance.fuel++;
             entrance.plot.resources.remove(Resource.Fuel, 1);
         }
         if(aircraft==null){
@@ -161,5 +161,20 @@ public class Terminal {
             config.set("schedule", schedule.save());
         }
         return config;
+    }
+    public void load(Config get){
+        occupied = get.get("occupied");
+        occupiers = get.get("occupiers");
+        tick = get.get("tick");
+        if(plot.getType()==PlotType.AirportEntrance||plot.getType()==PlotType.AirportTerminal){
+            if(get.hasProperty("aircraft")){
+                aircraft = Aircraft.load((Config)get.get("aircraft"));
+            }
+            timeLanded = get.get("landed");
+            timeWaiting = get.get("waiting");
+            state = get.get("state");
+            fuel = get.get("fuel");
+            schedule.load((Config)get.get("schedule"));
+        }
     }
 }

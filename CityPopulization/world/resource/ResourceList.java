@@ -111,9 +111,18 @@ public class ResourceList{
     }
     public Config save(){
         Config config = Config.newConfig();
-        for(Resource res : Resource.values()){
+        for(Resource res : list.keySet()){
             config.set(res.name(), get(res));
         }
         return config;
+    }
+    public static ResourceList load(Config config){
+        ResourceList lst = new ResourceList();
+        for(Resource res : Resource.values()){
+            if(config.hasProperty(res.name())&&(int)config.get(res.name())>0){
+                lst.list.put(res, (int)config.get(res.name()));
+            }
+        }
+        return lst;
     }
 }

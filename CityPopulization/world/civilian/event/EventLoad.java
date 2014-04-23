@@ -4,9 +4,9 @@ import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import simplelibrary.config2.Config;
-public class EventLoad implements Event{
+public class EventLoad extends Event{
     private ResourceList resources;
-    private boolean complete;
+    boolean complete;
     public EventLoad(ResourceList resources){
         this.resources = resources;
     }
@@ -33,5 +33,9 @@ public class EventLoad implements Event{
         config.set("resources", resources.save());
         config.set("complete", complete);
         return config;
+    }
+    @Override
+    public boolean validate(){
+        return resources!=null;
     }
 }

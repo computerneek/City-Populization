@@ -159,9 +159,12 @@ public class Civilian{
     public Config save(){
         Config config = Config.newConfig();
         config.set("worker", this instanceof Worker);
+        config.set("x", x);
+        config.set("y", y);
+        config.set("z", z);
         config.set("homex", homePlot.x);
         config.set("homey", homePlot.y);
-        config.set("honez", homePlot.z);
+        config.set("homez", homePlot.z);
         if(dest!=null){
             config.set("destx", dest[0]);
             config.set("desty", dest[1]);
@@ -178,10 +181,37 @@ public class Civilian{
             config.set("events", eventSequence.save());
         }
         if(currentEvent!=null){
-            config.set("event", eventSequence.events.indexOf(currentEvent));
+            config.set("event", currentEvent.save());
         }
         config.set("timer", timer);
         config.set("resources", resources.save());
         return config;
+    }
+    public static Civilian load(Config config){
+        Civilian civilian = ((boolean)config.get("worker"))?new Worker():new Civilian();
+        civilian.x = config.get("x");
+        civilian.y = config.get("y");
+        civilian.z = config.get("z");
+        civilian.homePlot = Core.loadingWorld.getPlot((int)config.get("homex"), (int)config.get("homey"), (int)config.get("homez"));
+        if(config.hasProperty("destx")){
+            civilian.dest = new int[]{config.get("destx"), config.get("desty"), config.get("destz")};
+        }
+        if(config.hasProperty("path")){
+            civilian.path = Path.load((Config)config.get("path"));
+        }
+        if(config.hasProperty("player")){
+            int which = config.get("player");
+            civilian.player = which==-1?Core.loadingWorld.localPlayer:Core.loadingWorld.otherPlayers.get(which);
+        }
+        civilian.tick = config.get("tick");
+        if(config.hasProperty("events")){
+            civilian.eventSequence = EventSequence.load((Config)config.get("events"));
+        }
+        if(config.hasProperty("event")){
+            civilian.currentEvent = Event.load((Config)config.get("event"));
+        }
+        civilian.timer = config.get("timer");
+        civilian.resources = ResourceList.load((Config)config.get("resources"));
+        return civilian;
     }
 }

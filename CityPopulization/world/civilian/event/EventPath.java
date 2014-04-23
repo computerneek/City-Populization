@@ -2,7 +2,7 @@ package CityPopulization.world.civilian.event;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Path;
 import simplelibrary.config2.Config;
-public class EventPath implements Event{
+public class EventPath extends Event{
     private Path path;
     private Civilian worker;
     public EventPath(Path path){
@@ -26,5 +26,9 @@ public class EventPath implements Event{
         config.set("type", "path");
         config.set("path", path.save());
         return config;
+    }
+    @Override
+    public boolean validate(){
+        return path!=null;
     }
 }

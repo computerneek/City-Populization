@@ -1,7 +1,7 @@
 package CityPopulization.world.aircraft.landingSequence;
 import CityPopulization.world.aircraft.Aircraft;
 import simplelibrary.config2.Config;
-public class LSEAircraftRotation implements LandingSequenceEvent {
+public class LSEAircraftRotation extends LandingSequenceEvent {
     private int rotation;
     public LSEAircraftRotation(int rotation){
         this.rotation = rotation;

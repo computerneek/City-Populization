@@ -1,7 +1,7 @@
 package CityPopulization.world.aircraft.landingSequence;
 import CityPopulization.world.aircraft.Aircraft;
 import simplelibrary.config2.Config;
-public class LSEPitch implements LandingSequenceEvent {
+public class LSEPitch extends LandingSequenceEvent {
     private final int targetPitch;
     public LSEPitch(int targetPitch){
         this.targetPitch=targetPitch;

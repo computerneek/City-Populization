@@ -10,6 +10,7 @@ import CityPopulization.world.player.Race;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.save.LocalSaveLoader;
 import CityPopulization.world.save.SaveLoader;
+import CityPopulization.world.save.StorySaveLoader;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -48,6 +49,8 @@ public class Core{
     public static World world;
     private static int sourceNum;
     private static SaveLoader empireSaveLoader;
+    private static SaveLoader storySaveLoader;
+    public static World loadingWorld;
     //</editor-fold>
     public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, IOException, URISyntaxException{
         Sys.initLWJGL(new File(getAppdataRoot()), new ErrorAdapter(){
@@ -57,6 +60,7 @@ public class Core{
             }
         });
         empireSaveLoader = new LocalSaveLoader(new File(getAppdataRoot()+"\\Saves"));
+        storySaveLoader = new StorySaveLoader(new File(getAppdataRoot()+"\\Story"));
         helper = new GameHelper();
         helper.setBackground(new Color(48, 160, 255));
         helper.setInitMethod(Core.class.getDeclaredMethod("init", new Class<?>[0]));
@@ -67,6 +71,7 @@ public class Core{
         Main.dist = 1;
         helper.setUsesControllers(true);
         helper.setWindowTitle("City Populization "+VersionManager.currentVersion);
+        helper.setMaximumFramerate(100);
         helper.start();
     }
     public static void init() throws LWJGLException{
@@ -157,6 +162,9 @@ public class Core{
     }
     public static SaveLoader getSingleplayerSaveLoader(){
         return empireSaveLoader;
+    }
+    public static SaveLoader getStorySaveLoader(){
+        return storySaveLoader;
     }
     public static void createEmpireWorld(WorldData data){
         WorldInfo info = new WorldInfo(empireSaveLoader);

@@ -2,6 +2,9 @@ package CityPopulization.world.aircraft;
 import CityPopulization.world.plot.Plot;
 import java.util.ArrayList;
 public class Runway{
+    public static Runway findRunway(Plot plot){
+        return new Runway(plot);
+    }
     public ArrayList<Plot> plots = new ArrayList<>();
     public Runway(Plot plot){
         plots.add(plot);

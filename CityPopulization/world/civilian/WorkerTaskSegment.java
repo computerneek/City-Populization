@@ -134,8 +134,8 @@ public class WorkerTaskSegment {
         ArrayList<Integer> ints = new ArrayList<>();
         for(Plot plot : plots){
             ResourceList lst = new ResourceList().addAll(plot.resources).addAll(plot.readyResources);
-            int count = lst.count();
-            int canHarvest = task.owner.getResourcesPerWarehouse()*(plot.getLevel()+1);
+            int count = lst.count()+plot.coming;
+            int canHarvest = task.owner.getResourcesPerWarehouse()*(plot.getLevel()+1)-count;
             if(!ints.contains(canHarvest)){
                 ints.add(canHarvest);
                 map.put(canHarvest, new ArrayList<Plot>());
@@ -190,5 +190,19 @@ public class WorkerTaskSegment {
             config.set("tofront", ((Side)data[2]).name());
         }
         return config;
+    }
+    public static WorkerTaskSegment load(Config get){
+        WorkerTaskSegment seg = new WorkerTaskSegment();
+        seg.type = get.get("type");
+        seg.workers = get.get("workers");
+        seg.workersSatisfied = get.get("finished");
+        seg.requiredWorkers = get.get("required");
+        if(get.hasProperty("resource")){
+            seg.resources = ResourceList.load((Config)get.get("resource"));
+        }
+        if(seg.type.equals("Plot Type")){
+            seg.data = new Object[]{PlotType.valueOf((String)get.get("totype")), (int)get.get("tolevel"), Side.valueOf((String)get.get("tofront"))};
+        }
+        return seg;
     }
 }
