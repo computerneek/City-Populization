@@ -17,7 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JOptionPane;
 public class Main{
-    private static String requiredSimpleLibraryVersion = "b58";
+    private static String requiredSimpleLibraryVersion = "8.2.0.2";
     static double dist;
     public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, IOException, URISyntaxException{
         args = update(args);
@@ -99,7 +99,7 @@ public class Main{
                 extractFile(bit64, nativesDir);
             }
             //latest SimpleLibrary https://dl.dropboxusercontent.com/s/bzqxuyoomo93s5f/SimpleLibrary.jar?dl=1&token_hash=AAEvnTJTCdzSItllO9FWsL-ZRDme-bjVgAaJOJqdlAAsHQ
-            File simpleLibrary = downloadFile("https://dl.dropboxusercontent.com/s/bzqxuyoomo93s5f/SimpleLibrary.jar?dl=1&token_hash=AAEvnTJTCdzSItllO9FWsL-ZRDme-bjVgAaJOJqdlAAsHQ", new File(getAppdataRoot()+"\\simplelibrary "+requiredSimpleLibraryVersion+".jar"));
+            File simpleLibrary = downloadFile("https://dl.dropboxusercontent.com/s/845w9mcr4jggnxb/SimpleLibrary%208.2.0.2.jar?dl=1&token_hash=AAGQQmQ6_qHhILZmbV-t63sseI5zgzZvoNvJx9nAP3bQcA", new File(getAppdataRoot()+"\\simplelibrary "+requiredSimpleLibraryVersion+".jar"));
             File[] lwjglJars = {
                 downloadFile("https://dl.dropboxusercontent.com/s/p7v72lix4gl96co/lwjgl.jar?dl=1&token_hash=AAG5TMAYw0Oq1_xwgVjKoE8FkKXMaWOfpj5cau1UuWKZlA", new File(getAppdataRoot()+"\\lwjgl.jar")),
                 downloadFile("https://dl.dropboxusercontent.com/s/9ylaq5w5vzj1lgi/jinput.jar?dl=1&token_hash=AAHILxU3uc-UU5vXj7N4i5s1huBKYSzKGgKq3MawNJB05w", new File(getAppdataRoot()+"\\jinput.jar")),
