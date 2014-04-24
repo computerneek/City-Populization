@@ -23,6 +23,8 @@ public class VersionManager{
     static{
         addVersion("3.0");
         breakBackCompatability();
+        addVersion("3.1");
+        addVersion("3.1.1");
         currentVersion = versions.get(versions.size()-1);
     }
     /**
