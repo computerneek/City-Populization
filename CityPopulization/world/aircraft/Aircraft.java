@@ -176,6 +176,7 @@ public abstract class Aircraft{
                 state="Landed";
             }else{
                 runway.getStartPlot().terminal.occupied = 0;
+                runway.getStartPlot().terminal.occupiers = 0;
                 player.world.aircraft.remove(this);
                 if(schedule!=null){
                     for(AircraftPassenger pass : passengers){
@@ -311,6 +312,7 @@ public abstract class Aircraft{
         if(path!=null){
             this.path = path;
             taxiSequence = path.generateDirections();
+            runway.getStartPlot().terminal.occupiers = 1;
             state = "TaxiIn";
         }
     }
@@ -431,6 +433,7 @@ public abstract class Aircraft{
             config.set("taxiSequence", two);
         }
         config.set("fuelLevel", fuelLevel);
+        config.set("maxFuelLevel", maxFuelLevel);
         if(schedule!=null){
             config.set("schedule", schedule.getIndex());
         }
@@ -487,6 +490,7 @@ public abstract class Aircraft{
                 }
             }
             air.fuelLevel = config.get("fuelLevel");
+            air.maxFuelLevel = config.get("maxFuelLevel");
             if(config.hasProperty("schedule")){
                 int index = config.get("schedule");
                 FOR:for(HashMap<Integer, HashMap<Integer, Plot>> plts : Core.loadingWorld.plots.values()){

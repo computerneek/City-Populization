@@ -6,6 +6,7 @@ import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.ResourceList;
+import java.awt.event.ActionEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
@@ -46,7 +47,7 @@ public class MenuIngame extends Menu{
             space += (plot.getLevel()+1)*Core.world.getLocalPlayer().getResourcesPerWarehouse()-plot.coming-plot.readyResources.count();
         }
         space-= lst.count();
-        drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.08, (Core.world.getLocalPlayer().sandbox?"":"$"+Core.world.getLocalPlayer().cash+"; ")+lst.toString()+"; "+space+" space");
+        drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.06, (Core.world.getLocalPlayer().sandbox?"":"$"+Core.world.getLocalPlayer().cash+"; ")+lst.toString()+"; "+space+" space");
     }
     @Override
     public void tick(){}
@@ -114,6 +115,12 @@ public class MenuIngame extends Menu{
             Core.world.getLocalPlayer().cameraX = 0;
             Core.world.getLocalPlayer().cameraY = 0;
             Core.world.getLocalPlayer().cameraZ = 0;
+        }
+        for(MenuComponent cmpt : components){
+            MenuComponentButtonIngame button = (MenuComponentButtonIngame)cmpt;
+            if(button.getHotkey()==key){
+                buttonClicked(button);
+            }
         }
         super.keyboardEvent(character, key, pressed, repeat);
     }

@@ -43,8 +43,8 @@ public class Plot{
     public ArrayList<Civilian> civiliansPresent = new ArrayList<>();
     public ArrayList<Worker> workers = new ArrayList<>();
     public ArrayList<Worker> workersPresent = new ArrayList<>();
-    int timeSinceLastCivilianOperation = 0;
-    int timeSinceLastWorkerOperation = 0;
+    public int timeSinceLastCivilianOperation = 0;
+    public int timeSinceLastWorkerOperation = 0;
     public WorkerTask task;
     public ResourceList resources = new ResourceList();
     public ResourceList readyResources = new ResourceList();
@@ -56,6 +56,7 @@ public class Plot{
     public ArrayList<WorkerTask> lastTasksWorker = new ArrayList<>();
     public int lastTaskTimeCivilian = -1;
     public ArrayList<WorkerTask> lastTasksCivilian = new ArrayList<>();
+    private int civilianTime;
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -320,7 +321,8 @@ public class Plot{
     }
     private void civilianUpdate(){
         timeSinceLastCivilianOperation++;
-        if(timeSinceLastCivilianOperation>=20){
+        civilianTime++;
+        if(civilianTime>=20){
             doCivilianUpdate();
         }
     }
@@ -329,7 +331,7 @@ public class Plot{
             return;
         }
         owner.cash+=civiliansPresent.size();
-        timeSinceLastCivilianOperation = 0;
+        civilianTime = 0;
         if(getType()!=PlotType.House){
             Plot house = findEmptyHouse();
             if(house!=null){
@@ -344,6 +346,7 @@ public class Plot{
                 civiliansPresent.remove(civilian);
                 civilian.path = path;
                 world.civilians.add(civilian);
+                timeSinceLastCivilianOperation = 0;
             }
         }else{
             for(Civilian worker : civilians){

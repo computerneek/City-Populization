@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import simplelibrary.opengl.gui.components.MenuComponent;
 public class ButtonSet {
@@ -60,7 +61,7 @@ public class ButtonSet {
                 public void actionPerformed(ActionEvent e){
                     display(type, buttonIndex-1, menu);
                 }
-            }));
+            }, Keyboard.KEY_LEFT));
             buttonOffset+=buttonSize;
         }
         for(int i = 0; i<drawableButtons; i++){
@@ -73,7 +74,7 @@ public class ButtonSet {
                 public void actionPerformed(ActionEvent e){
                     button.onClicked();
                 }
-            }));
+            }, button.getHotkey()));
         }
         if(addNextButton){
             menu.add(new MenuComponentButtonIngame(buttonOffset+drawableButtons*buttonSize, menu.screenBottom-buttonSize, buttonSize, buttonSize, new String[]{"Next"}, true, "/gui/buttons/next.png", new ActionListener() {
@@ -81,7 +82,7 @@ public class ButtonSet {
                 public void actionPerformed(ActionEvent e){
                     display(type, buttonIndex+1, menu);
                 }
-            }));
+            }, Keyboard.KEY_RIGHT));
         }
     }
 }

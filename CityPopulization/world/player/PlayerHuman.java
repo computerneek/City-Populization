@@ -16,6 +16,7 @@ import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
+import org.lwjgl.input.Keyboard;
 public class PlayerHuman extends Player {
     public PlayerHuman(){
         super(null);
@@ -157,6 +158,7 @@ public class PlayerHuman extends Player {
     }
     private Button createCancelTaskButton(Plot plot){
         return new Button()
+                .setHotkey(Keyboard.KEY_C)
                 .setImage("/gui/buttons/cancel.png")
                 .setText("Cancel")
                 .setEvent(new ButtonEvent()
@@ -165,6 +167,7 @@ public class PlayerHuman extends Player {
     }
     private Button createHarvestResourceButton(String image, Resource revenue, Plot plot){
         return new Button()
+                .setHotkey(Keyboard.KEY_H)
                 .setImage("/gui/buttons/harvest"+image+".png")
                 .setText("Harvest",revenue.name())
                 .setEvent(new ButtonEvent()
@@ -181,6 +184,7 @@ public class PlayerHuman extends Player {
     }
     private Button createDestroyResourceButton(String image, Resource revenue, Plot plot){
         return new Button()
+                .setHotkey(Keyboard.KEY_D)
                 .setImage("/gui/buttons/destroy"+image+".png")
                 .setText("Destroy")
                 .setEvent(new ButtonEvent()
@@ -208,6 +212,7 @@ public class PlayerHuman extends Player {
     }
     private Button createConstructionButton(Plot plot, PlotType type){
         return new Button()
+                .setHotkey(type.getHotkey())
                 .setImage("/gui/buttons/"+race.getName()+"/build"+type.textureFolder+".png")
                 .setText("Construct", type.name)
                 .setEvent(new ButtonEvent()
@@ -241,6 +246,7 @@ public class PlayerHuman extends Player {
         onPlainOwnedPlotClicked(plot, set);
         if(plot.task==null){
             set.add(new Button()
+                    .setHotkey(Keyboard.KEY_R)
                     .setImage("/gui/buttons/"+race.getName()+"/rotateRight.png")
                     .setText("Turn","Right")
                     .setEvent(new ButtonEvent()
@@ -255,6 +261,7 @@ public class PlayerHuman extends Player {
                                             .setType("Plot Type")
                                             .setData(plot.getType(), plot.getLevel(), plot.front.right())))));
             set.add(new Button()
+                    .setHotkey(Keyboard.KEY_L)
                     .setImage("/gui/buttons/"+race.getName()+"/rotateLeft.png")
                     .setText("Turn","Left")
                     .setEvent(new ButtonEvent()
@@ -269,6 +276,7 @@ public class PlayerHuman extends Player {
                                             .setType("Plot Type")
                                             .setData(plot.getType(), plot.getLevel(), plot.front.left())))));
             set.add(new Button()
+                    .setHotkey(Keyboard.KEY_A)
                     .setImage("/gui/buttons/"+race.getName()+"/rotateBack.png")
                     .setText("Turn","Around")
                     .setEvent(new ButtonEvent()
@@ -286,6 +294,7 @@ public class PlayerHuman extends Player {
     }
     private Button createUpgradeButton(Plot plot){
         return new Button()
+                .setHotkey(Keyboard.KEY_U)
                 .setImage("/gui/buttons/"+race.getName()+"/upgrade"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
                 .setText("Upgrade")
                 .setEvent(new ButtonEvent()
@@ -302,6 +311,7 @@ public class PlayerHuman extends Player {
     }
     private Button createDowngradeButton(Plot plot){
         return new Button()
+                .setHotkey(Keyboard.KEY_D)
                 .setImage("/gui/buttions/"+race.getName()+"/downgrade"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
                 .setText("Downgrade")
                 .setEvent(new ButtonEvent()
@@ -323,6 +333,7 @@ public class PlayerHuman extends Player {
         }
         revenue.multiply(0.1);
         return new Button()
+                .setHotkey(Keyboard.KEY_X)
                 .setImage("/gui/buttons/"+race.getName()+"/destroy"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
                 .setText("Destroy")
                 .setEvent(new ButtonEvent()
@@ -364,6 +375,7 @@ public class PlayerHuman extends Player {
     }
     private Button createNewWorkerButton(Plot plot, Plot workshop){
         return new Button()
+                .setHotkey(Keyboard.KEY_T)
                 .setImage("/gui/buttons/"+race.getName()+"/trainWorker"+(plot.getLevel()+1)+".png")
                 .setText("Train","Worker")
                 .setEvent(new ButtonEvent()
