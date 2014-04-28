@@ -34,7 +34,7 @@ public class Path{
                 plot.lastTaskTimeCivilian = startPlot.world.age;
                 plot.lastTasksCivilian = tasks;
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&plot.getType()!=PlotType.AirportRunway))){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))){
                 Plot plotUnder = plot.world.getPlot(plot.x, plot.y, plot.z-1);
                 if(isWorker&&plot.getType()==PlotType.Air&&plotUnder!=null&&plotUnder.task!=null&&plotUnder.getPathableSides(true).contains(Side.UP)){
                     tasks.add(plotUnder.task);
@@ -71,7 +71,7 @@ public class Path{
                 continue;
             }
             coveredPlots.add(plot);
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -101,7 +101,7 @@ public class Path{
             if(plot.getType()==PlotType.Warehouse&&plot.resources.count()<(plot.getLevel()+1)*plot.owner.getResourcesPerWarehouse()){
                 warehouses.add(plot);
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -126,7 +126,7 @@ public class Path{
             if(plot.getType()==PlotType.AirportEntrance){
                 return plot;
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -151,7 +151,7 @@ public class Path{
             if(plot.getType()==PlotType.House&&plot.civilians.size()+plot.workers.size()<plot.getMaximumCivilianCapacity()){
                 return plot;
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -176,7 +176,7 @@ public class Path{
             if(plot.getType()==PlotType.Workshop){
                 return plot;
             }
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))){
                 continue;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
@@ -207,7 +207,7 @@ public class Path{
                 continue;
             }
             coveredPlots.add(plot);
-            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||plot.getType()!=PlotType.AirportJetway||plot.getType()!=PlotType.AirportRunway)&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
+            if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
                 if(isWorker&&plot.getType()==PlotType.Air&&end==plot.world.getPlot(plot.x, plot.y, plot.z-1)){
                     paths.add(path.copy().path(Side.DOWN.getPlot(plot.world, plot.x, plot.y, plot.z)));
                 }
@@ -218,9 +218,6 @@ public class Path{
             }
         }
         return null;
-    }
-    public static Object findPlots(PlotType type, int i){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     private ArrayList<Plot> path = new ArrayList<>();
     private Plot currentPlot;

@@ -33,7 +33,7 @@ public class Main{
         ArrayList<String> theargs = new ArrayList<>(Arrays.asList(args));
         if(args.length<1||!args[0].equals("Skip dependencies")){
             Updater updater = Updater.read("https://dl.dropboxusercontent.com/s/uk6b1hjhewkz38i/versions?dl=1&token_hash=AAEgSI-u7D866OGd6vD50jwzBUVj0V967wsIkbv-UF7LAw", VersionManager.currentVersion, "City Populization");
-            if(updater!=null&&updater.getVersionsBehindLatestDownloadable()>0&&JOptionPane.showConfirmDialog(null, "Version "+updater.getLatestDownloadableVersion()+" is out!  Would you like to update City Populization now?", "Update Available", JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION){
+            if(updater!=null&&updater.getVersionsBehindLatestDownloadable()>0&&JOptionPane.showConfirmDialog(null, "Version "+updater.getLatestDownloadableVersion()+" is out!  Would you like to update City Populization now?", "City Populization "+VersionManager.currentVersion+"- Update Available", JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION){
                 startJava(new String[0], new String[]{"justUpdated"}, updater.update(updater.getLatestDownloadableVersion()));
                 System.exit(0);
             }

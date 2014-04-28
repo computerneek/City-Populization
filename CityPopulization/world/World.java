@@ -165,6 +165,72 @@ public class World{
         }
     }
     public void render(){
+//        renderWithDepthTesting();
+        renderWithoutDepthTesting();
+    }
+    public void renderWithDepthTesting(){
+        GL11.glLoadIdentity();
+        GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -4*Core.gui.distBack);
+        GL11.glScalef(1, 1, 0.25f);
+        GL11.glTranslated(0, 0, -localPlayer.getCameraZ());
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        int x = -(int)localPlayer.getCameraX();
+        int y = (int)localPlayer.getCameraY();
+        int z = localPlayer.getCameraZ();
+        int renderWidth = 10;
+//        for(int i = -30; i<6; i++){
+//            GL11.glColor4d(1, 1, 1, i>0?0.2:1*Math.pow(0.9, -i));
+//            HashMap<Float, ArrayList<Plot>> map = new HashMap<>();
+//            for(int j=-renderWidth; j<renderWidth+1; j++){
+//                for(int k = -renderWidth; k<renderWidth+1; k++){
+//                    float dist = (float)Math.sqrt(j*j+k*k);
+//                    if(!map.containsKey(dist)){
+//                        map.put(dist, new ArrayList<Plot>());
+//                    }
+//                    map.get(dist).add(getPlot(x+j, y+k, z+i));
+//                }
+//            }
+//            ArrayList<Float> dists = new ArrayList<>(map.keySet());
+//            Collections.sort(dists);
+//            while(!dists.isEmpty()){
+//                for(Plot plot : map.get(dists.remove(dists.size()-1))){
+//                    if(plot!=null){
+//                        plot.render(localPlayer);
+//                    }
+//                }
+//            }
+//        }
+        for(int k = -50; k<6; k++){
+            if(k==1){
+                GL11.glDisable(GL11.GL_DEPTH_TEST);
+            }else if(k==-50){
+                GL11.glEnable(GL11.GL_DEPTH_TEST);
+            }
+            for(int i = -renderWidth; i<renderWidth+1; i++){
+                for(int j = -renderWidth; j<renderWidth+1; j++){
+                    Plot plot = getPlot(x+i, y+j, z+k);
+                    if(plot==null){
+                        continue;
+                    }
+                    GL11.glColor4d(1, 1, 1, k>0?0.2:1);
+                    plot.render(localPlayer);
+                }
+            }
+        }
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        for(Aircraft aircraft : this.aircraft){
+            aircraft.render(localPlayer);
+        }
+        for(Civilian civilian : civilians){
+            civilian.render(localPlayer);
+        }
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        localPlayer.render();
+        for(Player player : otherPlayers){
+            player.render();
+        }
+    }
+    public void renderWithoutDepthTesting(){
         GL11.glLoadIdentity();
         GL11.glTranslated(localPlayer.getCameraX(), localPlayer.getCameraY(), -4*Core.gui.distBack);
         GL11.glScalef(1, 1, 0.25f);
@@ -175,7 +241,7 @@ public class World{
         int z = localPlayer.getCameraZ();
         int renderWidth = 10;
         for(int i = -30; i<6; i++){
-            GL11.glColor4d(1, 1, 1, i>0?0.2:1*Math.pow(0.9, -i));
+            GL11.glColor4d(1, 1, 1, i>0?0.1:1*Math.pow(0.9, -i));
             HashMap<Float, ArrayList<Plot>> map = new HashMap<>();
             for(int j=-renderWidth; j<renderWidth+1; j++){
                 for(int k = -renderWidth; k<renderWidth+1; k++){

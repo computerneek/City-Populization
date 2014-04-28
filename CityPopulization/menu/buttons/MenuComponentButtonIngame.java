@@ -7,11 +7,13 @@ public class MenuComponentButtonIngame extends MenuComponentButton{
     public String[] label;
     public String image;
     public ActionListener listener;
-    public MenuComponentButtonIngame(double x, double y, double width, double height, String[] label, boolean enabled, String image, ActionListener listener){
+    private int hotkey;
+    public MenuComponentButtonIngame(double x, double y, double width, double height, String[] label, boolean enabled, String image, ActionListener listener, int hotkey){
         super(x, y, width, height, "", enabled);
         this.label = label;
         this.image = image;
         this.listener = listener;
+        this.hotkey = hotkey;
     }
     @Override
     public void render(){
@@ -42,5 +44,8 @@ public class MenuComponentButtonIngame extends MenuComponentButton{
             drawCenteredText(x+0.01, y+height-0.02-textHeight*(i+1), x+width-0.01, y+height-0.02-textHeight*i, text);
         } 
         GL11.glColor3f(1, 1, 1);
+    }
+    public int getHotkey(){
+        return hotkey;
     }
 }

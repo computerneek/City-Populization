@@ -71,14 +71,14 @@ public class Civilian{
     public void pathingUpdate(){
         Plot plot = homePlot.world.generatePlot(Math.round(x), Math.round(y), Math.round(z));
         double traveledThisTick = 1;
-        if(plot.getType()==PlotType.Road||plot.getType()==PlotType.Road){
+        if(plot.getType()==PlotType.Road||plot.getType()==PlotType.Elevator){
             traveledThisTick*=plot.getLevel()+1;
         }
         if(plot.task!=null){
             traveledThisTick/=2;
         }
         dist+=traveledThisTick;
-        while(dist>=1F){
+        while(dist>=1F&&dest!=null){
             if(dest==null&&path!=null){
                 dest = path.next();
                 if(path.isComplete()){
@@ -129,18 +129,18 @@ public class Civilian{
     }
     public void render(Player localPlayer){
         player = homePlot.owner;
-        boolean canPlayerSeePlane = player==localPlayer;
+        boolean canPlayerSee = player==localPlayer;
         Plot currentPlot = Core.world.getPlot(Math.round(x), Math.round(y), Math.round(z));
         if(currentPlot!=null&&localPlayer==currentPlot.getOwner()){
-            canPlayerSeePlane = true;
+            canPlayerSee = true;
         }
-        if(!canPlayerSeePlane){
+        if(!canPlayerSee){
             return;
         }
         String textureFolder = (this instanceof Worker)?"worker":"civilian";
         GL11.glTranslatef(x+0.5f, -y-0.5f, z+0.01f);
         ImageStash.instance.bindTexture(ImageStash.instance.getTexture("/textures/"+textureFolder+"/frame "+(tick%frameCap+1)+".png"));
-        GL11.glColor4f(1, 1, 1, z<localPlayer.getCameraZ()?0.2f:1);
+        GL11.glColor4f(1, 1, 1, z!=localPlayer.getCameraZ()?0.2f:1);
         render();
         GL11.glTranslatef(-x-0.5f, y+0.5f, -z+0.01f);
     }

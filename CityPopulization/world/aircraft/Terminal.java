@@ -117,10 +117,10 @@ public class Terminal {
                     timeWaiting = 0;
                 }
             }
-            if(aircraft.passengers.size()<aircraft.passengerCapacity&&(!entrance.plot.workers.isEmpty()||!entrance.plot.civilians.isEmpty())){
+            if(aircraft.passengers.size()<aircraft.passengerCapacity&&(!entrance.plot.workers.isEmpty()||(!entrance.plot.civilians.isEmpty()&&entrance.plot.timeSinceLastCivilianOperation>20))){
                 canLoad = true;
                 if(timeLanded%20==0){
-                    if(!entrance.plot.civiliansPresent.isEmpty()){
+                    if(!entrance.plot.civiliansPresent.isEmpty()&&entrance.plot.timeSinceLastCivilianOperation>20){
                         aircraft.loadPassengers(AircraftPassenger.civilians(1));
                         entrance.plot.civilians.remove(entrance.plot.civiliansPresent.remove(0));
                         timeWaiting = 0;

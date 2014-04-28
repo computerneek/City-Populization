@@ -25,6 +25,7 @@ public class VersionManager{
         breakBackCompatability();
         addVersion("3.1");
         addVersion("3.1.1");
+        addVersion("3.2");
         currentVersion = versions.get(versions.size()-1);
     }
     /**

@@ -1,5 +1,4 @@
 package CityPopulization;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,6 +14,9 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
+import simplelibrary.Sys;
+import simplelibrary.error.ErrorCategory;
+import simplelibrary.error.ErrorLevel;
 public class Updater{
     private ArrayList<String> versions = new ArrayList<>();
     private HashMap<String, String> links = new HashMap<>();
@@ -180,12 +181,9 @@ public class Updater{
                 while (downloadFile) {
                     downloadFile = false;
                     URLConnection urlconnection = urlList[j].openConnection();
-                    String etag = "";
                     if ((urlconnection instanceof HttpURLConnection)) {
                         urlconnection.setRequestProperty("Cache-Control", "no-cache");
                         urlconnection.connect();
-                        etag = urlconnection.getHeaderField("ETag");
-                        etag = etag.substring(1, etag.length() - 1);
                     }
                     String targetFile = temporaryFilename;
                     InputStream inputstream = getRemoteInputStream(targetFile, urlconnection);
@@ -200,16 +198,7 @@ public class Updater{
                     }
                     inputstream.close();
                     fos.close();
-                    String md5 = new BigInteger(1, m.digest()).toString(16);
-                    while (md5.length() < 32) {
-                        md5 = "0"+md5;
-                    }
-                    boolean md5Matches = true;
-                    if (etag != null) {
-                        md5Matches = md5.equals(etag);
-                    }
-                    if (((urlconnection instanceof HttpURLConnection)) && (
-                        (!md5Matches) || ((fileSize != fileSizes[j]) && (fileSizes[j] > 0)))){
+                    if ((fileSize != fileSizes[j]) && (fileSizes[j] > 0)){
                         unsuccessfulAttempts++;
                         if (unsuccessfulAttempts < maxUnsuccessfulAttempts){
                             downloadFile = true;
@@ -220,6 +209,7 @@ public class Updater{
                 }
             }
         }catch (Exception ex){
+            Sys.error(ErrorLevel.severe, null, ex, ErrorCategory.InternetIO);
             new File(temporaryFilename).delete();
         }//</editor-fold>
         if(!existingFilename.equals(fileName)){
@@ -229,16 +219,7 @@ public class Updater{
                 File otherFile = new File(temporaryFilename);
                 try{
                     file.delete();
-                    try(FileOutputStream out = new FileOutputStream(file); BufferedInputStream in = new BufferedInputStream(new FileInputStream(otherFile))){
-                        byte[] buff = new byte[1024];
-                        int read = 0;
-                        try{
-                            while((read=in.read(buff))>=0){
-                                out.write(buff, 0, read);
-                            }
-                        }catch(IOException ex){}
-                    }
-                    otherFile.delete();
+                    otherFile.renameTo(file);
                     return file;
                 }catch(Throwable twbl){}
                 return new File(temporaryFilename);

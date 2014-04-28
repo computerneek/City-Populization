@@ -3,6 +3,7 @@ public class Button {
     public String image;
     public String[] text;
     public ButtonEvent event;
+    public int hotkey = -1;
     public Button setImage(String image){
         this.image = image;
         return this;
@@ -15,7 +16,14 @@ public class Button {
         this.event = event;
         return this;
     }
+    public Button setHotkey(int hotkey){
+        this.hotkey = hotkey;
+        return this;
+    }
     public void onClicked(){
         event.onClicked();
+    }
+    public int getHotkey(){
+        return hotkey;
     }
 }

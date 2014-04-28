@@ -29,13 +29,13 @@ public enum Template{
             }else{
                 dirtChance = rand.nextGaussian()*10*(z==-1?10:1);
                 if(z<-1){
-                    coalChance = rand.nextGaussian()*3/2;
-                    oilChance = rand.nextGaussian()*3/2;
-                    stoneChance = rand.nextGaussian()*10;
-                    ironChance = rand.nextGaussian();
+                    coalChance = rand.nextGaussian()*3;
+                    oilChance = rand.nextGaussian()*3;
+                    stoneChance = rand.nextGaussian()*20;
+                    ironChance = rand.nextGaussian()*2;
                     sandChance = rand.nextGaussian()*2;
-                    clayChance = rand.nextGaussian();
-                    goldChance = rand.nextGaussian()/5;
+                    clayChance = rand.nextGaussian()*4;
+                    goldChance = rand.nextGaussian();
                 }
             }
             HashMap<Double, Resource> chances = new HashMap<>();
@@ -93,8 +93,8 @@ public enum Template{
                         for(int j = -dist2+1; j<dist2; j++){
                             int dist3 = dist2-Math.abs(j);
                             for(int k = -dist3+1; k<dist3; k++){
-                                if(world.getPlot(x+i, y+j, z)==null&&rand.nextGaussian()<5){
-                                    world.generateAndGetPlot(x+i, y+j, z).setType(PlotType.Sand);
+                                if(world.getPlot(x+i, y+j, z+k)==null&&rand.nextGaussian()<5){
+                                    world.generateAndGetPlot(x+i, y+j, z+k).setType(PlotType.Sand);
                                 }
                             }
                         }
