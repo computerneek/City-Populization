@@ -12,7 +12,7 @@ public class MenuMain extends Menu{
     private final MenuComponentButton exit;
     public MenuMain(GUI gui, Menu parent){
         super(gui, parent);
-        story = add(new MenuComponentButton(-0.8f, -0.58f, 1.6f, 0.16f, "Story (NYI)", true));
+        story = add(new MenuComponentButton(-0.8f, -0.58f, 1.6f, 0.16f, "Story", true));
         multiplayer = add(new MenuComponentButton(-0.8f, -0.38f, 1.6f, 0.16f, "Multiplayer (NYI)", false));
         quickmap = add(new MenuComponentButton(-0.8f, -0.18f, 1.6f, 0.16f, "Empire Mode", true));
         texturepacks = add(new MenuComponentButton(-0.8f, 0.02f, 1.6f, 0.16f, "Texturepacks", true));

@@ -12,6 +12,7 @@ public class StoryManager{
         return missions.get(missionNumber);
     }
     static{
-        missions.add(new Mission1Tutorial());
+        missions.add(new Mission01Tutorial());
+        missions.add(new Mission02());
     }
 }

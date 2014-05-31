@@ -6,6 +6,7 @@ public class Character {
     public static final Character WORKER = new Character("Worker", "worker");
     public static final Character COMPUTER = new Character("Computer", "computer");
     public static final Character VOICE = new Character("Ominous Voice", "voice");
+    public static final Character CIVILIAN = new Character("Civilian", "civilian");
     public String name;
     public String texture;
     private Character(String name, String texture){

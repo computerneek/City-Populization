@@ -1,7 +1,7 @@
 package CityPopulization.menu.buttons;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.world.plot.PlotType;
-import CityPopulization.world.story.MenuIngameRestricted;
+import CityPopulization.menu.MenuIngameRestricted;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;

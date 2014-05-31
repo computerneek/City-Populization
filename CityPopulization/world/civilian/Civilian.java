@@ -69,6 +69,13 @@ public class Civilian{
         }
     }
     public void pathingUpdate(){
+        if(dest==null&&path!=null){
+            if(path.isComplete()){
+                path=null;
+            }else{
+                dest=path.next();
+            }
+        }
         Plot plot = homePlot.world.generatePlot(Math.round(x), Math.round(y), Math.round(z));
         double traveledThisTick = 1;
         if(plot.getType()==PlotType.Road||plot.getType()==PlotType.Elevator){

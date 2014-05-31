@@ -87,4 +87,11 @@ public abstract class Player{
         }
         return player;
     }
+    public void reset(){
+        cameraX = 0;
+        cameraY = 0;
+        cameraZ = 0;
+        resourceStructures.clear();
+        cash = 0;
+    }
 }

@@ -1,5 +1,6 @@
 package CityPopulization.world;
 import CityPopulization.Core;
+import CityPopulization.menu.MenuIngameVictory;
 import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Worker;
@@ -20,7 +21,7 @@ public class World{
     public Player localPlayer;
     public ArrayList<Player> otherPlayers = new ArrayList<>();
     public Template template;
-    public int speedMultiplier;
+    public int speedMultiplier = 1;
     public WinningCondition goal;
     public int age;
     public boolean isPaused;
@@ -62,6 +63,7 @@ public class World{
                 complete &= goal.isComplete();
             }
             if(winFromGoals&&complete){
+                winFromGoals = false;
                 victory();
             }
         }
@@ -257,7 +259,13 @@ public class World{
             while(!dists.isEmpty()){
                 for(Plot plot : map.get(dists.remove(dists.size()-1))){
                     if(plot!=null){
-                        plot.render(localPlayer);
+                        if(i==1&&plot.fallProgress>0){
+                            GL11.glColor4d(1, 1, 1, 1);
+                            plot.render(localPlayer);
+                            GL11.glColor4d(1, 1, 1, 0.1);
+                        }else{
+                            plot.render(localPlayer);
+                        }
                     }
                 }
             }
@@ -421,7 +429,21 @@ public class World{
             }
         }
     }
-    private void victory(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void victory(){
+        speedMultiplier = 1;
+        Core.gui.open(new MenuIngameVictory());
+    }
+    public void reset(){
+        otherPlayers.clear();
+        localPlayer.reset();
+        age = 0;
+        isPaused = false;
+        paused = false;
+        plots.clear();
+        plotsNeedingUpdate.clear();
+        aircraft.clear();
+        civilians.clear();
+        goals.clear();
+        winFromGoals = false;
     }
 }
