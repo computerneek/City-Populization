@@ -1,31 +1,29 @@
 package CityPopulization.world.story;
 import CityPopulization.Core;
 import CityPopulization.menu.ListComponentStory;
-import CityPopulization.render.Side;
+import CityPopulization.menu.MenuIngameRestricted;
 import CityPopulization.world.GameDifficulty;
-import CityPopulization.world.aircraft.schedule.ScheduleElement;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.player.PlayerHuman;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.plot.Template;
 import CityPopulization.world.resource.Resource;
-import CityPopulization.world.resource.ResourceList;
 import CityPopulization.world.save.StorySaveLoader;
 import java.io.File;
 import simplelibrary.config2.Config;
 import simplelibrary.opengl.gui.components.ListComponent;
-public class Mission1Tutorial extends StoryMission {
+public class Mission01Tutorial extends StoryMission {
     private final File file;
     private boolean isComplete;
     private String highScore = "High Score:  ----";
     private String lastScore = "Last Score:  ----";
-    public Mission1Tutorial(){
+    private int high = -1;
+    public Mission01Tutorial(){
         file = new File(((StorySaveLoader)Core.getStorySaveLoader()).file, "01 Tutorial.cps");
         Config config = Config.newConfig(file).load();
         localPlayer = new PlayerHuman(this);
         template = Template.FLAT;
-        speedMultiplier = 4;
         goal = null;
         difficulty = GameDifficulty.NORMAL;
         seed = "Story Location 01".hashCode();
@@ -36,6 +34,7 @@ public class Mission1Tutorial extends StoryMission {
         if(isComplete){
             highScore = config.get("highscore");
             lastScore = config.get("lastscore");
+            high = config.get("high");
         }
     }
     @Override
@@ -64,6 +63,7 @@ public class Mission1Tutorial extends StoryMission {
     }
     @Override
     public void setup(){
+        speedMultiplier = 4;
         for(int i = -7; i<4; i++){
             for(int j = -2; j<3; j++){
                 for(int k = -12; k<-8; k++){
@@ -152,7 +152,9 @@ public class Mission1Tutorial extends StoryMission {
                              "Why would we do that?", 
                              "A cave-in would loosen the overlaying rock layers and perhaps give us a path out to the surface.  The archeologists told me the surface should be somewhere near.",
                              "Make sure it doesn't cave in on anyone and go right on ahead.",
-                             "Okay.");
+                             "Okay.",
+                             Character.MAYOR, Character.WORKER, "This is an accelerated mission due to the tendency of workers to take a long time to harvest resources.",
+                             "Most missions will not be accelerated.");
                 paused = false;
                 rst.allowButton(PlotType.Dirt, "Harvest Dirt");
                 rst.addGoal(0, new GoalHarvest(Resource.Dirt, 2375, true));
@@ -181,4 +183,21 @@ public class Mission1Tutorial extends StoryMission {
     }
     @Override
     public void update(){}
+    @Override
+    public void victory(){
+        isComplete = true;
+        int newScore = Math.max(0, 10000-age/4);
+        if(newScore>high){
+            highScore = "High Score:  "+newScore;
+            high = newScore;
+        }
+        lastScore = "Last Score:  "+newScore;
+        Config config = Config.newConfig(file);
+        config.set("complete", isComplete);
+        config.set("highscore", highScore);
+        config.set("lastscore", lastScore);
+        config.set("high", high);
+        config.save();
+        super.victory();
+    }
 }

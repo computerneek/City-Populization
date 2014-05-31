@@ -14,8 +14,12 @@ public class MenuStory extends Menu{
         missionList = add(new MenuComponentMulticolumnList(-1.6f, -0.8f, 3.2f, 1.6f, 0.8f, 0.4f));
         playMission = add(new MenuComponentButton(-1.56f, 0.82f, 1.56f, 0.16f, "Start Mission", false));
         back = add(new MenuComponentButton(0.02f, 0.82f, 1.56f, 0.16f, "Back", true));
+    }
+    @Override
+    public void onGUIOpened(){
         boolean isVisible = true;
         StoryMission mission;
+        missionList.components.clear();
         for(int i = 0; (mission = StoryManager.getMission(i))!=null&&isVisible; i++){
             isVisible = mission.isComplete();
             missionList.add(mission.getComponent());

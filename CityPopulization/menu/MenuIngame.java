@@ -6,7 +6,6 @@ import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.ResourceList;
-import java.awt.event.ActionEvent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;

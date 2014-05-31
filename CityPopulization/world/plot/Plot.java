@@ -159,6 +159,7 @@ public class Plot{
         if(type.falls()&&world.getPlot(x, y, z-1)!=null&&!world.getPlot(x, y, z-1).type.supports()){
             fallProgress++;
             world.schedulePlotUpdate(this);
+            onNeighborPlotChange();
             if(fallProgress==1){
                 world.getPlot(x, y, z-1).demolish();
             }
@@ -246,15 +247,16 @@ public class Plot{
         inboundAircraft.add(aircraft);
     }
     private void onNeighborPlotChange(){
-        shouldRenderTopFace = world.getPlot(x, y, z+1)==null||!world.getPlot(x, y, z+1).getType().isOpaque();
-        shouldRenderLeftFace = world.getPlot(x-1, y, z)==null||!world.getPlot(x-1, y, z).getType().isOpaque();
-        shouldRenderRightFace = world.getPlot(x+1, y, z)==null||!world.getPlot(x+1, y, z).getType().isOpaque();
-        shouldRenderFrontFace = world.getPlot(x, y+1, z)==null||!world.getPlot(x, y+1, z).getType().isOpaque();
-        shouldRenderBackFace = world.getPlot(x, y-1, z)==null||!world.getPlot(x, y-1, z).getType().isOpaque();
+        Plot plot;
+        shouldRenderTopFace = (plot=world.getPlot(x, y, z+1))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        shouldRenderLeftFace = (plot=world.getPlot(x-1, y, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        shouldRenderRightFace = (plot=world.getPlot(x+1, y, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        shouldRenderFrontFace = (plot=world.getPlot(x, y+1, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        shouldRenderBackFace = (plot=world.getPlot(x, y-1, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
         world.schedulePlotUpdate(this);
     }
     public void render(Player localPlayer){
-        if(!playerVisibilities.contains(localPlayer)){
+        if(!playerVisibilities.contains(localPlayer)&&(fallProgress==0||!world.getPlot(x, y, z-1).playerVisibilities.contains(localPlayer))){
             return;
         }
         if(fallProgress>0){

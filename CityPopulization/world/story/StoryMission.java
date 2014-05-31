@@ -1,6 +1,8 @@
 package CityPopulization.world.story;
+import CityPopulization.menu.MenuIngameRestricted;
 import CityPopulization.Core;
 import CityPopulization.menu.MenuIngame;
+import CityPopulization.menu.MenuIngameVictory;
 import CityPopulization.world.World;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
@@ -66,6 +68,7 @@ public abstract class StoryMission extends World{
     }
     public void win(){
         winFromGoals = true;
+        MenuIngameVictory.init();
     }
     public void conversation(Object... objs){
         display(new Conversation(objs));

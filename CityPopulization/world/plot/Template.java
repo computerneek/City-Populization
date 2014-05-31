@@ -31,7 +31,7 @@ public enum Template{
                 if(z<-1){
                     coalChance = rand.nextGaussian()*3;
                     oilChance = rand.nextGaussian()*3;
-                    stoneChance = rand.nextGaussian()*20;
+                    stoneChance = rand.nextGaussian()*10;
                     ironChance = rand.nextGaussian()*2;
                     sandChance = rand.nextGaussian()*2;
                     clayChance = rand.nextGaussian()*4;
@@ -49,7 +49,7 @@ public enum Template{
             chances.put(Math.abs(sandChance), Resource.Sand);
             chances.put(Math.abs(clayChance), Resource.Clay);
             chances.put(Math.abs(goldChance), Resource.Gold);
-            ArrayList<Double> lst = new ArrayList(chances.keySet());
+            ArrayList<Double> lst = new ArrayList<>(chances.keySet());
             Collections.sort(lst);
             Resource resource = chances.get(lst.get(lst.size()-1));
             if(resource==null){

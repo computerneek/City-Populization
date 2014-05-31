@@ -1,4 +1,4 @@
-package CityPopulization.world.story;
+package CityPopulization.menu;
 import CityPopulization.Core;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.menu.buttons.Button;
@@ -9,10 +9,9 @@ import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.ResourceList;
-import java.awt.Component;
+import CityPopulization.world.story.Goal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -148,9 +147,9 @@ public class MenuIngameRestricted extends MenuIngame{
                 component.mouseover(-1, -1, false);
             }
             if(selected==component){
-                component.setSelected(true);
+                component.isSelected = true;
             }else{
-                component.setSelected(false);
+                component.isSelected = false;
             }
         }
         if(selected!=null&&wheelChange!=0){
@@ -206,6 +205,12 @@ public class MenuIngameRestricted extends MenuIngame{
             Core.world.getLocalPlayer().cameraX = 0;
             Core.world.getLocalPlayer().cameraY = 0;
             Core.world.getLocalPlayer().cameraZ = 0;
+        }
+        for(MenuComponent cmpt : components){
+            MenuComponentButtonIngame button = (MenuComponentButtonIngame)cmpt;
+            if(button.getHotkey()==key){
+                buttonClicked(button);
+            }
         }
         if(selected!=null){
             selected.processKeyboard(character, key, pressed, repeat);
