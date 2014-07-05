@@ -212,6 +212,9 @@ public class MenuIngameRestricted extends MenuIngame{
                 buttonClicked(button);
             }
         }
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
+        }
         if(selected!=null){
             selected.processKeyboard(character, key, pressed, repeat);
         }

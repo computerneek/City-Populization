@@ -79,7 +79,7 @@ public class ResourceList{
         Collections.sort(resources);
         for(Resource resource : resources){
             if(!value.isEmpty()){
-                value+="; ";
+                value+=", ";
             }
             value += get(resource)+" "+resource.name();
         }

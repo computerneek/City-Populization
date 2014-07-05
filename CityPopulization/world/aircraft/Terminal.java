@@ -1,4 +1,5 @@
 package CityPopulization.world.aircraft;
+import CityPopulization.Core;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
 import CityPopulization.world.aircraft.cargo.AircraftCargoResource;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
@@ -78,7 +79,7 @@ public class Terminal {
     }
     public void update(Terminal entrance){
         tick++;
-        if(entrance.plot.resources.get(Resource.Fuel)>0&&tick%20==0&&fuel<500){
+        if(entrance.plot.resources.get(Resource.Fuel)>0&&tick%20==0&&entrance.fuel<500){
             entrance.fuel++;
             entrance.plot.resources.remove(Resource.Fuel, 1);
         }
@@ -90,6 +91,9 @@ public class Terminal {
         if(aircraft.fuelLevel<aircraft.maxFuelLevel&&entrance.fuel>0){
             entrance.fuel--;
             aircraft.fuelLevel++;
+        }
+        if(plot.owner.sandbox){
+            aircraft.fuelLevel = aircraft.maxFuelLevel;
         }
         boolean canLoad = false;
         if(state==UNLOADING){
@@ -128,7 +132,8 @@ public class Terminal {
                         for(Worker worker : entrance.plot.workersPresent){
                             if(worker.timer<=0){
                                 aircraft.loadPassengers(AircraftPassenger.workers(1));
-                                entrance.plot.workers.remove(entrance.plot.workersPresent.remove(0));
+                                entrance.plot.workersPresent.remove(worker);
+                                while(entrance.plot.workers.remove(worker));
                                 timeWaiting = 0;
                                 break;
                             }

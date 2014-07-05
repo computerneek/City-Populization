@@ -20,7 +20,9 @@ public class MenuMain extends Menu{
         exit = add(new MenuComponentButton(-0.8f, 0.42f, 1.6f, 0.16f, "Exit", true));
     }
     @Override
-    public void renderBackground(){}
+    public void renderBackground(){
+        drawText(0.85F, -0.35F, 1.6F, -0.25F, "Coming soon!");
+    }
     @Override
     public void buttonClicked(MenuComponentButton button){
         if(button==story){
@@ -44,7 +46,7 @@ public class MenuMain extends Menu{
         gui.open(new MenuEmpireMode(gui, this));
     }
     private void multiplayer(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        gui.open(new MenuMultiplayer(gui, this));
     }
     private void texturepacks(){
         gui.open(new MenuTexturepacks(gui, this));

@@ -5,7 +5,7 @@ import CityPopulization.world.aircraft.Runway;
 import CityPopulization.world.plot.Plot;
 import simplelibrary.config2.Config;
 public class LSEStartingPoint extends LandingSequenceEvent {
-    private final int distanceBack;
+    private int distanceBack;
     private final int height;
     private final int speed;
     public LSEStartingPoint(int distanceBack, int height, int speed){
@@ -19,6 +19,10 @@ public class LSEStartingPoint extends LandingSequenceEvent {
         Plot touchdown = runway.getTouchdownPlot();
         Side side = touchdown.front.reverse();
         Plot plot = touchdown;
+        if(distanceBack<0){
+            distanceBack*=-1;
+            side = side.reverse();
+        }
         for(int i = 0; i<distanceBack; i++){
             plot = side.getPlot(aircraft.player.world, plot.x, plot.y, plot.z);
         }

@@ -35,16 +35,18 @@ public class PlayerHuman extends Player {
         world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(this);
         world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
         world.generateAndGetPlot(0, 0, 0).setType(PlotType.AirportEntrance).setOwner(this).terminal.fuel=100;
-        world.generateAndGetPlot(0, 1, 0).setType(PlotType.Road).setOwner(this);
-        world.generateAndGetPlot(1, 1, 0).setType(PlotType.Road).setOwner(this);
-        world.generateAndGetPlot(1, 0, 0).setType(PlotType.Warehouse).setLevel(0).setOwner(this).resources.addAll(new ResourceList(
+        if(!sandbox){
+            world.generateAndGetPlot(0, 1, 0).setType(PlotType.Road).setOwner(this);
+            world.generateAndGetPlot(1, 1, 0).setType(PlotType.Road).setOwner(this);
+            world.generateAndGetPlot(1, 0, 0).setType(PlotType.Warehouse).setLevel(1000/getResourcesPerWarehouse()+(1000%getResourcesPerWarehouse()>0?0:-1)).setOwner(this).resources.addAll(new ResourceList(
                 Resource.Tools, 200,
                 Resource.Dirt, 250,
                 Resource.Wood, 250,
                 Resource.Iron, 250,
                 Resource.Coal, 50
-        ));
-        world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_PASSENGER, 1, 0, new ResourceList(Resource.Fuel, 10), 1200, 0));
+            ));
+            world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_PASSENGER, 1, 0, new ResourceList(Resource.Fuel, 10), 1200, 0));
+        }
         for(int j = 0; j<10; j++){
             Worker worker = new Worker();
             worker.homePlot = world.getPlot(0, 0, 0);
@@ -107,6 +109,10 @@ public class PlayerHuman extends Player {
                 break;
             case Air:
                 onAirClicked(plot, set);
+                break;
+            case Debris:
+                plot.setOwner(this);
+                onPlainOwnedPlotClicked(plot, set);
                 break;
         }
     }
@@ -177,7 +183,7 @@ public class PlayerHuman extends Player {
                                 .setPlot(plot)
                                 .setCost(new ResourceList())
                                 .setCash(100)
-                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested))
+                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(world.difficulty.incomeModifier))
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
                                         .setData(PlotType.Air, 0, Side.FRONT))));
@@ -194,7 +200,7 @@ public class PlayerHuman extends Player {
                                 .setPlot(plot)
                                 .setCost(new ResourceList())
                                 .setCash(100)
-                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(0.1))
+                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(0.1*world.difficulty.incomeModifier))
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
                                         .setData(PlotType.Air, 0, Side.FRONT))));

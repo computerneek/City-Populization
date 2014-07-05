@@ -36,7 +36,7 @@ public class World{
     public boolean winFromGoals = false;
     public void tick(){
         localPlayer.motion();
-        for(int i = 0; i<speedMultiplier; i++){
+        for(int i = 0; i<speedMultiplier*difficulty.gameSpeedModifier; i++){
             if(isPaused||paused){
                 return;
             }
@@ -67,7 +67,7 @@ public class World{
                 victory();
             }
         }
-        if((age/speedMultiplier)%6000==0){
+        if((age/speedMultiplier*difficulty.gameSpeedModifier)%6000==0){
             save();
         }
     }
@@ -176,6 +176,7 @@ public class World{
         GL11.glScalef(1, 1, 0.25f);
         GL11.glTranslated(0, 0, -localPlayer.getCameraZ());
         GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glDisable(GL11.GL_BLEND);
         int x = -(int)localPlayer.getCameraX();
         int y = (int)localPlayer.getCameraY();
         int z = localPlayer.getCameraZ();
@@ -205,8 +206,10 @@ public class World{
         for(int k = -50; k<6; k++){
             if(k==1){
                 GL11.glDisable(GL11.GL_DEPTH_TEST);
+                GL11.glEnable(GL11.GL_BLEND);
             }else if(k==-50){
                 GL11.glEnable(GL11.GL_DEPTH_TEST);
+                GL11.glDisable(GL11.GL_BLEND);
             }
             for(int i = -renderWidth; i<renderWidth+1; i++){
                 for(int j = -renderWidth; j<renderWidth+1; j++){
@@ -220,6 +223,7 @@ public class World{
             }
         }
         GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glDisable(GL11.GL_BLEND);
         for(Aircraft aircraft : this.aircraft){
             aircraft.render(localPlayer);
         }
@@ -227,6 +231,7 @@ public class World{
             civilian.render(localPlayer);
         }
         GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_BLEND);
         localPlayer.render();
         for(Player player : otherPlayers){
             player.render();

@@ -7,6 +7,17 @@ public class ButtonEvent {
     private String type;
     private WorkerTask task;
     private Plot plot;
+    public String getInfo(){
+        switch(type){
+            case "Task":
+                return "Costs $"+task.cash+" and "+task.cost.toString()+"; returns "+task.revenue.toString()+".";
+            case "Airport":
+                return "";
+            case "Cancel Task":
+                return "Refunds $"+plot.task.cash+" instantly";
+        }
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     public ButtonEvent setType(String type){
         this.type = type;
         return this;
@@ -36,6 +47,7 @@ public class ButtonEvent {
                     plot.task = null;
                     task.segments.clear();
                 }
+                task.owner.cash+=task.cash;
                 break;
             default:
                 throw new AssertionError(type);

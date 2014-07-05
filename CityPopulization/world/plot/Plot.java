@@ -12,7 +12,6 @@ import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.civilian.WorkerTaskSegment;
 import CityPopulization.world.civilian.event.EventSequence;
-import CityPopulization.world.civilian.event.EventTrainWorker;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.resource.Resource;
@@ -57,6 +56,7 @@ public class Plot{
     public int lastTaskTimeCivilian = -1;
     public ArrayList<WorkerTask> lastTasksCivilian = new ArrayList<>();
     private int civilianTime;
+    public static final int VISION_DISTANCE = 2;
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -76,13 +76,37 @@ public class Plot{
         terminal = new Terminal(this);
     }
     public Plot setType(PlotType type){
+        if(this.type==PlotType.Warehouse&&type!=this.type){
+            resources.addAll(inboundResources);
+            coming = Math.max(0, coming-inboundResources.count());
+            inboundResources = new ResourceList();
+            if(task!=null){
+                task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
+                task.prepare();
+                task.cost.remove(Resource.Tools, 1);
+                task.revenue.remove(Resource.Tools, 1);
+                task.segments.remove(0);
+                world.schedulePlotUpdate(this, 20);
+                resources = new ResourceList();
+            }else{
+                task.revenue.addAll(resources);
+                resources = new ResourceList();
+            }
+        }else if(this.type==PlotType.House&&type!=this.type){
+            for(Worker worker : workers){
+                worker.timer = 0;
+            }
+            for(Civilian civil : civilians){
+                civil.timer = 0;
+            }
+        }
         this.type = type;
         this.level = 0;
         world.clearPlotUpdates(this);
         world.schedulePlotUpdate(this);
-        for(int i = -1; i<2; i++){
-            for(int j = -1; j<2; j++){
-                for(int k = -1; k<2; k++){
+        for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+            for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
                     Plot plot = world.getPlot(x+i, y+j, z+k);
                     if(plot!=null){
                         plot.onNeighborPlotChange();
@@ -117,9 +141,9 @@ public class Plot{
             owner.resourceStructures.remove(this);
         }
         owner = player;
-        for(int i = -1; i<2; i++){
-            for(int j = -1; j<2; j++){
-                for(int k = -1; k<2; k++){
+        for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+            for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
                     world.generatePlot(x+i, y+j, z+k).updateVisibility();
                 }
             }
@@ -142,9 +166,9 @@ public class Plot{
     public void updateVisibility(){
         playerVisibilities.clear();
         PLAYER:for(Player player : world.listPlayers()){
-            for(int i = -1; i<2; i++){
-                for(int j = -1; j<2; j++){
-                    for(int k = -1; k<2; k++){
+            for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+                for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                    for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
                         Plot plot = world.getPlot(x+i, y+j, z+k);
                         if(plot!=null&&plot.owner==player){
                             playerVisibilities.add(player);
@@ -166,6 +190,7 @@ public class Plot{
             if(fallProgress>=100){
                 world.getPlot(x, y, z-1).setType(type.getFallenType()).setOwner(owner);
                 setType(PlotType.Air);
+                setOwner(null);
                 fallProgress=0;
             }
         }
@@ -196,6 +221,14 @@ public class Plot{
                 task.revenue.remove(Resource.Tools, 1);
                 task.segments.remove(0);
             }
+        }else if(type!=PlotType.AirportEntrance&&task==null&&resources.count()>0){
+            task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
+            task.prepare();
+            task.cost.remove(Resource.Tools, 1);
+            task.revenue.remove(Resource.Tools, 1);
+            task.segments.remove(0);
+            world.schedulePlotUpdate(this, 20);
+            resources = new ResourceList();
         }
     }
     private void doAirportUpdate(){
@@ -204,6 +237,9 @@ public class Plot{
         }
         ArrayList<Plot> terminals = new ArrayList<>();
         findTerminals(terminals);
+        ResourceList fuel = new ResourceList(Resource.Fuel, Math.min(inboundResources.get(Resource.Fuel), 500-terminal.fuel-resources.get(Resource.Fuel)));
+        resources.addAll(fuel);
+        inboundResources.removeAll(fuel);
         for(Plot plot : terminals){
             plot.terminal.update(terminal);
         }
@@ -219,7 +255,7 @@ public class Plot{
             if(!OK){
                 return;
             }
-            ResourceList fuel = new ResourceList(Resource.Fuel, resources.get(Resource.Fuel));
+            fuel = new ResourceList(Resource.Fuel, resources.get(Resource.Fuel));
             fuel = fuel.split(500-terminal.fuel);
             resources.removeAll(fuel);
             if(resources.count()>0){
@@ -230,6 +266,16 @@ public class Plot{
                 task.segments.remove(0);
             }
             resources.addAll(fuel);
+        }else if(owner!=null&&task==null&&terminal.fuel+resources.get(Resource.Fuel)<500&&!Path.findWarehouse(this, true).isEmpty()){
+            int available = 0;
+            for(Plot plot : Path.findWarehouse(this, true)){
+                available+=plot.resources.get(Resource.Fuel);
+            }
+            task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList(Resource.Fuel, 1)).setRevenue(new ResourceList());
+            task.prepare();
+            task.cost.remove(Resource.Tools, 1);
+            task.revenue.remove(Resource.Tools, 1);
+            task.segments.remove(1);
         }
     }
     private void attemptToLandAircraft(Aircraft aircraft){
@@ -417,10 +463,27 @@ public class Plot{
                         if(path!=null){
                             worker.path = path;
                             worker.homePlot = airport;
-                            workers.remove(worker);
+                            while(workers.remove(worker));
                             workersPresent.remove(worker);
                             world.civilians.add(worker);
                             airport.workers.add(worker);
+                            break;
+                        }
+                    }
+                }
+            }
+            for(Civilian worker : civiliansPresent){
+                if(worker.timer<=0){
+                    Plot airport = Path.findAirportEntrance(this, true);
+                    if(airport!=null){
+                        Path path = Path.findPath(this, airport, true);
+                        if(path!=null){
+                            worker.path = path;
+                            worker.homePlot = airport;
+                            while(civilians.remove(worker));
+                            civiliansPresent.remove(worker);
+                            world.civilians.add(worker);
+                            airport.civilians.add(worker);
                             break;
                         }
                     }
@@ -528,7 +591,7 @@ public class Plot{
         }
     }
     public boolean canUpgrade(Race race){
-        return level+1<type.getMaximumLevel()&&type.getCost(level+1, race)!=null;
+        return level+1<type.getMaximumLevel()&&(type.getCost(level+1, race)!=null||world.localPlayer.sandbox);
     }
     private Plot findEmptyHouse(){
         return Path.findHouseWithSpace(this, false);

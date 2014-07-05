@@ -17,12 +17,14 @@ public enum GameDifficulty{
     public final double moveSpeedModifier;//Modifier for things move speed
     public final double homeOccupantModifier;//Modifier for the number of people in one house
     public final double stabilityModifier;//Modifier for how often people like staying in their house
+    public final int gameSpeedModifier;//Modifier for the game speed (compensates for move speed on harder levels)
     private GameDifficulty(String name, double modifier){
         this.name = name;
         this.incomeModifier = modifier;
         this.moveSpeedModifier = modifier;
         this.homeOccupantModifier = modifier;
         this.stabilityModifier = modifier;
+        this.gameSpeedModifier = (int)Math.round(Math.max(1/modifier, 1));
     }
     public String getName(){
         return name;

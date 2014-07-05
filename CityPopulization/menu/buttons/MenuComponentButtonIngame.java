@@ -8,12 +8,17 @@ public class MenuComponentButtonIngame extends MenuComponentButton{
     public String image;
     public ActionListener listener;
     private int hotkey;
+    private Button button;
     public MenuComponentButtonIngame(double x, double y, double width, double height, String[] label, boolean enabled, String image, ActionListener listener, int hotkey){
+        this(null, x, y, width, height, label, enabled, image, listener, hotkey);
+    }
+    public MenuComponentButtonIngame(Button button, double x, double y, double width, double height, String[] label, boolean enabled, String image, ActionListener listener, int hotkey){
         super(x, y, width, height, "", enabled);
         this.label = label;
         this.image = image;
         this.listener = listener;
         this.hotkey = hotkey;
+        this.button=button;
     }
     @Override
     public void render(){
@@ -47,5 +52,8 @@ public class MenuComponentButtonIngame extends MenuComponentButton{
     }
     public int getHotkey(){
         return hotkey;
+    }
+    public String getInfo(){
+        return button==null?"":button.getInfo();
     }
 }

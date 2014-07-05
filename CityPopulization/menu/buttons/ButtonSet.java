@@ -37,10 +37,9 @@ public class ButtonSet {
         int buttonCount = (int)Math.floor((screenWidth-buttonOffset)/buttonSize);
         buttonOffset-=screenWidth/2;
         int drawableButtons = buttonCount;
-        boolean addPreviousButton = false;
+        final boolean addPreviousButton = buttonIndex>0;
         if(buttonIndex>0){
             drawableButtons--;
-            addPreviousButton = true;
         }
         int buttonsToDraw = buttons.size()-buttonIndex;
         boolean addNextButton = false;
@@ -69,7 +68,7 @@ public class ButtonSet {
                 break;
             }
             final Button button = buttons.get(i+buttonIndex);
-            menu.add(new MenuComponentButtonIngame(buttonOffset+i*buttonSize, menu.screenBottom-buttonSize, buttonSize, buttonSize, button.text, true, button.image, new ActionListener() {
+            menu.add(new MenuComponentButtonIngame(button, buttonOffset+i*buttonSize, menu.screenBottom-buttonSize, buttonSize, buttonSize, button.text, true, button.image, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e){
                     button.onClicked();
@@ -80,7 +79,7 @@ public class ButtonSet {
             menu.add(new MenuComponentButtonIngame(buttonOffset+drawableButtons*buttonSize, menu.screenBottom-buttonSize, buttonSize, buttonSize, new String[]{"Next"}, true, "/gui/buttons/next.png", new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e){
-                    display(type, buttonIndex+1, menu);
+                    display(type, buttonIndex+1+(addPreviousButton?0:1), menu);
                 }
             }, Keyboard.KEY_RIGHT));
         }

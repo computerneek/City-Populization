@@ -142,6 +142,7 @@ public enum PlotType{
         costs.put(AirportRunway, new ResourceListList(new ResourceList(Resource.Stone, 100, Resource.Iron, 25)));
         costs.put(AirportJetway, new ResourceListList(new ResourceList(Resource.Stone, 50)));
         costs.put(AirportTerminal, new ResourceListList(new ResourceList(Resource.Wood, 100, Resource.Stone, 50, Resource.Iron, 50, Resource.Coal, 5, Resource.Clay, 50, Resource.Oil, 25)));
+        costs.put(AirportEntrance, new ResourceListList(new ResourceList(Resource.Wood, 100, Resource.Stone, 50, Resource.Iron, 50, Resource.Coal, 5, Resource.Clay, 50, Resource.Oil, 25)));
         costs.put(Support, new ResourceListList(new ResourceList(Resource.Iron, 100)));
     }
     public void loadAllTextures(){

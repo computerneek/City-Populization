@@ -17,7 +17,9 @@ public class WorkerTask{
     public int cash;
     private Plot plotRestriction;
     public WorkerTask(){
-        segments.add(new WorkerTaskSegment().setType("Resource Collection"));
+        if(Core.world!=null&&!Core.world.localPlayer.sandbox){
+            segments.add(new WorkerTaskSegment().setType("Resource Collection"));
+        }
     }
     public WorkerTask setPlot(Plot plot){
         this.targetPlot = plot;
@@ -33,7 +35,7 @@ public class WorkerTask{
         return this;
     }
     public WorkerTask setRevenue(ResourceList revenue){
-        this.revenue = new ResourceList().addAll(revenue).multiply(targetPlot.world.difficulty.incomeModifier).add(Resource.Tools, 1);
+        this.revenue = new ResourceList().addAll(revenue).add(Resource.Tools, 1);
         return this;
     }
     public WorkerTask addSegment(WorkerTaskSegment segment){
@@ -55,7 +57,9 @@ public class WorkerTask{
     }
     public void prepare(){
         owner.cash-=cash;
-        segments.add(new WorkerTaskSegment().setType("Resource Returns").setResources(revenue));
+        if(!Core.world.localPlayer.sandbox){
+            segments.add(new WorkerTaskSegment().setType("Resource Returns").setResources(revenue));
+        }
         for(WorkerTaskSegment segment : segments){
             segment.setParentTask(this);
         }
