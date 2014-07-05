@@ -7,6 +7,7 @@ import CityPopulization.world.civilian.event.EventSatisfy;
 import CityPopulization.world.civilian.event.EventSequence;
 import CityPopulization.world.civilian.event.EventTrainWorker;
 import CityPopulization.world.civilian.event.EventUnload;
+import CityPopulization.world.civilian.event.EventUnloadAndDelete;
 import CityPopulization.world.civilian.event.EventWait;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
@@ -50,7 +51,7 @@ public class WorkerTaskSegment {
             sequence.add(new EventPath(Path.findPath(home, plot, worker instanceof Worker)));
             sequence.add(new EventLoad(loaded));
             sequence.add(new EventPath(Path.findPath(plot, task.altPlot, worker instanceof Worker)));
-            sequence.add(new EventUnload());
+            sequence.add(task.segments.size()==1?new EventUnload():new EventUnloadAndDelete());
             sequence.add(new EventSatisfy(this));
             sequence.add(new EventPath(Path.findPath(task.altPlot, home, worker instanceof Worker)));
             if(sequence.validate()){

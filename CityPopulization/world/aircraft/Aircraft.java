@@ -31,9 +31,9 @@ public abstract class Aircraft{
     private Terminal terminal;
     private ArrayList<LandingSequenceEvent> landingSequence = new ArrayList<>();
     private String state;
-    private float x;
-    private float y;
-    private float z;
+    float x;
+    float y;
+    float z;
     private float heading;
     private float targetHeading;
     private float pitch;
@@ -51,6 +51,7 @@ public abstract class Aircraft{
     public int maxFuelLevel = 50;
     public int minimumRunwayLength = 1;
     public ScheduleElement schedule;
+    private int crashed;
     public Aircraft(Player player, String textureFolder){
         this.player = player;
         this.textureFolder=textureFolder;
@@ -115,13 +116,13 @@ public abstract class Aircraft{
         this.terminal = terminal;
     }
     public void land(){
-        landingSequence = getLandingSequence();
+        landingSequence = getLandingSequence(runway.size());
         player.world.aircraft.add(this);
         state = "Landing";
         terminal.occupied = Terminal.IN;
         runway.getStartPlot().terminal.occupied = Terminal.IN;
     }
-    public abstract ArrayList<LandingSequenceEvent> getLandingSequence();
+    public abstract ArrayList<LandingSequenceEvent> getLandingSequence(int runwayLength);
     public void update(){
         tick++;
         float distance = 0.02F*speed;
@@ -150,25 +151,47 @@ public abstract class Aircraft{
         if(tiltToMatchPitch){
             tilt = pitch;
         }
-        switch(state){
-            case "Landing":
-            case "Takeoff":
-                landingUpdate();
-                break;
-            case "Landed":
-                landedUpdate();
-                break;
-            case "TaxiIn":
-            case "TaxiOut":
-                taxiUpdate();
-                break;
-            case "Departure":
-                departureUpdate();
-                break;
-            default:
-                throw new AssertionError(state);
+        if(crashed>0){
+            targetSpeed-=0.01;
+            targetPitch--;
+            if(targetPitch<-90){
+                targetPitch = -90;
+            }
+            if(targetSpeed<0){
+                targetSpeed = 0;
+            }
+            if(targetPitch<=-90||targetSpeed<=0){
+                crashed++;
+            }
+            Plot plot = player.world.getPlot(Math.round(x), Math.round(y), Math.round(z)+1);
+            if(plot.getType().getConstructionCost(player.race)!=null||!plot.getType().isOpaque()){
+                plot.setType(PlotType.Debris).setOwner(player);
+            }else if(plot.getType()!=PlotType.Debris){
+                player.world.aircraft.remove(this);
+            }
+            if(crashed>100){
+                player.world.aircraft.remove(this);
+            }
+        }else{
+            switch(state){
+                case "Landing":
+                case "Takeoff":
+                    landingUpdate();
+                    break;
+                case "Landed":
+                    landedUpdate();
+                    break;
+                case "TaxiIn":
+                case "TaxiOut":
+                    taxiUpdate();
+                    break;
+                case "Departure":
+                    departureUpdate();
+                    break;
+                default:
+                    throw new AssertionError(state);
+            }
         }
-        checkForCrashes();
     }
     private void landingUpdate(){
         if(landingSequence.isEmpty()){
@@ -196,6 +219,7 @@ public abstract class Aircraft{
         if(landingSequence.get(0).update(this)){
             landingSequence.remove(0);
         }
+        checkForCrashes();
     }
     private void checkForCrashes(){
         ArrayList<Plot> plots = new ArrayList<>();
@@ -270,11 +294,20 @@ public abstract class Aircraft{
             return;
         }
         if(plot.getType().causesAirlineCrash()){
-            crash();
+            crash(x, y, z);
         }
     }
-    private void crash(){
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private void crash(int x, int y, int z){
+        if(terminal!=null&&state.equals("Landing")){
+            terminal.occupiers--;
+            terminal.occupied = 0;
+            terminal.state = Terminal.IDLE;
+        }
+        runway.getStartPlot().terminal.occupiers--;
+        runway.getStartPlot().terminal.occupied = 0;
+        player.world.getPlot(x, y, z).setType(PlotType.Debris).setOwner(player);
+        player.world.getPlot(Math.round(x), Math.round(y), Math.round(z)+1).setType(PlotType.Debris).setOwner(player);
+        crashed = 1;
     }
     public void render(Player localPlayer){
         boolean canPlayerSeePlane = player==localPlayer;
@@ -345,7 +378,7 @@ public abstract class Aircraft{
                 player.world.aircraft.remove(this);
                 terminal.onArrival(this);
             }else{
-                landingSequence = getTakeoffSequence();
+                landingSequence = getTakeoffSequence(runway.size());
                 state = "Takeoff";
             }
             return;
@@ -354,7 +387,7 @@ public abstract class Aircraft{
             taxiSequence.remove(0);
         }
     }
-    public abstract ArrayList<LandingSequenceEvent> getTakeoffSequence();
+    public abstract ArrayList<LandingSequenceEvent> getTakeoffSequence(int runwayLength);
     public float getHeading(){
         return heading;
     }
@@ -437,6 +470,7 @@ public abstract class Aircraft{
         if(schedule!=null){
             config.set("schedule", schedule.getIndex());
         }
+        config.set("crashed", crashed);
         return config;
     }
     public static Aircraft load(Config config){
@@ -506,6 +540,7 @@ public abstract class Aircraft{
                     }
                 }
             }
+            air.crashed = (int)(config.hasProperty("crashed")?config.get("crashed"):0);
             return air;
         }catch(ClassNotFoundException|NoSuchMethodException|SecurityException|InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException ex){
             throw new RuntimeException(ex);

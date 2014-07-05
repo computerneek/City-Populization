@@ -27,7 +27,7 @@ public enum Template{
                 airChance = rand.nextGaussian()*10;
                 woodChance = rand.nextGaussian();
             }else{
-                dirtChance = rand.nextGaussian()*10*(z==-1?10:1);
+                dirtChance = rand.nextGaussian()*5*(z==-1?10:1);
                 if(z<-1){
                     coalChance = rand.nextGaussian()*3;
                     oilChance = rand.nextGaussian()*3;
@@ -71,7 +71,7 @@ public enum Template{
                     int dist = rand.nextInt(7);
                     for(int i = -dist+1; i<dist; i++){
                         for(int j = -dist+1+Math.abs(i); j<dist-Math.abs(i); j++){
-                            if(world.getPlot(x+i, y+j, z)==null&&rand.nextGaussian()<5){
+                            if((world.getPlot(x+i, y+j, z)==null||(world.getPlot(x+i, y+j, z).getType()==PlotType.Air&&world.getPlot(x+i, y+j, z).task==null))&&rand.nextGaussian()<2){
                                 world.generateAndGetPlot(x+i, y+j, z).setType(PlotType.Woods);
                             }
                         }

@@ -39,14 +39,16 @@ public class MenuIngame extends Menu{
             }
         }
         screenBottom = gui.helper.guiScale;
-        ResourceList lst = new ResourceList();
-        int space = 0;
-        for(Plot plot : Core.world.getLocalPlayer().resourceStructures){
-            lst.addAll(plot.resources);
-            space += (plot.getLevel()+1)*Core.world.getLocalPlayer().getResourcesPerWarehouse()-plot.coming-plot.readyResources.count();
+        if(!Core.world.getLocalPlayer().sandbox){
+            ResourceList lst = new ResourceList();
+            int space = 0;
+            for(Plot plot : Core.world.getLocalPlayer().resourceStructures){
+                lst.addAll(plot.resources);
+                space += (plot.getLevel()+1)*Core.world.getLocalPlayer().getResourcesPerWarehouse()-plot.coming-plot.readyResources.count();
+            }
+            space-= lst.count();
+            drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.06, "$"+Core.world.getLocalPlayer().cash+"; "+lst.toString()+"; "+space+" space");
         }
-        space-= lst.count();
-        drawCenteredText(-lastScreenWidth, -screenBottom, lastScreenWidth, -screenBottom+0.06, (Core.world.getLocalPlayer().sandbox?"":"$"+Core.world.getLocalPlayer().cash+"; ")+lst.toString()+"; "+space+" space");
     }
     @Override
     public void tick(){}
@@ -57,9 +59,14 @@ public class MenuIngame extends Menu{
             needsUpdate = false;
         }
         renderBackground();
+        String buttonInfo = "";
         for(MenuComponent component : components){
             component.draw();
+            if(component instanceof MenuComponentButtonIngame&&component.isMouseOver){
+                buttonInfo = ((MenuComponentButtonIngame)component).getInfo();
+            }
         }
+        drawCenteredText(-lastScreenWidth, screenBottom-0.31, lastScreenWidth, screenBottom-0.25, buttonInfo);
     }
     @Override
     public void mouseEvent(int button, boolean pressed, float x, float y, float xChange, float yChange, int wheelChange){
@@ -120,6 +127,9 @@ public class MenuIngame extends Menu{
             if(button.getHotkey()==key){
                 buttonClicked(button);
             }
+        }
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
         }
         super.keyboardEvent(character, key, pressed, repeat);
     }
