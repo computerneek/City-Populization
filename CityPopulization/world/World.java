@@ -1,12 +1,15 @@
 package CityPopulization.world;
 import CityPopulization.Core;
 import CityPopulization.menu.MenuIngameVictory;
+import CityPopulization.packets.PacketPlot;
+import CityPopulization.packets.PacketPlotRequest;
 import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.plot.Plot;
+import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.plot.Template;
 import CityPopulization.world.story.Goal;
 import java.util.ArrayList;
@@ -15,7 +18,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import org.lwjgl.opengl.GL11;
+import simplelibrary.Sys;
 import simplelibrary.config2.Config;
+import simplelibrary.error.ErrorCategory;
+import simplelibrary.error.ErrorLevel;
+import simplelibrary.net.ConnectionManager;
+import simplelibrary.net.packet.Packet;
 public class World{
     public long seed = new Random().nextLong();
     public Player localPlayer;
@@ -34,7 +42,9 @@ public class World{
     public WorldInfo info;
     public ArrayList<Goal> goals = new ArrayList<>();
     public boolean winFromGoals = false;
-    public void tick(){
+    public boolean remote;
+    public ConnectionManager server;
+    public synchronized void tick(){
         localPlayer.motion();
         for(int i = 0; i<speedMultiplier*difficulty.gameSpeedModifier; i++){
             if(isPaused||paused){
@@ -44,7 +54,11 @@ public class World{
             ArrayList<Plot> plots = plotsNeedingUpdate.remove(age);
             if(plots!=null){
                 for(Plot plot : plots){
-                    plot.update();
+                    try{
+                        plot.update();
+                    }catch(Throwable twbl){
+                        Sys.error(ErrorLevel.severe, null, twbl, ErrorCategory.other);
+                    }
                 }
             }
             for(Aircraft aircraft : (ArrayList<Aircraft>)this.aircraft.clone()){
@@ -92,7 +106,7 @@ public class World{
     public void setDifficulty(GameDifficulty difficulty){
         this.difficulty = difficulty;
     }
-    public Plot generateAndGetPlot(int x, int y, int z){
+    public synchronized Plot generateAndGetPlot(int x, int y, int z){
         for(int i = -1; i<2; i++){
             for(int j = -1; j<2; j++){
                 for(int k = -1; k<2; k++){
@@ -102,23 +116,34 @@ public class World{
         }
         return getPlot(x, y, z);
     }
-    public Plot getPlot(int x, int y, int z){
+    public synchronized Plot getPlot(int x, int y, int z){
         HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x);
         if(plots2==null){
+            if(remote){
+                server.send(new PacketPlotRequest(x, y, z));
+            }
             return null;
         }
         HashMap<Integer, Plot> plots3 = plots2.get(y);
         if(plots3==null){
+            if(remote){
+                server.send(new PacketPlotRequest(x, y, z));
+            }
             return null;
+        }
+        if(remote&&!plots3.containsKey(z)){
+            server.send(new PacketPlotRequest(x, y, z));
         }
         return plots3.get(z);
     }
     public void summonInitialWorker(){
         localPlayer.summonInitialWorkers();
     }
-    public Plot generatePlot(int x, int y, int z){
+    public synchronized Plot generatePlot(int x, int y, int z){
         if(getPlot(x, y, z)!=null){
             return getPlot(x, y, z);
+        }else if(remote){
+            return makePlot(x, y, z);
         }
         HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x);
         if(plots2==null){
@@ -144,17 +169,17 @@ public class World{
         players.addAll(otherPlayers);
         return players;
     }
-    public void clearPlotUpdates(Plot plot){
+    public synchronized void clearPlotUpdates(Plot plot){
         for(Map.Entry<Integer, ArrayList<Plot>> entry:plotsNeedingUpdate.entrySet()){
             Integer key=entry.getKey();
             ArrayList<Plot> value=entry.getValue();
             value.remove(plot);
         }
     }
-    public void schedulePlotUpdate(Plot plot){
+    public synchronized void schedulePlotUpdate(Plot plot){
         schedulePlotUpdate(plot, 1);
     }
-    public void schedulePlotUpdate(Plot plot, int tick){
+    public synchronized void schedulePlotUpdate(Plot plot, int tick){
         if(tick<1){
             tick = 1;
         }
@@ -166,7 +191,7 @@ public class World{
             plotsNeedingUpdate.get(tick).add(plot);
         }
     }
-    public void render(){
+    public synchronized void render(){
 //        renderWithDepthTesting();
         renderWithoutDepthTesting();
     }
@@ -176,7 +201,7 @@ public class World{
         GL11.glScalef(1, 1, 0.25f);
         GL11.glTranslated(0, 0, -localPlayer.getCameraZ());
         GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glEnable(GL11.GL_BLEND);
         int x = -(int)localPlayer.getCameraX();
         int y = (int)localPlayer.getCameraY();
         int z = localPlayer.getCameraZ();
@@ -204,12 +229,10 @@ public class World{
 //            }
 //        }
         for(int k = -50; k<6; k++){
-            if(k==1){
+            if(k==0){
                 GL11.glDisable(GL11.GL_DEPTH_TEST);
-                GL11.glEnable(GL11.GL_BLEND);
             }else if(k==-50){
                 GL11.glEnable(GL11.GL_DEPTH_TEST);
-                GL11.glDisable(GL11.GL_BLEND);
             }
             for(int i = -renderWidth; i<renderWidth+1; i++){
                 for(int j = -renderWidth; j<renderWidth+1; j++){
@@ -222,19 +245,19 @@ public class World{
                 }
             }
         }
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_BLEND);
+//        GL11.glEnable(GL11.GL_DEPTH_TEST);
+//        GL11.glDisable(GL11.GL_BLEND);
         for(Aircraft aircraft : this.aircraft){
             aircraft.render(localPlayer);
         }
-        for(Civilian civilian : civilians){
-            civilian.render(localPlayer);
-        }
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GL11.glEnable(GL11.GL_BLEND);
         localPlayer.render();
         for(Player player : otherPlayers){
             player.render();
+        }
+        for(Civilian civilian : civilians){
+            civilian.render(localPlayer);
         }
     }
     public void renderWithoutDepthTesting(){
@@ -311,7 +334,9 @@ public class World{
         localPlayer = race.createPlayer(this);
     }
     public void save(){
-        info.saveLoader.saveWorld(this);
+        if(info.saveLoader!=null){
+            info.saveLoader.saveWorld(this);
+        }
     }
     public String size(){
         int count = 0;
@@ -323,7 +348,7 @@ public class World{
         }
         return count+" plots";
     }
-    public void save(Config config){
+    public synchronized void save(Config config){
         config.set("seed", ""+seed);
         config.set("localPlayer", localPlayer.save());
         Config two = Config.newConfig();
@@ -382,7 +407,7 @@ public class World{
         }
         config.set("civilians",two);
     }
-    public void load(Config config){
+    public synchronized void load(Config config){
         Core.loadingWorld = this;
         seed = Long.parseLong((String)config.get("seed"));
         localPlayer = Player.load((Config)config.get("localPlayer"));
@@ -400,6 +425,10 @@ public class World{
         for(int i = 0; i<(int)two.get("count"); i++){
             Config three = two.get(i+"");
             generatePlot((int)three.get("x"), (int)three.get("y"), (int)three.get("z")).load(three);
+        }
+        for(int i = 0; i<(int)two.get("count"); i++){
+            Config three = two.get(i+"");
+            getPlot((int)three.get("x"), (int)three.get("y"), (int)three.get("z")).terminal.load((Config)three.get("terminal"));
         }
         two = config.get("updates");
         for(int i = 0; i<(int)two.get("count"); i++){
@@ -429,7 +458,9 @@ public class World{
             for(HashMap<Integer, Plot> plts : plots.values()){
                 for(Plot plot : plts.values()){
                     plot.updateVisibility();
-                    schedulePlotUpdate(plot);
+                    if(!plot.workers.isEmpty()||!plot.civilians.isEmpty()||plot.getType()==PlotType.AirportEntrance||plot.getType()==PlotType.Warehouse||plot.getType()==PlotType.AirportTerminal){
+                        schedulePlotUpdate(plot);
+                    }
                 }
             }
         }
@@ -450,5 +481,70 @@ public class World{
         civilians.clear();
         goals.clear();
         winFromGoals = false;
+    }
+    public void setRemote(ConnectionManager connection){
+        remote = true;
+        server = connection;
+        new Thread(){
+            public void run(){
+                doThread();
+            }
+        }.start();
+    }
+    public void onCivilianAdded(Civilian civilian){
+        for(Player player : otherPlayers){
+            player.civilianAdded(civilian);
+        }
+    }
+    private void doThread(){
+        while(!server.isClosed()){
+            while(!server.inboundPackets.isEmpty()){
+                processPacket(server.inboundPackets.remove(0));
+            }
+            try{
+                Thread.sleep(50);
+            }catch(InterruptedException ex){}
+        }
+    }
+    private void processPacket(Packet packet){
+        if(packet.getClass()==PacketPlot.class){
+            PacketPlot pkt = (PacketPlot)packet;
+            Plot plot = findPlot((int)pkt.value.get("x"), (int)pkt.value.get("y"), (int)pkt.value.get("z"));
+            if(plot==null){
+                plot = makePlot((int)pkt.value.get("x"), (int)pkt.value.get("y"), (int)pkt.value.get("z"));
+            }
+            plot.eraseAndLoad(pkt.value);
+        }
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    public synchronized Plot findPlot(int x, int y, int z){
+        HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x);
+        if(plots2==null){
+            return null;
+        }
+        HashMap<Integer, Plot> plots3 = plots2.get(y);
+        if(plots3==null){
+            return null;
+        }
+        return plots3.get(z);
+    }
+    private synchronized Plot makePlot(int x, int y, int z){
+        HashMap<Integer, HashMap<Integer, Plot>> plots2 = plots.get(x);
+        if(plots2==null){
+            plots2 = new HashMap<>();
+            plots.put(x, plots2);
+        }
+        HashMap<Integer, Plot> plots3 = plots2.get(y);
+        if(plots3==null){
+            plots3 = new HashMap<>();
+            plots2.put(y, plots3);
+        }
+        Plot plot = plots3.get(z);
+        if(plot==null){
+            plot = new Plot(this, x, y, z);
+            plots3.put(z, plot);
+            template.onPlotGenerated(this, x, y, z);
+        }
+        return plot;
     }
 }

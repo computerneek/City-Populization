@@ -1,6 +1,9 @@
 package CityPopulization;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.menu.MenuMain;
+import CityPopulization.packets.PacketCash;
+import CityPopulization.packets.PacketPlot;
+import CityPopulization.packets.PacketPlotRequest;
 import CityPopulization.texturepack.Texture;
 import CityPopulization.texturepack.TexturepackCreator;
 import CityPopulization.world.World;
@@ -34,6 +37,7 @@ import simplelibrary.error.ErrorCategory;
 import simplelibrary.error.ErrorLevel;
 import simplelibrary.font.FontManager;
 import simplelibrary.game.GameHelper;
+import simplelibrary.net.ConnectionManager;
 import simplelibrary.openal.SoundStash;
 import simplelibrary.opengl.gui.GUI;
 import simplelibrary.texture.TexturePack;
@@ -80,6 +84,9 @@ public class Core{
                 helper.running = false;
             }
         });
+        ConnectionManager.registerPacketClass(new PacketPlot());
+        ConnectionManager.registerPacketClass(new PacketPlotRequest());
+        ConnectionManager.registerPacketClass(new PacketCash());
         FontManager.addFont("/simplelibrary/font");
         FontManager.setFont("font");
         GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -107,6 +114,13 @@ public class Core{
             AL.destroy();
             if(world!=null){
                 world.save();
+                if(world.remote){
+                    try{
+                        world.server.close();
+                    }catch(IOException ex){
+                        throw new RuntimeException(ex);
+                    }
+                }
             }
         }else if(tick%20==0){
             helper.frame.validate();
@@ -189,8 +203,8 @@ public class Core{
         world.setGameSpeed(data.gameSpeed);
         world.setDifficulty(data.difficulty);
         world.getLocalPlayer().setSandbox(data.sandbox);
-        world.summonInitialWorker();
         playWorld(world);
+        world.summonInitialWorker();
     }
     public static String getNow(){
         GregorianCalendar calendar = new GregorianCalendar();

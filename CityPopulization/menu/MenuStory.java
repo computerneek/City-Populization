@@ -1,6 +1,8 @@
 package CityPopulization.menu;
+import CityPopulization.Core;
 import CityPopulization.world.story.StoryManager;
 import CityPopulization.world.story.StoryMission;
+import org.lwjgl.input.Keyboard;
 import simplelibrary.opengl.gui.GUI;
 import simplelibrary.opengl.gui.Menu;
 import simplelibrary.opengl.gui.components.MenuComponentButton;
@@ -41,5 +43,12 @@ public class MenuStory extends Menu{
     }
     private void back(){
         gui.open(parent);
+    }
+    @Override
+    public void keyboardEvent(char character, int key, boolean pressed, boolean repeat){
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
+        }
+        super.keyboardEvent(character, key, pressed, repeat);
     }
 }

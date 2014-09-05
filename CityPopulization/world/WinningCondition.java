@@ -1,11 +1,15 @@
 package CityPopulization.world;
+import CityPopulization.menu.Client;
 import java.util.ArrayList;
 import simplelibrary.config2.Config;
 public abstract class WinningCondition{
     private static ArrayList<WinningCondition> types = new ArrayList<>();
     private static ArrayList<String> names = new ArrayList<>();
+    private void _load(Config config){}
     public static WinningCondition load(Config config){
-        return types.get(names.indexOf(config.get("name")));
+        WinningCondition condition = types.get(names.indexOf(config.get("name")));
+        condition._load(config);
+        return condition;
     }
     private String name;
     public WinningCondition(){}

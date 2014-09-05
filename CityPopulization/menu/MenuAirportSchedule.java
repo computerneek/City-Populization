@@ -1,4 +1,5 @@
 package CityPopulization.menu;
+import CityPopulization.Core;
 import CityPopulization.world.aircraft.schedule.AircraftSchedule;
 import CityPopulization.world.aircraft.schedule.ScheduleElement;
 import org.lwjgl.input.Keyboard;
@@ -80,5 +81,12 @@ public class MenuAirportSchedule extends Menu{
             list.add(new ListComponentAircraftSchedule(element));
         }
         return this;
+    }
+    @Override
+    public void keyboardEvent(char character, int key, boolean pressed, boolean repeat){
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
+        }
+        super.keyboardEvent(character, key, pressed, repeat);
     }
 }

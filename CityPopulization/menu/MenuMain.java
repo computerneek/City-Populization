@@ -1,5 +1,6 @@
 package CityPopulization.menu;
 import CityPopulization.Core;
+import org.lwjgl.input.Keyboard;
 import simplelibrary.opengl.gui.GUI;
 import simplelibrary.opengl.gui.Menu;
 import simplelibrary.opengl.gui.components.MenuComponentButton;
@@ -13,7 +14,7 @@ public class MenuMain extends Menu{
     public MenuMain(GUI gui, Menu parent){
         super(gui, parent);
         story = add(new MenuComponentButton(-0.8f, -0.58f, 1.6f, 0.16f, "Story", true));
-        multiplayer = add(new MenuComponentButton(-0.8f, -0.38f, 1.6f, 0.16f, "Multiplayer (NYI)", false));
+        multiplayer = add(new MenuComponentButton(-0.8f, -0.38f, 1.6f, 0.16f, "Multiplayer (NYI)", true));
         quickmap = add(new MenuComponentButton(-0.8f, -0.18f, 1.6f, 0.16f, "Empire Mode", true));
         texturepacks = add(new MenuComponentButton(-0.8f, 0.02f, 1.6f, 0.16f, "Texturepacks", true));
         options = add(new MenuComponentButton(-0.8f, 0.22f, 1.6f, 0.16f, "Options (NYI)", false));
@@ -21,7 +22,6 @@ public class MenuMain extends Menu{
     }
     @Override
     public void renderBackground(){
-        drawText(0.85F, -0.35F, 1.6F, -0.25F, "Coming soon!");
     }
     @Override
     public void buttonClicked(MenuComponentButton button){
@@ -56,5 +56,12 @@ public class MenuMain extends Menu{
     }
     private void exit(){
         Core.helper.running = false;
+    }
+    @Override
+    public void keyboardEvent(char character, int key, boolean pressed, boolean repeat){
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
+        }
+        super.keyboardEvent(character, key, pressed, repeat);
     }
 }

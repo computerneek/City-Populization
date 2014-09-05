@@ -61,6 +61,9 @@ public class ResourceList{
         return this;
     }
     public ResourceList remove(Resource resource, int count){
+        if(count<1){
+            return this;
+        }
         if(get(resource)>count){
             list.put(resource, list.get(resource)-count);
         }else{
@@ -75,7 +78,6 @@ public class ResourceList{
         }
         String value = "";
         ArrayList<Resource> resources = listResources();
-        Resource.Wood.compareTo(Resource.Oil);
         Collections.sort(resources);
         for(Resource resource : resources){
             if(!value.isEmpty()){

@@ -57,7 +57,10 @@ public class WorkerTaskSegment {
             if(sequence.validate()){
                 resources.removeAll(loaded);
                 plot.readyResources(loaded);
+            }else if(resources.count()>0){
+                return null;
             }else{
+                requiredWorkers--;
                 return null;
             }
         }else if(type.equals("Plot Type")){
@@ -84,7 +87,10 @@ public class WorkerTaskSegment {
             if(sequence.validate()&&loaded.count()>0){
                 resources.removeAll(loaded);
                 plot.coming+=loaded.count();
+            }else if(resources.count()>0){
+                return null;
             }else{
+                requiredWorkers--;
                 return null;
             }
         }else if(type.equals("Train Worker")){
@@ -102,7 +108,7 @@ public class WorkerTaskSegment {
         switch(type){
             case "Resource Collection":
             case "Resource Returns":
-                if(resources.listResources().size()>0){
+                if(resources.count()>0){
                     requiredWorkers++;
                 }
         }
