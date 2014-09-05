@@ -3,6 +3,7 @@ import CityPopulization.menu.MenuIngame;
 import CityPopulization.menu.buttons.Button;
 import CityPopulization.menu.buttons.ButtonEvent;
 import CityPopulization.menu.buttons.ButtonSet;
+import CityPopulization.packets.PacketCash;
 import CityPopulization.render.Side;
 import CityPopulization.world.World;
 import CityPopulization.world.aircraft.Template;
@@ -17,6 +18,7 @@ import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import org.lwjgl.input.Keyboard;
+import simplelibrary.net.packet.PacketInteger;
 public class PlayerHuman extends Player {
     public PlayerHuman(){
         super(null);
@@ -31,30 +33,35 @@ public class PlayerHuman extends Player {
     }
     @Override
     public void summonInitialWorkers(){
-        world.generateAndGetPlot(-1, 0, 0).setType(PlotType.AirportTerminal).setOwner(this).setFront(Side.BACK);
-        world.generateAndGetPlot(-1, -1, 0).setType(PlotType.AirportJetway).setOwner(this);
-        world.generateAndGetPlot(0, -1, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
-        world.generateAndGetPlot(0, 0, 0).setType(PlotType.AirportEntrance).setOwner(this).terminal.fuel=100;
+        world.generateAndGetPlot(-1+offsetX, 0+offsetY, 0).setType(PlotType.AirportTerminal).setOwner(this).setFront(Side.BACK);
+        world.generateAndGetPlot(-1+offsetX, -1+offsetY, 0).setType(PlotType.AirportJetway).setOwner(this);
+        world.generateAndGetPlot(0+offsetX, -1+offsetY, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
+        world.generateAndGetPlot(0+offsetX, 0+offsetY, 0).setType(PlotType.AirportEntrance).setOwner(this).terminal.fuel=100;
+        world.generateAndGetPlot(1+offsetX, -1+offsetY, 0).setType(PlotType.Air);
         if(!sandbox){
-            world.generateAndGetPlot(0, 1, 0).setType(PlotType.Road).setOwner(this);
-            world.generateAndGetPlot(1, 1, 0).setType(PlotType.Road).setOwner(this);
-            world.generateAndGetPlot(1, 0, 0).setType(PlotType.Warehouse).setLevel(1000/getResourcesPerWarehouse()+(1000%getResourcesPerWarehouse()>0?0:-1)).setOwner(this).resources.addAll(new ResourceList(
+            world.generateAndGetPlot(0+offsetX, 1+offsetY, 0).setType(PlotType.Road).setOwner(this);
+            world.generateAndGetPlot(1+offsetX, 1+offsetY, 0).setType(PlotType.Road).setOwner(this);
+            world.generateAndGetPlot(1+offsetX, 0+offsetY, 0).setType(PlotType.Warehouse).setLevel(1000/getResourcesPerWarehouse()+(1000%getResourcesPerWarehouse()>0?0:-1)).setOwner(this).resources.addAll(new ResourceList(
                 Resource.Tools, 200,
                 Resource.Dirt, 250,
                 Resource.Wood, 250,
                 Resource.Iron, 250,
                 Resource.Coal, 50
             ));
-            world.getPlot(0, 0, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_PASSENGER, 1, 0, new ResourceList(Resource.Fuel, 10), 1200, 0));
+            world.getPlot(0+offsetX, 0+offsetY, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_PASSENGER, 1, 1, new ResourceList(Resource.Fuel, 10), 1200, 0));
         }
-        for(int j = 0; j<10; j++){
+        for(int j = 0; j<1; j++){
             Worker worker = new Worker();
-            worker.homePlot = world.getPlot(0, 0, 0);
+            worker.homePlot = world.getPlot(0+offsetX, 0+offsetY, 0);
             worker.player = this;
             worker.homePlot.workers.add(worker);
             worker.homePlot.workersPresent.add(worker);
         }
         cash = 5000;
+        if(client!=null){
+            sendPlot(0, 0, 0);
+            client.client.send(new PacketCash(cash));
+        }
     }
     @Override
     public void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button){

@@ -57,36 +57,6 @@ public class LocalSaveLoader implements SaveLoader{
                 return load3_1(info);
         }
     }
-    private World load3_1(WorldInfo info){
-        World world = new World();
-        world.info = info;
-        try(FileInputStream in = new FileInputStream(info.file)){
-            Config config = Config.newConfig(in).load();
-            if(config!=null){
-                config = config.load();
-            }
-            if(config==null){
-                return world;
-            }
-            world.load(config);
-        }catch(IOException ex){
-        }catch(NullPointerException|UnsupportedOperationException ex){
-            new Thread(){
-                public void run(){
-                    try{
-                        Thread.sleep(1000);
-                    }catch(InterruptedException ex1){
-                        throw new RuntimeException(ex1);
-                    }
-                    JOptionPane.showMessageDialog(null, "World load failed due to programming error!\n"
-                                                        + "Please include this file in a bug report:\n"
-                                                        + Sys.errorLog.getAbsolutePath(), "Load Failed", JOptionPane.ERROR_MESSAGE);
-                }
-            }.start();
-            throw ex;
-        }
-        return world;
-    }
     @Override
     public void saveWorld(World world){
         WorldInfo info = world.info;
@@ -124,5 +94,35 @@ public class LocalSaveLoader implements SaveLoader{
             }.start();
             throw ex;
         }
+    }
+    private World load3_1(WorldInfo info){
+        World world = new World();
+        world.info = info;
+        try(FileInputStream in = new FileInputStream(info.file)){
+            Config config = Config.newConfig(in).load();
+            if(config!=null){
+                config = config.load();
+            }
+            if(config==null){
+                return world;
+            }
+            world.load(config);
+        }catch(IOException ex){
+        }catch(NullPointerException|UnsupportedOperationException ex){
+            new Thread(){
+                public void run(){
+                    try{
+                        Thread.sleep(1000);
+                    }catch(InterruptedException ex1){
+                        throw new RuntimeException(ex1);
+                    }
+                    JOptionPane.showMessageDialog(null, "World load failed due to programming error!\n"
+                                                        + "Please include this file in a bug report:\n"
+                                                        + Sys.errorLog.getAbsolutePath(), "Load Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            }.start();
+            throw ex;
+        }
+        return world;
     }
 }

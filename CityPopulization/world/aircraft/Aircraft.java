@@ -204,9 +204,7 @@ public abstract class Aircraft{
                 if(schedule!=null){
                     for(AircraftPassenger pass : passengers){
                         if(pass instanceof AircraftPassengerCivilian){
-                            if(schedule.civilians>1){
-                                schedule.civilians--;
-                            }
+                            schedule.civilians--;
                             return;
                         }
                     }
@@ -308,6 +306,16 @@ public abstract class Aircraft{
         player.world.getPlot(x, y, z).setType(PlotType.Debris).setOwner(player);
         player.world.getPlot(Math.round(x), Math.round(y), Math.round(z)+1).setType(PlotType.Debris).setOwner(player);
         crashed = 1;
+        if(schedule!=null){
+            for(AircraftPassenger pass : passengers){
+                schedule.civilians = -Math.abs(schedule.civilians)-5;
+                if(pass instanceof AircraftPassengerCivilian){
+                    if(schedule.civilians>0){
+                        schedule.civilians--;
+                    }
+                }
+            }
+        }
     }
     public void render(Player localPlayer){
         boolean canPlayerSeePlane = player==localPlayer;
@@ -487,7 +495,7 @@ public abstract class Aircraft{
             air.cargoCapacity = config.get("cargoCapacity");
             air.cargoOccupied = config.get("cargo");
             if(config.hasProperty("runwayx")){
-                air.runway = Runway.findRunway(Core.loadingWorld.getPlot((int)config.get("runwayx"), (int)config.get("runwayy"), (int)config.get("runwayz")));
+                air.runway = Runway.findRunway(Core.loadingWorld.generatePlot((int)config.get("runwayx"), (int)config.get("runwayy"), (int)config.get("runwayz")));
             }
             if(config.hasProperty("terminalx")){
                 air.terminal = Core.loadingWorld.getPlot((int)config.get("terminalx"), (int)config.get("terminaly"), (int)config.get("terminalz")).terminal;

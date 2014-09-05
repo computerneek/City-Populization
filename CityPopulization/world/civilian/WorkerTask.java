@@ -86,6 +86,7 @@ public class WorkerTask{
     }
     public Config save(){
         Config config = Config.newConfig();
+        config.set("civilian", this instanceof CivilianTask);
         config.set("x", targetPlot.x);
         config.set("y", targetPlot.y);
         config.set("z", targetPlot.z);
@@ -113,7 +114,12 @@ public class WorkerTask{
         return config;
     }
     public static WorkerTask load(Config get){
-        WorkerTask task = new WorkerTask();
+        WorkerTask task;
+        if(get.hasProperty("civilian")&&(boolean)get.get("civilian")){
+            task = new CivilianTask();
+        }else{
+            task = new WorkerTask();
+        }
         task.segments.clear();
         task.targetPlot = Core.loadingWorld.generatePlot((int)get.get("x"), (int)get.get("y"), (int)get.get("z"));
         if(get.hasProperty("altx")){

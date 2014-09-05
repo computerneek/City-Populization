@@ -1,18 +1,17 @@
 package CityPopulization.menu;
 import CityPopulization.Core;
 import CityPopulization.world.WinningCondition;
-import CityPopulization.menu.MenuNewWorld;
 import org.lwjgl.input.Keyboard;
 import simplelibrary.opengl.gui.GUI;
 import simplelibrary.opengl.gui.Menu;
 import simplelibrary.opengl.gui.components.MenuComponentButton;
 import simplelibrary.opengl.gui.components.MenuComponentOptionButton;
-public class MenuNewWorldGoal extends Menu{
-    private final MenuNewWorld parent;
+public class MenuOpenServerGoal extends Menu{
+    private final MenuOpenServer parent;
     private final MenuComponentOptionButton goalType;
     private final MenuComponentButton cancel;
     private final MenuComponentButton done;
-    public MenuNewWorldGoal(GUI gui, MenuNewWorld parent){
+    public MenuOpenServerGoal(GUI gui, MenuOpenServer parent){
         super(gui, parent);
         this.parent = parent;
         goalType = add(new MenuComponentOptionButton(-0.8f, -0.78, 1.6, 0.16, "Type", true, parent.theGoal.getGoalType(), WinningCondition.listTypes()));

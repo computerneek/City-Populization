@@ -1,4 +1,5 @@
 package CityPopulization.world.plot;
+import CityPopulization.Core;
 import CityPopulization.menu.MenuIngame;
 import CityPopulization.render.Side;
 import CityPopulization.world.World;
@@ -17,6 +18,7 @@ import CityPopulization.world.player.Race;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.config2.Config;
@@ -57,6 +59,7 @@ public class Plot{
     public ArrayList<WorkerTask> lastTasksCivilian = new ArrayList<>();
     private int civilianTime;
     public static final int VISION_DISTANCE = 2;
+    private boolean taskWorkerFailed;
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
@@ -102,19 +105,21 @@ public class Plot{
         }
         this.type = type;
         this.level = 0;
-        world.clearPlotUpdates(this);
-        world.schedulePlotUpdate(this);
-        for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
-            for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
-                for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
-                    Plot plot = world.getPlot(x+i, y+j, z+k);
-                    if(plot!=null){
-                        plot.onNeighborPlotChange();
+        if(Core.world==world){
+            world.clearPlotUpdates(this);
+            world.schedulePlotUpdate(this);
+            for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+                for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                    for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
+                        Plot plot = world.getPlot(x+i, y+j, z+k);
+                        if(plot!=null){
+                            plot.onNeighborPlotChange();
+                        }
                     }
                 }
             }
+            onPlotChange();
         }
-        onPlotChange();
         if(owner!=null){
             owner.resourceStructures.remove(this);
             if(type==PlotType.Warehouse){
@@ -131,9 +136,11 @@ public class Plot{
     }
     public Plot setLevel(int level){
         this.level = level;
-        world.clearPlotUpdates(this);
-        world.schedulePlotUpdate(this);
-        onPlotChange();
+        if(Core.world==world){
+            world.clearPlotUpdates(this);
+            world.schedulePlotUpdate(this);
+            onPlotChange();
+        }
         return this;
     }
     public Plot setOwner(Player player){
@@ -141,14 +148,16 @@ public class Plot{
             owner.resourceStructures.remove(this);
         }
         owner = player;
-        for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
-            for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
-                for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
-                    world.generatePlot(x+i, y+j, z+k).updateVisibility();
+        if(Core.world==world){
+            for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+                for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                    for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
+                        world.generatePlot(x+i, y+j, z+k).updateVisibility();
+                    }
                 }
             }
+            onPlotChange();
         }
-        onPlotChange();
         if(type==PlotType.Warehouse){
             owner.resourceStructures.add(this);
         }
@@ -164,6 +173,7 @@ public class Plot{
         return aircraft;
     }
     public void updateVisibility(){
+        ArrayList<Player> visibilityClone = new ArrayList<Player>(playerVisibilities);
         playerVisibilities.clear();
         PLAYER:for(Player player : world.listPlayers()){
             for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
@@ -178,20 +188,53 @@ public class Plot{
                 }
             }
         }
+        Plot plot;
+        shouldRenderTopFace = (plot=world.getPlot(x, y, z+1))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        shouldRenderLeftFace = (plot=world.getPlot(x-1, y, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        shouldRenderRightFace = (plot=world.getPlot(x+1, y, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        shouldRenderFrontFace = (plot=world.getPlot(x, y+1, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        shouldRenderBackFace = (plot=world.getPlot(x, y-1, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
+        for(Player player : visibilityClone){
+            if(!playerVisibilities.contains(player)){
+                player.plotDisappear(x-player.offsetX, y-player.offsetY, z);
+            }
+        }
+        for(Player player : playerVisibilities){
+            if(!playerVisibilities.contains(player)){
+                player.plotAppear(x-player.offsetX, y-player.offsetY, z);
+            }
+        }
     }
     public void update(){
         if(type.falls()&&world.getPlot(x, y, z-1)!=null&&!world.getPlot(x, y, z-1).type.supports()){
-            fallProgress++;
-            world.schedulePlotUpdate(this);
-            onNeighborPlotChange();
-            if(fallProgress==1){
-                world.getPlot(x, y, z-1).demolish();
+            boolean go = true;
+            PlotType atype = world.getPlot(x, y, z-1).type;
+            if(type==PlotType.OilDeposit){
+                if(atype==PlotType.Sand||atype==PlotType.OilDeposit){
+                    go = false;
+                }
             }
-            if(fallProgress>=100){
-                world.getPlot(x, y, z-1).setType(type.getFallenType()).setOwner(owner);
-                setType(PlotType.Air);
-                setOwner(null);
-                fallProgress=0;
+            if(go){
+                fallProgress++;
+                world.schedulePlotUpdate(this);
+                onNeighborPlotChange();
+                if(type==PlotType.Sand&&atype==PlotType.OilDeposit){
+                    world.getPlot(x, y, z-1).fallProgress = -fallProgress;
+                }else if(fallProgress==1){
+                    world.getPlot(x, y, z-1).demolish();
+                }
+                if(fallProgress>=100){
+                    if(type==PlotType.Sand&&atype==PlotType.OilDeposit){
+                        Player anowner = world.getPlot(x, y, z-1).owner;
+                        world.getPlot(x, y, z-1).setType(PlotType.Sand).setOwner(owner).fallProgress=0;
+                        setType(PlotType.OilDeposit).setOwner(anowner);
+                    }else{
+                        world.getPlot(x, y, z-1).setType(type.getFallenType()).setOwner(owner);
+                        setType(PlotType.Air);
+                        setOwner(null);
+                    }
+                    fallProgress=0;
+                }
             }
         }
         if(getType()==PlotType.AirportEntrance){
@@ -211,7 +254,7 @@ public class Plot{
             coming = Math.max(0, coming-inboundResources.count());
             inboundResources = new ResourceList();
         }
-        if(getType()==PlotType.Warehouse){
+        if(owner!=null&&getType()==PlotType.Warehouse){
             world.schedulePlotUpdate(this);
             if(task==null&&resources.count()>(level+1)*owner.getResourcesPerWarehouse()){
                 ResourceList lst = resources.split(resources.count()-(level+1)*owner.getResourcesPerWarehouse());
@@ -221,7 +264,7 @@ public class Plot{
                 task.revenue.remove(Resource.Tools, 1);
                 task.segments.remove(0);
             }
-        }else if(type!=PlotType.AirportEntrance&&task==null&&resources.count()>0){
+        }else if(owner!=null&&type!=PlotType.AirportEntrance&&task==null&&resources.count()>0){
             task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
             task.prepare();
             task.cost.remove(Resource.Tools, 1);
@@ -237,7 +280,7 @@ public class Plot{
         }
         ArrayList<Plot> terminals = new ArrayList<>();
         findTerminals(terminals);
-        ResourceList fuel = new ResourceList(Resource.Fuel, Math.min(inboundResources.get(Resource.Fuel), 500-terminal.fuel-resources.get(Resource.Fuel)));
+        ResourceList fuel = new ResourceList(Resource.Fuel, Math.max(Math.min(inboundResources.get(Resource.Fuel), 500-terminal.fuel-resources.get(Resource.Fuel)), 0));
         resources.addAll(fuel);
         inboundResources.removeAll(fuel);
         for(Plot plot : terminals){
@@ -259,11 +302,12 @@ public class Plot{
             fuel = fuel.split(500-terminal.fuel);
             resources.removeAll(fuel);
             if(resources.count()>0){
-                task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources.split(100));
+                task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
                 task.prepare();
                 task.cost.remove(Resource.Tools, 1);
                 task.revenue.remove(Resource.Tools, 1);
                 task.segments.remove(0);
+                resources = new ResourceList();
             }
             resources.addAll(fuel);
         }else if(owner!=null&&task==null&&terminal.fuel+resources.get(Resource.Fuel)<500&&!Path.findWarehouse(this, true).isEmpty()){
@@ -271,7 +315,11 @@ public class Plot{
             for(Plot plot : Path.findWarehouse(this, true)){
                 available+=plot.resources.get(Resource.Fuel);
             }
-            task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList(Resource.Fuel, 1)).setRevenue(new ResourceList());
+            if(available==0){
+                return;
+            }
+            int count = Math.min(Math.max(1, available/10), 500-terminal.fuel-resources.get(Resource.Fuel));
+            task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList(Resource.Fuel, count)).setRevenue(new ResourceList());
             task.prepare();
             task.cost.remove(Resource.Tools, 1);
             task.revenue.remove(Resource.Tools, 1);
@@ -384,20 +432,27 @@ public class Plot{
             Plot house = findEmptyHouse();
             if(house!=null){
                 Civilian civilian = civiliansPresent.get(0);
-                Path path = Path.findPath(this, house, false);
-                if(path==null){
-                    return;
+                if(civilian.timer>0){
+                    Path path = Path.findPath(this, house, false);
+                    if(path==null){
+                        return;
+                    }
+                    civilian.homePlot = house;
+                    house.civilians.add(civilian);
+                    civilians.remove(civilian);
+                    civiliansPresent.remove(civilian);
+                    civilian.path = path;
+                    world.civilians.add(civilian);
+                    world.onCivilianAdded(civilian);
+                    timeSinceLastCivilianOperation = 0;
+                }else{
+                    civiliansPresent.remove(civilian);
+                    civiliansPresent.add(civilian);
                 }
-                civilian.homePlot = house;
-                house.civilians.add(civilian);
-                civilians.remove(civilian);
-                civiliansPresent.remove(civilian);
-                civilian.path = path;
-                world.civilians.add(civilian);
-                timeSinceLastCivilianOperation = 0;
             }
         }else{
-            for(Civilian worker : civilians){
+            for(Iterator<Civilian> it=civilians.iterator(); it.hasNext();){
+                Civilian worker=it.next();
                 if(worker.timer<=0){
                     Plot airport = Path.findAirportEntrance(this, false);
                     if(airport!=null){
@@ -405,16 +460,17 @@ public class Plot{
                         if(path!=null){
                             worker.path = path;
                             worker.homePlot = airport;
-                            civilians.remove(worker);
+                            it.remove();
                             civiliansPresent.remove(worker);
                             world.civilians.add(worker);
+                            world.onCivilianAdded(worker);
                             airport.civilians.add(worker);
                         }
                     }
                 }
             }
             ArrayList<WorkerTask> tasks = new ArrayList<>();
-            findPotentialTasks(tasks, false);
+            ArrayList<Plot> plots = findPotentialTasks(tasks, false);
             ArrayList<Civilian> workersAvailable = new ArrayList<>();
             for(Civilian worker : civiliansPresent){
                 if(worker.timer>0){
@@ -425,14 +481,17 @@ public class Plot{
                 return;
             }
             Civilian worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
+            boolean taskSent = false;
             if(task!=null&&task instanceof CivilianTask&&!(task.isFull()||task.getCurrentSegment().isFull()||!task.canReceiveFrom(this))){
                 WorkerTaskSegment segment = task.getCurrentSegment();
                 EventSequence sequence = segment.generateEventSequence(worker, this);
                 if(sequence!=null){
                     worker.assign(sequence);
                     world.civilians.add(worker);
+                    world.onCivilianAdded(worker);
                     civiliansPresent.remove(worker);
                     timeSinceLastCivilianOperation = 0;
+                    taskSent = true;
                 }
             }
         }
@@ -454,6 +513,48 @@ public class Plot{
             for(Worker worker : workers){
                 worker.timer--;
             }
+            for(Civilian civilian : civilians){
+                civilian.timer--;
+            }
+            if(getType()!=PlotType.AirportEntrance){
+                for(Worker worker : workersPresent){
+                    if(worker.timer<=0){
+                        Plot airport = Path.findAirportEntrance(this, true);
+                        if(airport!=null){
+                            Path path = Path.findPath(this, airport, true);
+                            if(path!=null){
+                                worker.path = path;
+                                worker.homePlot = airport;
+                                while(workers.remove(worker));
+                                workersPresent.remove(worker);
+                                world.civilians.add(worker);
+                                world.onCivilianAdded(worker);
+                                airport.workers.add(worker);
+                                break;
+                            }
+                        }
+                    }
+                }
+                for(Civilian worker : civiliansPresent){
+                    worker.timer--;
+                    if(worker.timer<=0){
+                        Plot airport = Path.findAirportEntrance(this, true);
+                        if(airport!=null){
+                            Path path = Path.findPath(this, airport, true);
+                            if(path!=null){
+                                worker.path = path;
+                                worker.homePlot = airport;
+                                while(civilians.remove(worker));
+                                civiliansPresent.remove(worker);
+                                world.civilians.add(worker);
+                                world.onCivilianAdded(worker);
+                                airport.civilians.add(worker);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }else{
             for(Worker worker : workersPresent){
                 if(worker.timer<=0){
@@ -466,24 +567,8 @@ public class Plot{
                             while(workers.remove(worker));
                             workersPresent.remove(worker);
                             world.civilians.add(worker);
+                            world.onCivilianAdded(worker);
                             airport.workers.add(worker);
-                            break;
-                        }
-                    }
-                }
-            }
-            for(Civilian worker : civiliansPresent){
-                if(worker.timer<=0){
-                    Plot airport = Path.findAirportEntrance(this, true);
-                    if(airport!=null){
-                        Path path = Path.findPath(this, airport, true);
-                        if(path!=null){
-                            worker.path = path;
-                            worker.homePlot = airport;
-                            while(civilians.remove(worker));
-                            civiliansPresent.remove(worker);
-                            world.civilians.add(worker);
-                            airport.civilians.add(worker);
                             break;
                         }
                     }
@@ -491,17 +576,23 @@ public class Plot{
             }
         }
         ArrayList<WorkerTask> tasks = new ArrayList<>();
-        findPotentialTasks(tasks, true);
-        ArrayList<Worker> workersAvailable = new ArrayList<>();
-        for(Worker worker : workersPresent){
-            if(worker.timer>0){
-                workersAvailable.add(worker);
-            }
-        }
-        if(workersAvailable.isEmpty()){
+        ArrayList<Plot> plots = findPotentialTasks(tasks, true);
+        if(lastTaskTimeWorker==world.age&&taskWorkerFailed){
+            taskWorkerFailed = false;
             return;
         }
-        Worker worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
+        ArrayList<Worker> workersAvailable = new ArrayList<>();
+        Worker worker = null;
+        for(Worker aworker : workersPresent){
+            if(aworker.timer>0){
+                worker = aworker;
+                break;
+            }
+        }
+        if(worker==null){
+            return;
+        }
+        boolean taskSent = false;
         for(WorkerTask potentialTask : tasks){
             if(potentialTask.getCurrentSegment()==null||((potentialTask instanceof CivilianTask)&&potentialTask.getCurrentSegment().type.equals("Train Worker"))||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
                 continue;
@@ -511,24 +602,32 @@ public class Plot{
             if(sequence!=null){
                 worker.assign(sequence);
                 world.civilians.add(worker);
+                world.onCivilianAdded(worker);
                 workersPresent.remove(worker);
                 timeSinceLastWorkerOperation = 0;
+                taskSent = true;
                 break;
             }
         }
+        if(!taskSent){
+            for(Plot plot : plots){
+                plot.taskWorkerFailed = true;
+            }
+            taskWorkerFailed = false;
+        }
     }
-    private void findPotentialTasks(ArrayList<WorkerTask> tasks, boolean isWorker){
+    private ArrayList<Plot> findPotentialTasks(ArrayList<WorkerTask> tasks, boolean isWorker){
         if(owner==null){
-            return;
+            return new ArrayList<>();
         }
         if(isWorker&&lastTaskTimeWorker==world.age){
             tasks.addAll(lastTasksWorker);
-            return;
+            return new ArrayList<>();
         }else if(!isWorker&&lastTaskTimeCivilian==world.age){
             tasks.addAll(lastTasksCivilian);
-            return;
+            return new ArrayList<>();
         }
-        Path.findPotentialTasks(tasks, this, isWorker);
+        return Path.findPotentialTasks(tasks, this, isWorker);
     }
     public ArrayList<Side> getPathableSides(boolean isWorker){
         ArrayList<Side> sides = new ArrayList<>();
@@ -605,39 +704,53 @@ public class Plot{
         config.set("y", y);
         config.set("z", z);
         config.set("type", type.name());
-        config.set("level", level);
+        if(level!=0){
+            config.set("level", level);
+        }
         if(owner!=null){
             config.set("owner", world.otherPlayers.indexOf(owner));
         }
         config.set("frameBoost", frameBoost);
         config.set("front", front.name());
         config.set("terminal", terminal.save());
-        Config two = Config.newConfig();
-        two.set("count", civiliansPresent.size());
-        for(int i = 0; i<civiliansPresent.size(); i++){
-            two.set(i+"", civiliansPresent.get(i).save());
+        if(!civiliansPresent.isEmpty()){
+            Config two = Config.newConfig();
+            two.set("count", civiliansPresent.size());
+            for(int i = 0; i<civiliansPresent.size(); i++){
+                two.set(i+"", civiliansPresent.get(i).save());
+            }
+            config.set("civilians", two);
+            config.set("timeCivilian", timeSinceLastCivilianOperation);
         }
-        config.set("civilians", two);
-        two = Config.newConfig();
-        two.set("count", workersPresent.size());
-        for(int i = 0; i<workersPresent.size(); i++){
-            two.set(i+"", workersPresent.get(i).save());
+        if(!workersPresent.isEmpty()){
+            Config two = Config.newConfig();
+            two.set("count", workersPresent.size());
+            for(int i = 0; i<workersPresent.size(); i++){
+                two.set(i+"", workersPresent.get(i).save());
+            }
+            config.set("workers", two);
+            config.set("timeWorker", timeSinceLastWorkerOperation);
         }
-        config.set("workers", two);
-        config.set("timeCivilian", timeSinceLastCivilianOperation);
-        config.set("timeWorker", timeSinceLastWorkerOperation);
         if(task!=null){
             config.set("task", task.save());
         }
-        config.set("resources", resources.save());
-        config.set("readyResources", readyResources.save());
-        config.set("inboundResources", inboundResources.save());
-        two = Config.newConfig();
-        two.set("count", inboundAircraft.size());
-        for(int i = 0; i<inboundAircraft.size(); i++){
-            two.set(i+"", inboundAircraft.get(i).save());
+        if(resources.count()!=0){
+            config.set("resources", resources.save());
         }
-        config.set("aircraft", two);
+        if(readyResources.count()!=0){
+            config.set("readyResources", readyResources.save());
+        }
+        if(inboundResources.count()!=0){
+            config.set("inboundResources", inboundResources.save());
+        }
+        if(!inboundAircraft.isEmpty()){
+            Config two = Config.newConfig();
+            two.set("count", inboundAircraft.size());
+            for(int i = 0; i<inboundAircraft.size(); i++){
+                two.set(i+"", inboundAircraft.get(i).save());
+            }
+            config.set("aircraft", two);
+        }
         config.set("coming", coming);
         return config;
     }
@@ -646,7 +759,9 @@ public class Plot{
     }
     public void load(Config get){
         setType(PlotType.valueOf((String)get.get("type")));
-        setLevel((int)get.get("level"));
+        if(get.hasProperty("level")){
+            setLevel((int)get.get("level"));
+        }
         int whichOwner = get.hasProperty("owner")?(int)get.get("owner"):-2;
         if(whichOwner==-1){
             setOwner(world.localPlayer);
@@ -655,31 +770,57 @@ public class Plot{
         }
         frameBoost = get.get("frameBoost");
         front = Side.valueOf((String)get.get("front"));
-        terminal.load((Config)get.get("terminal"));
-        Config two = get.get("civilians");
-        for(int i = 0; i<(int)two.get("count"); i++){
-            Civilian civilian = Civilian.load((Config)two.get(i+""));
-            civiliansPresent.add(civilian);
-            civilians.add(civilian);
+        if(get.hasProperty("civilians")){
+            Config two = get.get("civilians");
+            for(int i = 0; i<(int)two.get("count"); i++){
+                Civilian civilian = Civilian.load((Config)two.get(i+""));
+                civiliansPresent.add(civilian);
+                civilians.add(civilian);
+            }
+            timeSinceLastCivilianOperation = get.get("timeCivilian");
         }
-        two = get.get("workers");
-        for(int i = 0; i<(int)two.get("count"); i++){
-            Worker worker = (Worker)Civilian.load((Config)two.get(i+""));
-            workersPresent.add(worker);
-            workers.add(worker);
+        if(get.hasProperty("workers")){
+            Config two = get.get("workers");
+            for(int i = 0; i<(int)two.get("count"); i++){
+                Worker worker = (Worker)Civilian.load((Config)two.get(i+""));
+                workersPresent.add(worker);
+                workers.add(worker);
+            }
+            timeSinceLastWorkerOperation = get.get("timeWorker");
         }
-        timeSinceLastCivilianOperation = get.get("timeCivilian");
-        timeSinceLastWorkerOperation = get.get("timeWorker");
         if(get.hasProperty("task")){
             task = WorkerTask.load((Config)get.get("task"));
         }
-        resources = ResourceList.load((Config)get.get("resources"));
-        readyResources = ResourceList.load((Config)get.get("readyResources"));
-        inboundResources = ResourceList.load((Config)get.get("inboundResources"));
-        two = get.get("aircraft");
-        for(int i = 0; i<(int)two.get("count"); i++){
-            inboundAircraft.add(Aircraft.load((Config)two.get(i+"")));
+        if(get.hasProperty("resources")){
+            resources = ResourceList.load((Config)get.get("resources"));
+        }
+        if(get.hasProperty("readyResources")){
+            readyResources = ResourceList.load((Config)get.get("readyResources"));
+        }
+        if(get.hasProperty("inboundResources")){
+            inboundResources = ResourceList.load((Config)get.get("inboundResources"));
+        }
+        if(get.hasProperty("aircraft")){
+            Config two = get.get("aircraft");
+            for(int i = 0; i<(int)two.get("count"); i++){
+                inboundAircraft.add(Aircraft.load((Config)two.get(i+"")));
+            }
         }
         coming = get.get("coming");
+    }
+    public void eraseAndLoad(Config cnfg){
+        civilians.clear();
+        civiliansPresent.clear();
+        workers.clear();
+        workersPresent.clear();
+        inboundAircraft.clear();
+        owner = null;
+        timeSinceLastCivilianOperation = 0;
+        timeSinceLastWorkerOperation = 0;
+        task = null;
+        resources = new ResourceList();
+        readyResources = new ResourceList();
+        coming = 0;
+        load(cnfg);
     }
 }

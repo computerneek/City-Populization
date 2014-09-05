@@ -8,7 +8,49 @@ import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import simplelibrary.config2.Config;
 public class Path{
-    public static void findPotentialTasks(ArrayList<WorkerTask> tasks, Plot startPlot, boolean isWorker){
+    private boolean jumped;
+    private ArrayList<Plot> path=new ArrayList<>();
+    private Plot currentPlot;
+    public boolean isComplete(){
+        return path.isEmpty();
+    }
+    public int[] next(){
+        Plot plot = path.remove(0);
+        return new int[]{plot.x, plot.y, plot.z};
+    }
+    public Config save(){
+        Config config = Config.newConfig();
+        config.set("count", path.size());
+        for(int i = 0; i<path.size(); i++){
+            Plot plt = path.get(i);
+            config.set(i+"x", plt.x);
+            config.set(i+"y", plt.y);
+            config.set(i+"z", plt.z);
+        }
+        return config;
+    }
+    private Path setJumped(boolean jumped){
+        this.jumped = jumped;
+        return this;
+    }
+    private Path start(Plot startPlot){
+        path.clear();
+        return path(startPlot);
+    }
+    private Path path(Plot plot){
+        path.add(plot);
+        currentPlot = plot;
+        return this;
+    }
+    private Path copy(){
+        Path path = new Path();
+        path.currentPlot = currentPlot;
+        path.path.addAll(this.path);
+        path.jumped = jumped;
+        return path;
+    }
+    public static ArrayList<Plot> findPotentialTasks(ArrayList<WorkerTask> tasks, Plot startPlot, boolean isWorker){
+        ArrayList<Plot> houses = new ArrayList<>();
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         if(startPlot.task!=null){
@@ -30,9 +72,11 @@ public class Path{
             if(isWorker&&!plot.workers.isEmpty()){
                 plot.lastTaskTimeWorker = startPlot.world.age;
                 plot.lastTasksWorker = tasks;
+                houses.add(plot);
             }else if(!isWorker&&!plot.civilians.isEmpty()){
                 plot.lastTaskTimeCivilian = startPlot.world.age;
                 plot.lastTasksCivilian = tasks;
+                houses.add(plot);
             }
             if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))){
                 Plot plotUnder = plot.world.getPlot(plot.x, plot.y, plot.z-1);
@@ -46,6 +90,7 @@ public class Path{
                 paths.add(path.copy().path(side.getPlot(plot.world, plot.x, plot.y, plot.z)));
             }
         }
+        return houses;
     }
     public static Plot findResourcePlot(Plot start, ResourceList resources, boolean isWorker){
         ArrayList<Path> paths = new ArrayList<>();
@@ -196,7 +241,7 @@ public class Path{
             paths.add(new Path().start(start).path(side.getPlot(start.world, start.x, start.y, start.z)));
         }
         if(isWorker&&!start.getTravelableSides(isWorker).contains(Side.UP)){
-            paths.add(new Path().start(start).path(Side.UP.getPlot(start.world, start.x, start.y, start.z)));
+            paths.add(new Path().start(start).path(Side.UP.getPlot(start.world, start.x, start.y, start.z)).setJumped(true));
         }
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
@@ -208,51 +253,19 @@ public class Path{
             }
             coveredPlots.add(plot);
             if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))&&!(plot.getType()==PlotType.Air&&plot.x==start.x&&plot.y==start.y&&plot.z==start.z+1)){
-                if(isWorker&&plot.getType()==PlotType.Air&&end==plot.world.getPlot(plot.x, plot.y, plot.z-1)){
+                if(isWorker&&plot.getType()==PlotType.Air&&end==plot.world.getPlot(plot.x, plot.y, plot.z-1)&&!path.jumped){
                     paths.add(path.copy().path(Side.DOWN.getPlot(plot.world, plot.x, plot.y, plot.z)));
                 }
                 continue;
+            }
+            if(path.jumped&&path.path.size()==3&&path.path.get(2).type!=PlotType.Road&&path.path.get(2).type!=PlotType.Elevator&&(!isWorker||(path.path.get(2).type!=PlotType.AirportJetway&&path.path.get(2).type!=PlotType.AirportRunway))){
+                break;
             }
             for(Side side : plot.getTravelableSides(isWorker)){
                 paths.add(path.copy().path(side.getPlot(plot.world, plot.x, plot.y, plot.z)));
             }
         }
         return null;
-    }
-    private ArrayList<Plot> path = new ArrayList<>();
-    private Plot currentPlot;
-    private Path start(Plot startPlot){
-        path.clear();
-        return path(startPlot);
-    }
-    private Path path(Plot plot){
-        path.add(plot);
-        currentPlot = plot;
-        return this;
-    }
-    private Path copy(){
-        Path path = new Path();
-        path.currentPlot = currentPlot;
-        path.path.addAll(this.path);
-        return path;
-    }
-    public boolean isComplete(){
-        return path.isEmpty();
-    }
-    public int[] next(){
-        Plot plot = path.remove(0);
-        return new int[]{plot.x, plot.y, plot.z};
-    }
-    public Config save(){
-        Config config = Config.newConfig();
-        config.set("count", path.size());
-        for(int i = 0; i<path.size(); i++){
-            Plot plt = path.get(i);
-            config.set(i+"x", plt.x);
-            config.set(i+"y", plt.y);
-            config.set(i+"z", plt.z);
-        }
-        return config;
     }
     public static Path load(Config config){
         Path path = new Path();

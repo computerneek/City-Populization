@@ -64,7 +64,7 @@ public class ScheduleElement {
     }
     public Aircraft getAircraft(Player player){
         tick = 0;
-        Aircraft aircraft = template.createAircraft(player).loadPassengers(AircraftPassenger.workers(workers)).loadPassengers(AircraftPassenger.civilians(civilians)).setDepartureTime(template.departureTime);
+        Aircraft aircraft = template.createAircraft(player).loadPassengers(AircraftPassenger.workers(Math.max(0, workers))).loadPassengers(AircraftPassenger.civilians(Math.max(0, civilians))).setDepartureTime(template.departureTime);
         player.cash-=getAircraftCost();
         for(Resource resource : resourceList.listResources()){
             aircraft.loadCargo(AircraftCargo.resource(resource, resourceList.get(resource)));

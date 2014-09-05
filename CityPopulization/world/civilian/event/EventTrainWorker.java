@@ -1,6 +1,7 @@
 package CityPopulization.world.civilian.event;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Worker;
+import CityPopulization.world.player.Player;
 import simplelibrary.config2.Config;
 public class EventTrainWorker extends Event {
     public EventTrainWorker(){}
@@ -27,6 +28,9 @@ public class EventTrainWorker extends Event {
         aworker.player = worker.player;
         worker.player.world.civilians.remove(worker);
         worker.player.world.civilians.add(aworker);
+        for(Player player : worker.player.world.otherPlayers){
+            player.civilianTrained(worker, aworker);
+        }
     }
     @Override
     public void work(Civilian worker){}

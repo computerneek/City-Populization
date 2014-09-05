@@ -1,16 +1,18 @@
 package CityPopulization.menu;
 import CityPopulization.Core;
-import CityPopulization.world.player.Race;
-import CityPopulization.world.plot.Template;
+import CityPopulization.world.GameDifficulty;
 import CityPopulization.world.WinningCondition;
 import CityPopulization.world.WorldData;
-import CityPopulization.world.GameDifficulty;
+import CityPopulization.world.player.Race;
+import CityPopulization.world.plot.Template;
+import org.lwjgl.input.Keyboard;
 import simplelibrary.opengl.gui.GUI;
 import simplelibrary.opengl.gui.Menu;
 import simplelibrary.opengl.gui.components.MenuComponentButton;
 import simplelibrary.opengl.gui.components.MenuComponentOptionButton;
 import simplelibrary.opengl.gui.components.MenuComponentTextBox;
 public class MenuNewWorld extends Menu{
+    public WinningCondition theGoal=WinningCondition.get("None");
     private final MenuComponentTextBox name;
     private final MenuComponentOptionButton race;
     private final MenuComponentOptionButton template;
@@ -20,7 +22,6 @@ public class MenuNewWorld extends Menu{
     private final MenuComponentOptionButton gameDifficulty;
     private final MenuComponentButton create;
     private final MenuComponentButton cancel;
-    public WinningCondition theGoal = WinningCondition.get("None");
     private final Race[] races;
     private final String[] racesS;
     private final Template[] templates;
@@ -68,6 +69,13 @@ public class MenuNewWorld extends Menu{
         }else if(button==cancel){
             cancel();
         }
+    }
+    @Override
+    public void keyboardEvent(char character, int key, boolean pressed, boolean repeat){
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
+        }
+        super.keyboardEvent(character, key, pressed, repeat);
     }
     private void goal(){
         gui.open(new MenuNewWorldGoal(gui, this));

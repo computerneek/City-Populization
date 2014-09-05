@@ -1,4 +1,5 @@
 package CityPopulization.world.plot;
+import CityPopulization.Core;
 import CityPopulization.world.World;
 import CityPopulization.world.resource.Resource;
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ public enum Template{
     FLAT("Flat"){
         @Override
         public void onPlotGenerated(World world, int x, int y, int z){
-            if(z>0){
+            if(z>0||Core.world!=world){
                 return;
             }
             Random rand = world.getPlot(x, y, z).rand;
@@ -24,7 +25,7 @@ public enum Template{
             double clayChance = 0;
             double goldChance = 0;
             if(z==0){
-                airChance = rand.nextGaussian()*10;
+                airChance = rand.nextGaussian()*20;
                 woodChance = rand.nextGaussian();
             }else{
                 dirtChance = rand.nextGaussian()*5*(z==-1?10:1);
@@ -93,7 +94,7 @@ public enum Template{
                         for(int j = -dist2+1; j<dist2; j++){
                             int dist3 = dist2-Math.abs(j);
                             for(int k = -dist3+1; k<dist3; k++){
-                                if(world.getPlot(x+i, y+j, z+k)==null&&rand.nextGaussian()<5){
+                                if(z>-2&&world.getPlot(x+i, y+j, z+k)==null&&rand.nextGaussian()<5){
                                     world.generateAndGetPlot(x+i, y+j, z+k).setType(PlotType.Sand);
                                 }
                             }

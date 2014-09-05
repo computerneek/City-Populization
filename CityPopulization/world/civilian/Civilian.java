@@ -132,6 +132,9 @@ public class Civilian{
             homePlot.civiliansPresent.add(this);
         }
         homePlot.world.civilians.remove(this);
+        for(Player player : homePlot.world.otherPlayers){
+            player.civilianRemoved(this);
+        }
         homePlot.world.schedulePlotUpdate(homePlot);
     }
     public void render(Player localPlayer){

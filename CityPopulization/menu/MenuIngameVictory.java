@@ -3,6 +3,7 @@ import CityPopulization.Core;
 import CityPopulization.world.plot.PlotType;
 import java.io.IOException;
 import java.io.InputStream;
+import org.lwjgl.input.Keyboard;
 import simplelibrary.opengl.ImageStash;
 import simplelibrary.opengl.gui.Menu;
 import simplelibrary.opengl.gui.components.MenuComponent;
@@ -57,5 +58,12 @@ public class MenuIngameVictory extends Menu {
             menu = menu.parent;
         }
         gui.open(menu);
+    }
+    @Override
+    public void keyboardEvent(char character, int key, boolean pressed, boolean repeat){
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
+        }
+        super.keyboardEvent(character, key, pressed, repeat);
     }
 }

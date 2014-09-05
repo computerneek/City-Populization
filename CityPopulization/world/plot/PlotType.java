@@ -49,7 +49,7 @@ public enum PlotType{
     House("House", "house", new ResourceList(), new HouseRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_H),
     Elevator("Elevator", "elevator", new ResourceList(), new ElevatorRenderer(), 10, false, true, Side.values(), false, false, Keyboard.KEY_L),
     Support("Support", "support", new ResourceList(), new CubeRenderer(), 1, true, true, Side.values(), false, true, Keyboard.KEY_U),
-    Debris("Debris", "debris", new ResourceList(), new DebrisRenderer(), 1, false, true, Side.values(), true, false, 0);
+    Debris("Debris", "debris", new ResourceList(), new DebrisRenderer(), 1, false, false, Side.values(), true, false, 0);
     public final String name;
     public final String textureFolder;
     public ResourceList resourceHarvested;
@@ -172,7 +172,7 @@ public enum PlotType{
         return supports;
     }
     public PlotType getFallenType(){
-        if(supports()){
+        if(supports()||this==PlotType.OilDeposit){
             return this;
         }else{
             return Debris;

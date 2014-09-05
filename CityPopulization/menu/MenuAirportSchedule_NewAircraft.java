@@ -1,4 +1,5 @@
 package CityPopulization.menu;
+import CityPopulization.Core;
 import CityPopulization.world.aircraft.Template;
 import CityPopulization.world.aircraft.schedule.ScheduleElement;
 import CityPopulization.world.resource.Resource;
@@ -210,5 +211,12 @@ public class MenuAirportSchedule_NewAircraft extends Menu{
                 gui.open(((MenuAirportSchedule)parent).refresh());
             }
         }
+    }
+    @Override
+    public void keyboardEvent(char character, int key, boolean pressed, boolean repeat){
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
+        }
+        super.keyboardEvent(character, key, pressed, repeat);
     }
 }

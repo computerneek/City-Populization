@@ -1,5 +1,7 @@
 package CityPopulization.menu;
+import CityPopulization.Core;
 import java.util.ArrayList;
+import org.lwjgl.input.Keyboard;
 import simplelibrary.openal.SoundStash;
 import simplelibrary.opengl.ImageStash;
 import simplelibrary.opengl.gui.GUI;
@@ -57,5 +59,12 @@ public class MenuTexturepacks extends Menu {
             list.add(new ListComponentButton(texturepack, true, 1.5, 0.1));
         }
         list.selectedIndex = TexturePackManager.instance.texturePacks.indexOf(TexturePackManager.instance.currentTexturePack);
+    }
+    @Override
+    public void keyboardEvent(char character, int key, boolean pressed, boolean repeat){
+        if(key==Keyboard.KEY_F11&&pressed&&!repeat){
+            Core.helper.setFullscreen(!Core.helper.isFullscreen());
+        }
+        super.keyboardEvent(character, key, pressed, repeat);
     }
 }

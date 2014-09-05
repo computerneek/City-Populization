@@ -152,34 +152,48 @@ public class Terminal {
     }
     public Config save(){
         Config config = Config.newConfig();
-        config.set("occupied", occupied);
-        config.set("occupiers", occupiers);
+        if(plot.getType()!=PlotType.AirportEntrance&&plot.getType()!=PlotType.AirportTerminal&&plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway){
+            return config;
+        }
+        if(occupied!=0){
+            config.set("occupied", occupied);
+            config.set("occupiers", occupiers);
+        }
         config.set("tick", tick);
         if(plot.getType()==PlotType.AirportEntrance||plot.getType()==PlotType.AirportTerminal){
             if(aircraft!=null){
                 config.set("aircraft", aircraft.save());
+                config.set("landed", timeLanded);
+                config.set("waiting", timeWaiting);
             }
-            config.set("landed", timeLanded);
-            config.set("waiting", timeWaiting);
             config.set("state", state);
-            config.set("fuel", fuel);
-            config.set("schedule", schedule.save());
+            if(plot.getType()==PlotType.AirportEntrance){
+                config.set("fuel", fuel);
+                config.set("schedule", schedule.save());
+            }
         }
         return config;
     }
     public void load(Config get){
-        occupied = get.get("occupied");
-        occupiers = get.get("occupiers");
+        if(plot.getType()!=PlotType.AirportEntrance&&plot.getType()!=PlotType.AirportTerminal&&plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway){
+            return;
+        }
+        if(get.hasProperty("occupied")){
+            occupied = get.get("occupied");
+            occupiers = get.get("occupiers");
+        }
         tick = get.get("tick");
         if(plot.getType()==PlotType.AirportEntrance||plot.getType()==PlotType.AirportTerminal){
             if(get.hasProperty("aircraft")){
                 aircraft = Aircraft.load((Config)get.get("aircraft"));
+                timeLanded = get.get("landed");
+                timeWaiting = get.get("waiting");
             }
-            timeLanded = get.get("landed");
-            timeWaiting = get.get("waiting");
             state = get.get("state");
-            fuel = get.get("fuel");
-            schedule.load((Config)get.get("schedule"));
+            if(plot.getType()==PlotType.AirportEntrance){
+                fuel = get.get("fuel");
+                schedule.load((Config)get.get("schedule"));
+            }
         }
     }
 }
