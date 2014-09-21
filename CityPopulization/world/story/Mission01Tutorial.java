@@ -64,6 +64,7 @@ public class Mission01Tutorial extends StoryMission {
     @Override
     public void setup(){
         speedMultiplier = 4;
+        Core.world = this;
         for(int i = -7; i<4; i++){
             for(int j = -2; j<3; j++){
                 for(int k = -12; k<-8; k++){

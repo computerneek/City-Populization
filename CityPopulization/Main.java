@@ -17,7 +17,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.JOptionPane;
 public class Main{
-    private static String requiredSimpleLibraryVersion = "b61";
+    private static String requiredSimpleLibraryVersion = "b62";
     static double dist;
     public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, IOException, URISyntaxException{
         args = update(args);

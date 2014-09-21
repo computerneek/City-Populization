@@ -49,16 +49,22 @@ public class Path{
         path.jumped = jumped;
         return path;
     }
-    public static ArrayList<Plot> findPotentialTasks(ArrayList<WorkerTask> tasks, Plot startPlot, boolean isWorker){
+    public static ArrayList<Plot> findPotentialTasks(ArrayList<WorkerTask> tasks, Plot start, boolean isWorker){
+        if(start.type==PlotType.SkyscraperFloor){
+            start = start.getSkyscraperPlots()[0];
+        }
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        }
         ArrayList<Plot> houses = new ArrayList<>();
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
-        if(startPlot.task!=null){
-            tasks.add(startPlot.task);
+        if(start.task!=null){
+            tasks.add(start.task);
         }
-        paths.add(new Path().start(startPlot));
-        for(Side side : startPlot.getTravelableSides(isWorker)){
-            paths.add(new Path().start(startPlot).path(side.getPlot(startPlot.world, startPlot.x, startPlot.y, startPlot.z)));
+        paths.add(new Path().start(start));
+        for(Side side : start.getTravelableSides(isWorker)){
+            paths.add(new Path().start(start).path(side.getPlot(start.world, start.x, start.y, start.z)));
         }
         while(!paths.isEmpty()){
             Path path = paths.remove(0);
@@ -70,11 +76,11 @@ public class Path{
                 coveredPlots.add(plot);
             }
             if(isWorker&&!plot.workers.isEmpty()){
-                plot.lastTaskTimeWorker = startPlot.world.age;
+                plot.lastTaskTimeWorker = start.world.age;
                 plot.lastTasksWorker = tasks;
                 houses.add(plot);
             }else if(!isWorker&&!plot.civilians.isEmpty()){
-                plot.lastTaskTimeCivilian = startPlot.world.age;
+                plot.lastTaskTimeCivilian = start.world.age;
                 plot.lastTasksCivilian = tasks;
                 houses.add(plot);
             }
@@ -93,6 +99,12 @@ public class Path{
         return houses;
     }
     public static Plot findResourcePlot(Plot start, ResourceList resources, boolean isWorker){
+        if(start.type==PlotType.SkyscraperFloor){
+            start = start.getSkyscraperPlots()[0];
+        }
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         paths.add(new Path().start(start));
@@ -126,6 +138,12 @@ public class Path{
         return null;
     }
     public static ArrayList<Plot> findWarehouse(Plot start, boolean isWorker){
+        if(start.type==PlotType.SkyscraperFloor){
+            start = start.getSkyscraperPlots()[0];
+        }
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         ArrayList<Plot> warehouses = new ArrayList<>();
@@ -156,6 +174,12 @@ public class Path{
         return warehouses;
     }
     public static Plot findAirportEntrance(Plot start, boolean isWorker){
+        if(start.type==PlotType.SkyscraperFloor){
+            start = start.getSkyscraperPlots()[0];
+        }
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         for(Side side : start.getTravelableSides(isWorker)){
@@ -181,6 +205,12 @@ public class Path{
         return null;
     }
     public static Plot findHouseWithSpace(Plot start, boolean isWorker){
+        if(start.type==PlotType.SkyscraperFloor){
+            start = start.getSkyscraperPlots()[0];
+        }
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         for(Side side : start.getTravelableSides(isWorker)){
@@ -196,6 +226,13 @@ public class Path{
             if(plot.getType()==PlotType.House&&plot.civilians.size()+plot.workers.size()<plot.getMaximumCivilianCapacity()){
                 return plot;
             }
+            if(plot.getType()==PlotType.SkyscraperBase){
+                for(Plot aplot : plot.getSkyscraperPlots()){
+                    if(aplot.civilians.size()+aplot.workers.size()<aplot.getMaximumCivilianCapacity()){
+                        return aplot;
+                    }
+                }
+            }
             if(plot.getType()!=PlotType.Road&&plot.getType()!=PlotType.Elevator&&(!isWorker||(plot.getType()!=PlotType.AirportJetway&&plot.getType()!=PlotType.AirportRunway))){
                 continue;
             }
@@ -206,6 +243,12 @@ public class Path{
         return null;
     }
     public static Plot findWorkshop(Plot start, boolean isWorker){
+        if(start.type==PlotType.SkyscraperFloor){
+            start = start.getSkyscraperPlots()[0];
+        }
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
         for(Side side : start.getTravelableSides(isWorker)){
@@ -231,6 +274,26 @@ public class Path{
         return null;
     }
     public static Path findPath(Plot start, Plot end, boolean isWorker){
+        if(start.type==PlotType.SkyscraperFloor){
+            return findPath(start.getSkyscraperPlots()[0], end, isWorker);
+        }
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
+            return findPath(Core.world.getPlot(start.x, start.y, start.z-1), end, isWorker);
+        }
+        if(end.type==PlotType.SkyscraperFloor){
+            Path path = findPath(start, end.getSkyscraperPlots()[0], isWorker);
+            if(path!=null){
+                path.path(end);
+            }
+            return path;
+        }
+        if(Core.world.getPlot(end.x, end.y, end.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(end.x, end.y, end.z-1).getSkyscraperPlots()[0].task!=null){
+            Path path = findPath(start, Core.world.getPlot(end.x, end.y, end.z-1), isWorker);
+            if(path!=null){
+                path.path(end);
+            }
+            return path;
+        }
         if(start==end){
             return new Path().start(start);
         }
