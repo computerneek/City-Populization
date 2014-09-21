@@ -14,7 +14,7 @@ public class MenuMain extends Menu{
     public MenuMain(GUI gui, Menu parent){
         super(gui, parent);
         story = add(new MenuComponentButton(-0.8f, -0.58f, 1.6f, 0.16f, "Story", true));
-        multiplayer = add(new MenuComponentButton(-0.8f, -0.38f, 1.6f, 0.16f, "Multiplayer (NYI)", true));
+        multiplayer = add(new MenuComponentButton(-0.8f, -0.38f, 1.6f, 0.16f, "Multiplayer", false));
         quickmap = add(new MenuComponentButton(-0.8f, -0.18f, 1.6f, 0.16f, "Empire Mode", true));
         texturepacks = add(new MenuComponentButton(-0.8f, 0.02f, 1.6f, 0.16f, "Texturepacks", true));
         options = add(new MenuComponentButton(-0.8f, 0.22f, 1.6f, 0.16f, "Options (NYI)", false));

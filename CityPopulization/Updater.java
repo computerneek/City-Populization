@@ -221,7 +221,9 @@ public class Updater{
                     file.delete();
                     otherFile.renameTo(file);
                     return file;
-                }catch(Throwable twbl){}
+                }catch(Throwable twbl){
+                    JOptionPane.showMessageDialog(null, "Could not replace file!");
+                }
                 return new File(temporaryFilename);
             }
         }

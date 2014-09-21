@@ -25,6 +25,7 @@ public class WorkerTaskSegment {
     public int workersSatisfied;
     private int requiredWorkers = 1;
     private ResourceList resources;
+    private Plot targetPlot;
     public WorkerTaskSegment setType(String type){
         this.type = type;
         return this;
@@ -64,11 +65,11 @@ public class WorkerTaskSegment {
                 return null;
             }
         }else if(type.equals("Plot Type")){
-            sequence.add(new EventPath(Path.findPath(home, task.targetPlot, worker instanceof Worker)));
+            sequence.add(new EventPath(Path.findPath(home, targetPlot==null?task.targetPlot:targetPlot, worker instanceof Worker)));
             sequence.add(new EventWait(100));
-            sequence.add(new EventPlotSet(task.targetPlot, (PlotType)data[0], (Integer)data[1], (Side)data[2], task.owner));
+            sequence.add(new EventPlotSet(targetPlot==null?task.targetPlot:targetPlot, (PlotType)data[0], (Integer)data[1], (Side)data[2], task.owner));
             sequence.add(new EventSatisfy(this));
-            sequence.add(new EventPath(Path.findPath(task.targetPlot, home, worker instanceof Worker)));
+            sequence.add(new EventPath(Path.findPath(targetPlot==null?task.targetPlot:targetPlot, home, worker instanceof Worker)));
             if(!sequence.validate()){
                 return null;
             }
@@ -115,6 +116,10 @@ public class WorkerTaskSegment {
         task.started = true;
         workers++;
         return sequence;
+    }
+    public WorkerTaskSegment setPlot(Plot plot){
+        targetPlot = plot;
+        return this;
     }
     private int getRequiredWorkers(){
         return requiredWorkers;
@@ -184,6 +189,7 @@ public class WorkerTaskSegment {
     }
     public Config save(){
         Config config = Config.newConfig();
+        config.set("set", false);
         config.set("type", type);
         config.set("workers", workers);
         config.set("finished", workersSatisfied);
@@ -200,6 +206,11 @@ public class WorkerTaskSegment {
     }
     public static WorkerTaskSegment load(Config get){
         WorkerTaskSegment seg = new WorkerTaskSegment();
+        if(get.hasProperty("set")){
+            if(get.get("set")){
+                return WorkerTaskSegmentSet.load(get);
+            }
+        }
         seg.type = get.get("type");
         seg.workers = get.get("workers");
         seg.workersSatisfied = get.get("finished");

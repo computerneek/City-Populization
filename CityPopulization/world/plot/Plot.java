@@ -95,7 +95,7 @@ public class Plot{
                 task.revenue.addAll(resources);
                 resources = new ResourceList();
             }
-        }else if(this.type==PlotType.House&&type!=this.type){
+        }else if((this.type==PlotType.House||getSkyscraperPlots().length>0)&&type!=this.type){
             for(Worker worker : workers){
                 worker.timer = 0;
             }
@@ -274,6 +274,25 @@ public class Plot{
             resources = new ResourceList();
         }
     }
+    public Plot[] getSkyscraperPlots(){
+        Plot plot = this;
+        while(plot.type==PlotType.SkyscraperFloor){
+            plot = world.generateAndGetPlot(x, y, plot.z-1);
+        }
+        if(plot.type!=PlotType.SkyscraperBase){
+            return new Plot[0];
+        }
+        ArrayList<Plot> plots = new ArrayList<>();
+        do{
+            plots.add(plot);
+            plot = world.generateAndGetPlot(x, y, plot.z+1);
+        }while(plot.type==PlotType.SkyscraperFloor);
+        return plots.toArray(new Plot[plots.size()]);
+    }
+    public boolean canAddSkyscraperFloor(){
+        Plot[] plots = getSkyscraperPlots();
+        return plots.length>0&&plots.length<10&&world.getPlot(x, y, z+plots.length).type==PlotType.Air;
+    }
     private void doAirportUpdate(){
         if(world.age%20==0&&!inboundAircraft.isEmpty()){
             attemptToLandAircraft(inboundAircraft.remove(0));
@@ -417,6 +436,9 @@ public class Plot{
     }
     private void civilianUpdate(){
         timeSinceLastCivilianOperation++;
+        if(world.age%20==0){
+            owner.cash+=civiliansPresent.size();
+        }
         civilianTime++;
         if(civilianTime>=20){
             doCivilianUpdate();
@@ -426,28 +448,38 @@ public class Plot{
         if(owner==null){
             return;
         }
+        if(getType()!=PlotType.AirportEntrance&&civilians.size()>getMaximumCivilianCapacity()&&!civiliansPresent.isEmpty()){
+            civiliansPresent.get(0).timer = 0;
+        }
         owner.cash+=civiliansPresent.size();
         civilianTime = 0;
-        if(getType()!=PlotType.House){
-            Plot house = findEmptyHouse();
-            if(house!=null){
-                Civilian civilian = civiliansPresent.get(0);
-                if(civilian.timer>0){
+        if(getType()!=PlotType.House&&getSkyscraperPlots().length==0){
+            Civilian civilian = civiliansPresent.get(0);
+            if(civilian.timer>0){
+                Plot house = findEmptyHouse();
+                if(house!=null){
                     Path path = Path.findPath(this, house, false);
                     if(path==null){
                         return;
                     }
                     civilian.homePlot = house;
                     house.civilians.add(civilian);
-                    civilians.remove(civilian);
-                    civiliansPresent.remove(civilian);
                     civilian.path = path;
                     world.civilians.add(civilian);
                     world.onCivilianAdded(civilian);
                     timeSinceLastCivilianOperation = 0;
-                }else{
-                    civiliansPresent.remove(civilian);
-                    civiliansPresent.add(civilian);
+                }
+            }else{
+                Plot airport = Path.findAirportEntrance(this, false);
+                if(airport!=null){
+                    Path path = Path.findPath(this, airport, false);
+                    if(path!=null){
+                        civilian.path = path;
+                        civilian.homePlot = airport;
+                        world.civilians.add(civilian);
+                        world.onCivilianAdded(civilian);
+                        airport.civilians.add(civilian);
+                    }
                 }
             }
         }else{
@@ -482,6 +514,10 @@ public class Plot{
             }
             Civilian worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
             boolean taskSent = false;
+            WorkerTask task = this.task;
+            if(type==PlotType.SkyscraperFloor){
+                task = getSkyscraperPlots()[0].task;
+            }
             if(task!=null&&task instanceof CivilianTask&&!(task.isFull()||task.getCurrentSegment().isFull()||!task.canReceiveFrom(this))){
                 WorkerTaskSegment segment = task.getCurrentSegment();
                 EventSequence sequence = segment.generateEventSequence(worker, this);
@@ -498,6 +534,9 @@ public class Plot{
     }
     private void workerUpdate(){
         timeSinceLastWorkerOperation++;
+        if(world.age%20==0){
+            owner.cash-=workersPresent.size();
+        }
         if(timeSinceLastWorkerOperation>=20){
             doWorkerUpdate();
         }
@@ -506,51 +545,39 @@ public class Plot{
         if(owner==null){
             return;
         }
-        if(timeSinceLastWorkerOperation%20==0){
-            owner.cash-=workersPresent.size();
+        if(getType()!=PlotType.AirportEntrance&&workers.size()+civilians.size()>getMaximumCivilianCapacity()&&!workersPresent.isEmpty()){
+            workersPresent.get(0).timer = 0;
         }
-        if(getType()!=PlotType.House){
+        if(getType()!=PlotType.House&&getSkyscraperPlots().length==0){
             for(Worker worker : workers){
                 worker.timer--;
             }
-            for(Civilian civilian : civilians){
-                civilian.timer--;
-            }
             if(getType()!=PlotType.AirportEntrance){
-                for(Worker worker : workersPresent){
-                    if(worker.timer<=0){
-                        Plot airport = Path.findAirportEntrance(this, true);
-                        if(airport!=null){
-                            Path path = Path.findPath(this, airport, true);
-                            if(path!=null){
-                                worker.path = path;
-                                worker.homePlot = airport;
-                                while(workers.remove(worker));
-                                workersPresent.remove(worker);
-                                world.civilians.add(worker);
-                                world.onCivilianAdded(worker);
-                                airport.workers.add(worker);
-                                break;
-                            }
+                Worker worker = workersPresent.get(0);
+                if(worker.timer>0){
+                    Plot house = findEmptyHouse();
+                    if(house!=null){
+                        Path path = Path.findPath(this, house, false);
+                        if(path==null){
+                            return;
                         }
+                        worker.homePlot = house;
+                        house.workers.add(worker);
+                        worker.path = path;
+                        world.civilians.add(worker);
+                        world.onCivilianAdded(worker);
+                        timeSinceLastCivilianOperation = 0;
                     }
-                }
-                for(Civilian worker : civiliansPresent){
-                    worker.timer--;
-                    if(worker.timer<=0){
-                        Plot airport = Path.findAirportEntrance(this, true);
-                        if(airport!=null){
-                            Path path = Path.findPath(this, airport, true);
-                            if(path!=null){
-                                worker.path = path;
-                                worker.homePlot = airport;
-                                while(civilians.remove(worker));
-                                civiliansPresent.remove(worker);
-                                world.civilians.add(worker);
-                                world.onCivilianAdded(worker);
-                                airport.civilians.add(worker);
-                                break;
-                            }
+                }else{
+                    Plot airport = Path.findAirportEntrance(this, false);
+                    if(airport!=null){
+                        Path path = Path.findPath(this, airport, true);
+                        if(path!=null){
+                            worker.path = path;
+                            worker.homePlot = airport;
+                            world.civilians.add(worker);
+                            world.onCivilianAdded(worker);
+                            airport.workers.add(worker);
                         }
                     }
                 }
@@ -687,6 +714,40 @@ public class Plot{
     private void onPlotChange(){
         if(menu!=null){
             menu.onPlotUpdate();
+        }
+        if(getType()!=PlotType.House&&getSkyscraperPlots().length==0){
+            while(!civiliansPresent.isEmpty()){
+                Civilian civilian = civiliansPresent.remove(0);
+                while(civilians.remove(civilian));
+                if(civilian.timer>0){
+                    Plot house = findEmptyHouse();
+                    if(house!=null){
+                        Path path = Path.findPath(this, house, false);
+                        if(path==null){
+                            return;
+                        }
+                        civilian.homePlot = house;
+                        house.civilians.add(civilian);
+                        civilian.path = path;
+                        world.civilians.add(civilian);
+                        world.onCivilianAdded(civilian);
+                        timeSinceLastCivilianOperation = 0;
+                    }
+                }else{
+                    Plot airport = Path.findAirportEntrance(this, true);
+                    if(airport!=null){
+                        Path path = Path.findPath(this, airport, true);
+                        if(path!=null){
+                            civilian.path = path;
+                            civilian.homePlot = airport;
+                            world.civilians.add(civilian);
+                            world.onCivilianAdded(civilian);
+                            airport.civilians.add(civilian);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
     public boolean canUpgrade(Race race){

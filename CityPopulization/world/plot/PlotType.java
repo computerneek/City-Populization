@@ -10,6 +10,7 @@ import CityPopulization.render.NonRenderer;
 import CityPopulization.render.PlotRenderer;
 import CityPopulization.render.RoadRenderer;
 import CityPopulization.render.Side;
+import CityPopulization.render.SkyscraperRenderer;
 import CityPopulization.render.StoreRenderer;
 import CityPopulization.render.WarehouseRenderer;
 import CityPopulization.render.WorkshopRenderer;
@@ -49,6 +50,8 @@ public enum PlotType{
     House("House", "house", new ResourceList(), new HouseRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_H),
     Elevator("Elevator", "elevator", new ResourceList(), new ElevatorRenderer(), 10, false, true, Side.values(), false, false, Keyboard.KEY_L),
     Support("Support", "support", new ResourceList(), new CubeRenderer(), 1, true, true, Side.values(), false, true, Keyboard.KEY_U),
+    SkyscraperBase("Skyscraper", "skyscraper/base", new ResourceList(), new SkyscraperRenderer(), 10, false, true, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, true, Keyboard.KEY_K),
+    SkyscraperFloor("Skyscraper Floor", "skyscraper/upperFloor", new ResourceList(), new SkyscraperRenderer(), SkyscraperBase.highestLevel, false, true, new Side[0], true, true, 0),
     Debris("Debris", "debris", new ResourceList(), new DebrisRenderer(), 1, false, false, Side.values(), true, false, 0);
     public final String name;
     public final String textureFolder;
@@ -144,6 +147,10 @@ public enum PlotType{
         costs.put(AirportTerminal, new ResourceListList(new ResourceList(Resource.Wood, 100, Resource.Stone, 50, Resource.Iron, 50, Resource.Coal, 5, Resource.Clay, 50, Resource.Oil, 25)));
         costs.put(AirportEntrance, new ResourceListList(new ResourceList(Resource.Wood, 100, Resource.Stone, 50, Resource.Iron, 50, Resource.Coal, 5, Resource.Clay, 50, Resource.Oil, 25)));
         costs.put(Support, new ResourceListList(new ResourceList(Resource.Iron, 100)));
+        costs.put(SkyscraperBase, new ResourceListList());
+        for(int i = 0; i<10; i++){
+            costs.get(SkyscraperBase).add(new ResourceList(Resource.Iron, 30+15*i, Resource.Wood, 50+25*i, Resource.Sand, 100+25*i, Resource.Clay, 50+25*i, Resource.Oil, 150+100*i));
+        }
     }
     public void loadAllTextures(){
         for(String texture : renderer.getPaths(highestLevel, textureFolder)){

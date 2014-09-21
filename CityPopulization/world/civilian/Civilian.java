@@ -78,7 +78,7 @@ public class Civilian{
         }
         Plot plot = homePlot.world.generatePlot(Math.round(x), Math.round(y), Math.round(z));
         double traveledThisTick = 1;
-        if(plot.getType()==PlotType.Road||plot.getType()==PlotType.Elevator){
+        if(plot.getType()==PlotType.Road||plot.getType()==PlotType.Elevator||plot.getSkyscraperPlots().length>0){
             traveledThisTick*=plot.getLevel()+1;
         }
         if(plot.task!=null){
