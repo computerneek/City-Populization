@@ -208,7 +208,7 @@ public class Path{
         if(start.type==PlotType.SkyscraperFloor){
             start = start.getSkyscraperPlots()[0];
         }
-        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0){
             start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
         }
         ArrayList<Path> paths = new ArrayList<>();

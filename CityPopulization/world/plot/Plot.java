@@ -468,6 +468,8 @@ public class Plot{
                     world.civilians.add(civilian);
                     world.onCivilianAdded(civilian);
                     timeSinceLastCivilianOperation = 0;
+                    civilians.remove(civilian);
+                    civiliansPresent.remove(civilian);
                 }
             }else{
                 Plot airport = Path.findAirportEntrance(this, false);
@@ -479,12 +481,17 @@ public class Plot{
                         world.civilians.add(civilian);
                         world.onCivilianAdded(civilian);
                         airport.civilians.add(civilian);
+                        civilians.remove(civilian);
+                        civiliansPresent.remove(civilian);
                     }
                 }
             }
         }else{
             for(Iterator<Civilian> it=civilians.iterator(); it.hasNext();){
                 Civilian worker=it.next();
+                if(shouldCivilianBeUnstable()){
+                    worker.timer--;
+                }
                 if(worker.timer<=0){
                     Plot airport = Path.findAirportEntrance(this, false);
                     if(airport!=null){
@@ -497,6 +504,8 @@ public class Plot{
                             world.civilians.add(worker);
                             world.onCivilianAdded(worker);
                             airport.civilians.add(worker);
+                            it.remove();
+                            civiliansPresent.remove(worker);
                         }
                     }
                 }
@@ -883,5 +892,11 @@ public class Plot{
         readyResources = new ResourceList();
         coming = 0;
         load(cnfg);
+    }
+    private boolean shouldCivilianBeUnstable(){
+        double stability = 0.9;
+        double stabilityModifier = world.difficulty.stabilityModifier;
+        stability = Math.pow(stability, 1/stabilityModifier);
+        return rand.nextFloat()>stability;
     }
 }
