@@ -93,7 +93,7 @@ public class Core{
         GL11.glEnable(GL11.GL_ALPHA_TEST);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glEnable(GL11.GL_BLEND);
-        AL.create();
+//        AL.create();
         Keyboard.enableRepeatEvents(true);
         new TexturePackManager(new File(getAppdataRoot(), "Texture packs"), new TexturePack());
         gui = new GUI(GameHelper.MODE_3D, helper);
@@ -111,7 +111,7 @@ public class Core{
         tick++;
         gui.tick();
         if(isLastTick){
-            AL.destroy();
+//            AL.destroy();
             if(world!=null){
                 world.save();
                 if(world.remote){
