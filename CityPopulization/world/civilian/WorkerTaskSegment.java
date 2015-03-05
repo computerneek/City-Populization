@@ -67,7 +67,7 @@ public class WorkerTaskSegment {
         }else if(type.equals("Plot Type")){
             sequence.add(new EventPath(Path.findPath(home, targetPlot==null?task.targetPlot:targetPlot, worker instanceof Worker)));
             sequence.add(new EventWait(100));
-            sequence.add(new EventPlotSet(targetPlot==null?task.targetPlot:targetPlot, (PlotType)data[0], (Integer)data[1], (Side)data[2], task.owner));
+            sequence.add(new EventPlotSet(targetPlot==null?task.targetPlot:targetPlot, (PlotType)data[0], (Integer)data[1], (Side)data[2], ((PlotType)data[0]).resourceHarvested.count()==0?task.owner:null));
             sequence.add(new EventSatisfy(this));
             sequence.add(new EventPath(Path.findPath(targetPlot==null?task.targetPlot:targetPlot, home, worker instanceof Worker)));
             if(!sequence.validate()){

@@ -237,7 +237,7 @@ public class AirportRenderer implements PlotRenderer{
         GL11.glEnd();
     }
     @Override
-    public String[] getPaths(int levels, String textureFolder){
+    public String[] getPaths(PlotType plot, int levels, String textureFolder){
         ArrayList<String> lst = new ArrayList<>();
         String tex = levels+":/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>/<SPEC>.png";
         String[] sides = {"dual", "left", "right", "lone"};

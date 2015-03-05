@@ -8,8 +8,10 @@ import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
+import CityPopulization.world.plot.ChunkSize;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
+import CityPopulization.world.plot.SkyScraper;
 import CityPopulization.world.plot.Template;
 import CityPopulization.world.story.Goal;
 import java.util.ArrayList;
@@ -107,9 +109,9 @@ public class World{
         this.difficulty = difficulty;
     }
     public synchronized Plot generateAndGetPlot(int x, int y, int z){
-        for(int i = -1; i<2; i++){
-            for(int j = -1; j<2; j++){
-                for(int k = -1; k<2; k++){
+        for(int i = -1; i<Math.max(getVisionDistance(), 1); i++){
+            for(int j = -1; j<Math.max(getVisionDistance(), 1); j++){
+                for(int k = -1; k<Math.max(getVisionDistance(), 1); k++){
                     generatePlot(x+i, y+j, z+k);
                 }
             }
@@ -157,11 +159,45 @@ public class World{
         }
         Plot plot = plots3.get(z);
         if(plot==null){
-            plot = new Plot(this, x, y, z);
-            plots3.put(z, plot);
-            template.onPlotGenerated(this, x, y, z);
+            ChunkSize cs = template.getChunkSize();
+            if(cs.x==0&&cs.y==0&&cs.z==0){
+                plot = new Plot(this, x, y, z);
+                plots3.put(z, plot);
+                template.onPlotGenerated(this, x, y, z);
+            }else{
+                generateChunk(x>>cs.x, y>>cs.y, z>>cs.z);
+                return getPlot(x, y, z);
+            }
         }
         return plot;
+    }
+    public int getVisionDistance(){
+        return 2;
+    }
+    private synchronized void generateChunk(int chunkX, int chunkY, int chunkZ){
+        ChunkSize cs = template.getChunkSize();
+        int startX = chunkX<<cs.x, startY = chunkY<<cs.y, startZ = chunkZ<<cs.z;
+        int xSize = 1<<cs.x, ySize = 1<<cs.y, zSize = 1<<cs.z;
+        for(int x = 0; x<xSize; x++){
+            if(!plots.containsKey(x)){
+                plots.put(x, new HashMap<Integer, HashMap<Integer, Plot>>());
+            }
+            HashMap<Integer, HashMap<Integer, Plot>> yzPlane = plots.get(x);
+            for(int y = 0; y<ySize; y++){
+                if(!yzPlane.containsKey(y)){
+                    yzPlane.put(y, new HashMap<Integer, Plot>());
+                }
+                HashMap<Integer, Plot> zRow = yzPlane.get(y);
+                for(int z = 0; z<zSize; z++){
+                    if(!zRow.containsKey(z)){
+                        zRow.put(z, new Plot(this, x, y, z));
+                    }
+                    Plot plot = zRow.get(z);
+                    template.onPlotGenerated(this, x, y, z);
+                }
+            }
+        }
+        template.onChunkGenerated(this, chunkX, chunkY, chunkZ);
     }
     public ArrayList<Player> listPlayers(){
         ArrayList<Player> players = new ArrayList<>();
@@ -429,6 +465,9 @@ public class World{
         for(int i = 0; i<(int)two.get("count"); i++){
             Config three = two.get(i+"");
             getPlot((int)three.get("x"), (int)three.get("y"), (int)three.get("z")).terminal.load((Config)three.get("terminal"));
+            if(three.hasProperty("skyscraper")){
+                SkyScraper.load((Config)three.get("skyscraper"), this);
+            }
         }
         two = config.get("updates");
         for(int i = 0; i<(int)two.get("count"); i++){

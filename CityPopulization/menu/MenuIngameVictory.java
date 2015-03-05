@@ -34,7 +34,7 @@ public class MenuIngameVictory extends Menu {
     @Override
     public void tick(){
         animFrame++;
-        if(animFrame==highestAnimFrame+1){
+        if(animFrame>=highestAnimFrame+1&&components.isEmpty()){
             makeButtons();
         }
     }

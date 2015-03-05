@@ -82,10 +82,10 @@ public class SkyscraperRenderer implements PlotRenderer {
         GL11.glEnd();
         if(plot.owner==plot.world.localPlayer){
             GL11.glTranslated(0, 0, z);
-            if(plot.type==PlotType.SkyscraperBase){
+            if(plot.type.skyscraperFloorType!=null){
                 int totalFill = 0;
                 int totalCapacity = 0;
-                for(Plot aplot : plot.getSkyscraperPlots()){
+                for(Plot aplot : plot.skyscraper.getAllPlots()){
                     totalCapacity+=aplot.getMaximumCivilianCapacity();
                     totalFill+=aplot.civilians.size()+aplot.workers.size();
                 }
@@ -98,7 +98,7 @@ public class SkyscraperRenderer implements PlotRenderer {
         }
     }
     @Override
-    public String[] getPaths(int levels, String textureFolder){
+    public String[] getPaths(PlotType plot, int levels, String textureFolder){
         return new String[]{levels+":/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png"};
     }
 }

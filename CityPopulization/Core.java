@@ -57,7 +57,7 @@ public class Core{
     public static World loadingWorld;
     //</editor-fold>
     public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, InterruptedException, IOException, URISyntaxException{
-        Sys.initLWJGL(new File(getAppdataRoot()), new ErrorAdapter(){
+        Sys.initLWJGLUnlogged(new File(getAppdataRoot()), new ErrorAdapter(){
             @Override
             public void warningError(String message, Throwable error, ErrorCategory catagory){
                 System.err.println((error!=null?error.toString()+";  ":"")+message);
@@ -101,7 +101,7 @@ public class Core{
         gui.open(new MenuMain(gui, null));
     }
     public static void tick(boolean isLastTick){
-        if(world!=null&&(gui.menu==null||gui.menu.pausesGame())){
+        if(world!=null){
             try{
                 world.tick();
             }catch(Exception ex){

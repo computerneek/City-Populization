@@ -128,6 +128,10 @@ public class PlayerHuman extends Player {
         }
     }
     private void onOwnedPlotClicked(Plot plot, ButtonSet set){
+        if(plot.skyscraper!=null){
+            onSkyscraperClicked(plot.skyscraper.basePlot, set);
+            return;
+        }
         switch(plot.getType()){
             case AirportJetway:
             case Road:
@@ -160,12 +164,6 @@ public class PlayerHuman extends Player {
                 break;
             case Debris:
                 onPlainOwnedPlotClicked(plot, set);
-                break;
-            case SkyscraperFloor:
-                onOwnedPlotClicked(Core.world.generateAndGetPlot(plot.x, plot.y, plot.z-1), set);
-                break;
-            case SkyscraperBase:
-                onSkyscraperClicked(plot, set);
                 break;
             default:
                 System.err.println("Unrecognized plot type "+plot.getType().name()+"!  (PlayerHuman)");
@@ -203,7 +201,7 @@ public class PlayerHuman extends Player {
                                 .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(world.difficulty.incomeModifier))
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
-                                        .setData(PlotType.Air, 0, Side.FRONT))));
+                                        .setData(plot.getLevel()>0?plot.getType():PlotType.Air, plot.getLevel()>0?plot.getLevel()-1:0, plot.getLevel()>0?plot.getFront():Side.FRONT))));
     }
     private Button createDestroyResourceButton(String image, Resource revenue, Plot plot){
         return new Button()
@@ -217,7 +215,7 @@ public class PlayerHuman extends Player {
                                 .setPlot(plot)
                                 .setCost(new ResourceList())
                                 .setCash(100)
-                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(0.1*world.difficulty.incomeModifier))
+                                .setRevenue(new ResourceList().addAll(plot.getType().resourceHarvested).multiply(plot.getLevel()+1).multiply(0.1*world.difficulty.incomeModifier))
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Plot Type")
                                         .setData(PlotType.Air, 0, Side.FRONT))));
@@ -268,51 +266,9 @@ public class PlayerHuman extends Player {
     private void onRotatablePlotClicked(Plot plot, ButtonSet set){
         onPlainOwnedPlotClicked(plot, set);
         if(plot.task==null){
-            set.add(new Button()
-                    .setHotkey(Keyboard.KEY_R)
-                    .setImage("/gui/buttons/"+race.getName()+"/rotateRight.png")
-                    .setText("Turn","Right")
-                    .setEvent(new ButtonEvent()
-                            .setType("Task")
-                            .setTask(new WorkerTask()
-                                    .setOwner(this)
-                                    .setPlot(plot)
-                                    .setCost(new ResourceList())
-                                    .setCash(100*(plot.getLevel()+1))
-                                    .setRevenue(new ResourceList())
-                                    .addSegment(new WorkerTaskSegment()
-                                            .setType("Plot Type")
-                                            .setData(plot.getType(), plot.getLevel(), plot.front.right())))));
-            set.add(new Button()
-                    .setHotkey(Keyboard.KEY_L)
-                    .setImage("/gui/buttons/"+race.getName()+"/rotateLeft.png")
-                    .setText("Turn","Left")
-                    .setEvent(new ButtonEvent()
-                            .setType("Task")
-                            .setTask(new WorkerTask()
-                                    .setOwner(this)
-                                    .setPlot(plot)
-                                    .setCost(new ResourceList())
-                                    .setCash(100*(plot.getLevel()+1))
-                                    .setRevenue(new ResourceList())
-                                    .addSegment(new WorkerTaskSegment()
-                                            .setType("Plot Type")
-                                            .setData(plot.getType(), plot.getLevel(), plot.front.left())))));
-            set.add(new Button()
-                    .setHotkey(Keyboard.KEY_A)
-                    .setImage("/gui/buttons/"+race.getName()+"/rotateBack.png")
-                    .setText("Turn","Around")
-                    .setEvent(new ButtonEvent()
-                            .setType("Task")
-                            .setTask(new WorkerTask()
-                                    .setOwner(this)
-                                    .setPlot(plot)
-                                    .setCost(new ResourceList())
-                                    .setCash(100*(plot.getLevel()+1))
-                                    .setRevenue(new ResourceList())
-                                    .addSegment(new WorkerTaskSegment()
-                                            .setType("Plot Type")
-                                            .setData(plot.getType(), plot.getLevel(), plot.front.reverse())))));
+            set.add(createRotateRightButton(plot));
+            set.add(createRotateLeftButton(plot));
+            set.add(createRotateAroundButton(plot));
         }
     }
     private Button createUpgradeButton(Plot plot){
@@ -415,139 +371,603 @@ public class PlayerHuman extends Player {
     }
     private void onSkyscraperClicked(Plot plot, ButtonSet set){
         if(plot.task==null){
-            Plot[] plots = plot.getSkyscraperPlots();
-            WorkerTask task;
-            WorkerTaskSegmentSet aset;
+            Plot[] plots = plot.skyscraper.getAllPlots();
             if(plot.canUpgrade(race)){
-                
-                set.add(new Button()
-                        .setHotkey(Keyboard.KEY_U)
-                        .setImage("/gui/buttons/"+race.getName()+"/upgrade"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
-                        .setText("Upgrade")
-                        .setEvent(new ButtonEvent()
-                                .setType("Task")
-                                .setTask(task = new WorkerTask()
-                                        .setOwner(this)
-                                        .setPlot(plot)
-                                        .setCost(plot.getType().getCost(plot.getLevel()+1, race).multiply(plots.length))
-                                        .setCash(100*(plot.getLevel()+1)*(plot.getLevel()+1)*plots.length)
-                                        .setRevenue(new ResourceList()))));
-                task.addSegment(aset = new WorkerTaskSegmentSet());
-                for(Plot aplot : plots){
-                    aset.add(new WorkerTaskSegment()
-                            .setType("Plot Type")
-                            .setPlot(aplot)
-                            .setData(aplot.getType(), aplot.getLevel()+1, aplot.getFront()));
-                }
+                set.add(createUpgradeSkyscraperButton(plot));
             }
-            set.add(new Button()
-                    .setHotkey(Keyboard.KEY_D)
-                    .setImage("/gui/buttions/"+race.getName()+"/downgrade"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
-                    .setText("Downgrade")
-                    .setEvent(new ButtonEvent()
-                            .setType("Task")
-                            .setTask(task = new WorkerTask()
-                                    .setOwner(this)
-                                    .setPlot(plot)
-                                    .setCost(new ResourceList())
-                                    .setCash(100*(plot.getLevel()+1)*(plot.getLevel()+1)*plots.length)
-                                    .setRevenue(plot.getType().getCost(plot.getLevel(), race).multiply(plots.length)))));
-            for(int i = plots.length-1; i>=0; i--){
-                Plot aplot = plots[i];
-                task.addSegment(new WorkerTaskSegment()
-                        .setType("Plot Type")
-                        .setPlot(aplot)
-                        .setData(aplot.getLevel()>0?aplot.getType():PlotType.Air, aplot.getLevel()>0?aplot.getLevel()-1:0, aplot.getLevel()>0?aplot.getFront():Side.FRONT));
-            }
-            ResourceList revenue = new ResourceList();
-            for(int i = 0; i<plot.getLevel()+1; i++){
-                revenue.addAll(plot.getType().getCost(i, race));
-            }
-            revenue.multiply(plots.length);
-            set.add(new Button()
-                    .setHotkey(Keyboard.KEY_X)
-                    .setImage("/gui/buttons/"+race.getName()+"/destroy"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
-                    .setText("Destroy")
-                    .setEvent(new ButtonEvent()
-                            .setType("Task")
-                            .setTask(task = new WorkerTask()
-                                    .setOwner(this)
-                                    .setPlot(plot)
-                                    .setCost(new ResourceList())
-                                    .setCash(500)
-                                    .setRevenue(revenue))));
-            for(int i = plots.length-1; i>=0; i--){
-                Plot aplot = plots[i];
-                for(int j = 0; j<aplot.level+1; j++){
-                    task.addSegment(new WorkerTaskSegment()
-                            .setType("Plot Type")
-                            .setPlot(aplot)
-                            .setData(j<plot.level?aplot.getType():PlotType.Air, j<plot.level?plot.level-j-1:0, j<plot.level?plot.getFront():Side.FRONT));
-                }
-            }
+            set.add(createDowngradeSkyscraperButton(plot));
+            set.add(createDestroySkyscraperButton(plot));
+            Plot[] plots2 = plot.getSkyscraperPlots();
             if(plot.canAddSkyscraperFloor()){
-                ResourceList cost = new ResourceList();
-                int cash = 0;
-                for(int i = 0; i<plot.level+1; i++){
-                    cost.addAll(plot.getType().getCost(i, race));
-                    cash+=100*(i+1)*(i+1);
-                }
-                set.add(new Button().
-                        setHotkey(Keyboard.KEY_A).
-                        setImage("/gui/buttons/"+race.getName()+"/addFloor"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
-                        setText("Add Floor").
-                        setEvent(new ButtonEvent().
-                                setType("Task").
-                                setTask(task = new WorkerTask().
-                                        setOwner(this).
-                                        setPlot(plot).
-                                        setCost(cost).
-                                        setCash(cash).
-                                        setRevenue(new ResourceList()))));
-                Plot aplot = Core.world.generateAndGetPlot(plot.x, plot.y, plots[plots.length-1].z+1);
-                for(int i = 0; i<plot.level+1; i++){
-                    task.addSegment(new WorkerTaskSegment().
-                            setType("Plot Type").
-                            setPlot(aplot).
-                            setData(PlotType.SkyscraperFloor, i, plot.front));
-                }
+                set.add(createAddSkyscraperFloorButton(plot));
             }
-            if(plots.length>1){
-                ResourceList cost = new ResourceList();
-                int cash = 0;
-                for(int i = 0; i<plot.level+1; i++){
-                    cost.addAll(plot.getType().getCost(i, race));
-                    cash+=100*(i+1)*(i+1);
-                }
-                set.add(new Button().
-                        setHotkey(Keyboard.KEY_R).
-                        setImage("/gui/buttons/"+race.getName()+"/removeFloor"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
-                        setText("Remove Floor").
-                        setEvent(new ButtonEvent().
-                                setType("Task").
-                                setTask(task = new WorkerTask().
-                                        setOwner(this).
-                                        setPlot(plot).
-                                        setCost(new ResourceList()).
-                                        setCash(cash).
-                                        setRevenue(cost))));
-                for(int i = 0; i<plot.level+1; i++){
-                    task.addSegment(new WorkerTaskSegment().
-                            setType("Plot Type").
-                            setPlot(plots[plots.length-1]).
-                            setData(i==plot.level?PlotType.SkyscraperFloor:PlotType.Air, i<plot.level?plot.level-i-1:0, i<plot.level?plot.getFront():Side.FRONT));
-                }
+            if(plots2.length>1){
+                set.add(createRemoveSkyscraperFloorButton(plot));
+            }
+            if(plot.skyscraper.canExpandRight()){
+                set.add(createExpandSkyscraperRightButton(plot));
+            }
+            if(plot.skyscraper.canExpandLeft()){
+                set.add(createExpandSkyscraperLeftButton(plot));
+            }
+            if(plot.skyscraper.canExpandUp()){
+                set.add(createExpandSkyscraperUpButton(plot));
+            }
+            if(plot.skyscraper.canExpandDown()){
+                set.add(createExpandSkyscraperDownButton(plot));
+            }
+            if(plot.skyscraper.width>1&&plot.getSkyscraperPlots().length<=plot.skyscraper.width*plot.type.getSkyscraperHeight()){
+                set.add(createShrinkSkyscraperRightButton(plot));
+                set.add(createShrinkSkyscraperLeftButton(plot));
+            }
+            if(plot.skyscraper.height>1&&plot.getSkyscraperPlots().length>=plot.skyscraper.height*plot.type.getSkyscraperHeight()){
+                set.add(createShrinkSkyscraperUpButton(plot));
+                set.add(createShrinkSkyscraperDownButton(plot));
             }
         }else if(!plot.task.started){
             set.add(createCancelTaskButton(plot));
         }
         Plot workshop = Path.findWorkshop(plot, false);
         int civilians = 0;
-        for(Plot aplot : plot.getSkyscraperPlots()){
+        for(Plot aplot : plot.skyscraper.getAllPlots()){
             civilians+=aplot.civilians.size();
         }
         if(civilians>0&&plot.task==null&&workshop!=null){
             set.add(createNewWorkerButton(plot, workshop));
         }
+    }
+    private Button createRotateRightButton(Plot plot){
+        return new Button()
+                .setHotkey(Keyboard.KEY_R)
+                .setImage("/gui/buttons/"+race.getName()+"/rotateRight.png")
+                .setText("Turn","Right")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(new ResourceList())
+                                .setCash(100*(plot.getLevel()+1))
+                                .setRevenue(new ResourceList())
+                                .addSegment(new WorkerTaskSegment()
+                                        .setType("Plot Type")
+                                        .setData(plot.getType(), plot.getLevel(), plot.front.right()))));
+    }
+    private Button createRotateLeftButton(Plot plot){
+        return new Button()
+                .setHotkey(Keyboard.KEY_L)
+                .setImage("/gui/buttons/"+race.getName()+"/rotateLeft.png")
+                .setText("Turn","Left")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(new ResourceList())
+                                .setCash(100*(plot.getLevel()+1))
+                                .setRevenue(new ResourceList())
+                                .addSegment(new WorkerTaskSegment()
+                                        .setType("Plot Type")
+                                        .setData(plot.getType(), plot.getLevel(), plot.front.left()))));
+    }
+    private Button createRotateAroundButton(Plot plot){
+        return new Button()
+                .setHotkey(Keyboard.KEY_A)
+                .setImage("/gui/buttons/"+race.getName()+"/rotateBack.png")
+                .setText("Turn","Around")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(new ResourceList())
+                                .setCash(100*(plot.getLevel()+1))
+                                .setRevenue(new ResourceList())
+                                .addSegment(new WorkerTaskSegment()
+                                        .setType("Plot Type")
+                                        .setData(plot.getType(), plot.getLevel(), plot.front.reverse()))));
+    }
+    private Button createUpgradeSkyscraperButton(Plot plot){
+        WorkerTask task;
+        WorkerTaskSegmentSet aset;
+        Plot[] plots = plot.skyscraper.getAllPlots();
+        Button button = new Button()
+                .setHotkey(Keyboard.KEY_U)
+                .setImage("/gui/buttons/"+race.getName()+"/upgrade"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
+                .setText("Upgrade")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(task = new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(plot.getType().getCost(plot.getLevel()+1, race).multiply(plots.length))
+                                .setCash(100*(plot.getLevel()+1)*(plot.getLevel()+1)*plots.length)
+                                .setRevenue(new ResourceList())));
+        task.addSegment(aset = new WorkerTaskSegmentSet());
+        for(Plot aplot : plots){
+            aset.add(new WorkerTaskSegment()
+                    .setType("Plot Type")
+                    .setPlot(aplot)
+                    .setData(aplot.getType(), aplot.getLevel()+1, aplot.getFront()));
+        }
+        return button;
+    }
+    private Button createDowngradeSkyscraperButton(Plot plot){
+        WorkerTask task;
+        Plot[] plots = plot.skyscraper.getAllPlots();
+        Button button = new Button()
+                .setHotkey(Keyboard.KEY_D)
+                .setImage("/gui/buttions/"+race.getName()+"/downgrade"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
+                .setText("Downgrade")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(task = new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(new ResourceList())
+                                .setCash(100*(plot.getLevel()+1)*(plot.getLevel()+1)*plots.length)
+                                .setRevenue(plot.getType().getCost(plot.getLevel(), race).multiply(plots.length))));
+        for(int i = plots.length-1; i>=0; i--){
+            Plot aplot = plots[i];
+            task.addSegment(new WorkerTaskSegment()
+                    .setType("Plot Type")
+                    .setPlot(aplot)
+                    .setData(aplot.getLevel()>0?aplot.getType():PlotType.Air, aplot.getLevel()>0?aplot.getLevel()-1:0, aplot.getLevel()>0?aplot.getFront():Side.FRONT));
+        }
+        return button;
+    }
+    private Button createDestroySkyscraperButton(Plot plot){
+        Plot[] plots = plot.skyscraper.getAllPlots();
+        WorkerTask task;
+        ResourceList revenue = new ResourceList();
+        for(int i = 0; i<plot.getLevel()+1; i++){
+            revenue.addAll(plot.getType().getCost(i, race));
+        }
+        revenue.multiply(plots.length);
+        Plot[] plots2 = plot.getSkyscraperPlots();
+        WorkerTaskSegmentSet aset;
+        Button button = new Button()
+                .setHotkey(Keyboard.KEY_X)
+                .setImage("/gui/buttons/"+race.getName()+"/destroy"+plot.getType().textureFolder+(plot.getLevel()+1)+".png")
+                .setText("Destroy")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(task = new WorkerTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setCost(new ResourceList())
+                                .setCash(500)
+                                .setRevenue(revenue)));
+        for(int i = plots2.length-1; i>=0; i--){
+            Plot aplot = plots2[i];
+            for(int j = 0; j<aplot.level+1; j++){
+                task.addSegment(aset = new WorkerTaskSegmentSet());
+                for(int k=0; k<plot.skyscraper.height; k++){
+                    for(int l=0; l<plot.skyscraper.width; l++){
+                        Plot aplot2 = plot.world.getPlot(plot.x+l, plot.y+k, aplot.z);
+                        aset.add(new WorkerTaskSegment()
+                                .setType("Plot Type")
+                                .setPlot(aplot2)
+                                .setData(j<plot.level?aplot2.getType():PlotType.Air, j<plot.level?plot.level-j-1:0, j<plot.level?plot.getFront():Side.FRONT));
+                    }
+                }
+            }
+        }
+        return button;
+    }
+    private Button createAddSkyscraperFloorButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        WorkerTask task;
+        cost.multiply(plot.skyscraper.height).multiply(plot.skyscraper.width);
+        cash = cash*plot.skyscraper.height*plot.skyscraper.width;
+        Plot[] plots = plot.getSkyscraperPlots();
+        Button button = new Button().
+                setHotkey(Keyboard.KEY_A).
+                setImage("/gui/buttons/"+race.getName()+"/addFloor"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Add Floor").setEvent(new ButtonEvent().
+                        setType("Task").setTask(task=new WorkerTask().
+                                setOwner(this).
+                                setPlot(plot).
+                                setCost(cost).setCash(cash).setRevenue(new ResourceList())));
+        Plot aplot = Core.world.generateAndGetPlot(plot.x, plot.y, plots[plots.length-1].z+1);
+        for(int i = 0; i<plot.level+1; i++){
+            for(int j=0; j<plot.skyscraper.height; j++){
+                for(int k=0; k<plot.skyscraper.width; k++){
+                    Plot aplot2 = aplot.world.generateAndGetPlot(plot.x+k, plot.y+j, aplot.z);
+                    task.addSegment(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot2).
+                            setData(plot.type.skyscraperFloorType, i, plot.front));
+                }
+            }
+        }
+        return button;
+    }
+    private Button createRemoveSkyscraperFloorButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.width).multiply(plot.skyscraper.height);
+        cash*=plot.skyscraper.width*plot.skyscraper.height;
+        WorkerTask task;
+        Plot[] plots = plot.getSkyscraperPlots();
+        Button button = new Button().
+                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/removeFloor"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Remove Floor").setEvent(new ButtonEvent().
+                        setType("Task").setTask(task=new WorkerTask().
+                                setOwner(this).
+                                setPlot(plot).
+                                setCost(new ResourceList()).setCash(cash).setRevenue(cost)));
+        for(int i = 0; i<plot.level+1; i++){
+            for(int j=0; j<plot.skyscraper.height; j++){
+                for(int k=0; k<plot.skyscraper.width; k++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x+k, plot.y+j, plots[plots.length-1].z);
+                    task.addSegment(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(i==plot.level?plot.type.skyscraperFloorType:PlotType.Air, i<plot.level?plot.level-i-1:0, i<plot.level?plot.getFront():Side.FRONT));
+                }
+            }
+        }
+        return button;
+    }
+    private Button createExpandSkyscraperRightButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.height).multiply(plot.skyscraper.levels());
+        cash = cash*plot.skyscraper.height*plot.skyscraper.levels();
+        WorkerTask task;
+        Button button = new Button().
+//                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/expandRight"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Expand", "Right").
+                setEvent(new ButtonEvent.Pair().
+                        addEvent(new ButtonEvent().
+                                setType("Task").
+                                setTask(task = new WorkerTask().
+                                        setOwner(this).
+                                        setPlot(plot).
+                                        setCost(cost).
+                                        setCash(cash).
+                                        setRevenue(new ResourceList()))).
+                        addEvent(new ButtonEvent().
+                                setType("Skyscraper "+(plot.skyscraper.width+1)+" "+plot.skyscraper.height).
+                                setPlot(plot).
+                                setTask(new WorkerTask().setPlot(plot))));
+        for(int i = 0; i<plot.level+1; i++){
+            WorkerTaskSegmentSet set;
+            task.addSegment(set = new WorkerTaskSegmentSet());
+            for(int k = 0; k<plot.skyscraper.levels(); k++){
+                for(int j = 0; j<plot.skyscraper.height; j++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x+plot.skyscraper.width, plot.y+j, plot.z+k);
+                    set.add(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(k==0?plot.type:plot.type.skyscraperFloorType, i, plot.front));
+                }
+                if(i==0){
+                    task.addSegment(set = new WorkerTaskSegmentSet());
+                }
+            }
+        }
+        return button;
+    }
+    private Button createExpandSkyscraperLeftButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.height).multiply(plot.skyscraper.levels());
+        cash = cash*plot.skyscraper.height*plot.skyscraper.levels();
+        WorkerTask task;
+        Button button = new Button().
+//                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/expandLeft"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Expand", "Left").
+                setEvent(new ButtonEvent.Pair().
+                        addEvent(new ButtonEvent().
+                                setType("Task").
+                                setTask(task = new WorkerTask().
+                                        setOwner(this).
+                                        setPlot(plot).
+                                        setCost(cost).
+                                        setCash(cash).
+                                        setRevenue(new ResourceList()))).
+                        addEvent(new ButtonEvent().
+                                setType("Skyscraper "+(plot.skyscraper.width+1)+" "+plot.skyscraper.height).
+                                setPlot(plot).
+                                setTask(new WorkerTask().setPlot(plot.world.getPlot(plot.x-1, plot.y, plot.z)))));
+        for(int i = 0; i<plot.level+1; i++){
+            WorkerTaskSegmentSet set;
+            task.addSegment(set = new WorkerTaskSegmentSet());
+            for(int k = 0; k<plot.skyscraper.levels(); k++){
+                for(int j = 0; j<plot.skyscraper.height; j++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x-1, plot.y+j, plot.z+k);
+                    set.add(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(k==0?plot.type:plot.type.skyscraperFloorType, i, plot.front));
+                }
+                if(i==0){
+                    task.addSegment(set = new WorkerTaskSegmentSet());
+                }
+            }
+        }
+        return button;
+    }
+    private Button createExpandSkyscraperDownButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.width).multiply(plot.skyscraper.levels());
+        cash = cash*plot.skyscraper.width*plot.skyscraper.levels();
+        WorkerTask task;
+        Button button = new Button().
+//                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/expandDown"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Expand", "Down").
+                setEvent(new ButtonEvent.Pair().
+                        addEvent(new ButtonEvent().
+                                setType("Task").
+                                setTask(task = new WorkerTask().
+                                        setOwner(this).
+                                        setPlot(plot).
+                                        setCost(cost).
+                                        setCash(cash).
+                                        setRevenue(new ResourceList()))).
+                        addEvent(new ButtonEvent().
+                                setType("Skyscraper "+plot.skyscraper.width+" "+(plot.skyscraper.height+1)).
+                                setPlot(plot).
+                                setTask(new WorkerTask().setPlot(plot))));
+        for(int i = 0; i<plot.level+1; i++){
+            WorkerTaskSegmentSet set;
+            task.addSegment(set = new WorkerTaskSegmentSet());
+            for(int k = 0; k<plot.skyscraper.levels(); k++){
+                for(int j = 0; j<plot.skyscraper.width; j++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x+j, plot.y+plot.skyscraper.height, plot.z+k);
+                    set.add(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(k==0?plot.type:plot.type.skyscraperFloorType, i, plot.front));
+                }
+                if(i==0){
+                    task.addSegment(set = new WorkerTaskSegmentSet());
+                }
+            }
+        }
+        return button;
+    }
+    private Button createExpandSkyscraperUpButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.width).multiply(plot.skyscraper.levels());
+        cash = cash*plot.skyscraper.width*plot.skyscraper.levels();
+        WorkerTask task;
+        Button button = new Button().
+//                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/expandUp"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Expand", "Up").
+                setEvent(new ButtonEvent.Pair().
+                        addEvent(new ButtonEvent().
+                                setType("Task").
+                                setTask(task = new WorkerTask().
+                                        setOwner(this).
+                                        setPlot(plot).
+                                        setCost(cost).
+                                        setCash(cash).
+                                        setRevenue(new ResourceList()))).
+                        addEvent(new ButtonEvent().
+                                setType("Skyscraper "+plot.skyscraper.width+" "+(plot.skyscraper.height+1)).
+                                setPlot(plot).
+                                setTask(new WorkerTask().setPlot(plot.world.generateAndGetPlot(plot.x, plot.y-1, plot.z)))));
+        for(int i = 0; i<plot.level+1; i++){
+            WorkerTaskSegmentSet set;
+            task.addSegment(set = new WorkerTaskSegmentSet());
+            for(int k = 0; k<plot.skyscraper.levels(); k++){
+                for(int j = 0; j<plot.skyscraper.width; j++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x+j, plot.y-1, plot.z+k);
+                    set.add(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(k==0?plot.type:plot.type.skyscraperFloorType, i, plot.front));
+                }
+                if(i==0){
+                    task.addSegment(set = new WorkerTaskSegmentSet());
+                }
+            }
+        }
+        return button;
+    }
+    private Button createShrinkSkyscraperRightButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.height).multiply(plot.skyscraper.levels());
+        cash = cash*plot.skyscraper.height*plot.skyscraper.levels();
+        WorkerTask task;
+        Button button = new Button().
+//                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/shrinkRight"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Shrink", "Right").
+                setEvent(new ButtonEvent.Pair().
+                        addEvent(new ButtonEvent().
+                                setType("Task").
+                                setTask(task = new WorkerTask().
+                                        setOwner(this).
+                                        setPlot(plot).
+                                        setCost(cost).
+                                        setCash(cash).
+                                        setRevenue(new ResourceList()))).
+                        addEvent(new ButtonEvent().
+                                setType("Skyscraper "+(plot.skyscraper.width-1)+" "+plot.skyscraper.height).
+                                setTask(new WorkerTask().setPlot(plot))));
+        for(int i = 0; i<plot.level+1; i++){
+            WorkerTaskSegmentSet set;
+            task.addSegment(set = new WorkerTaskSegmentSet());
+            for(int j = 0; j<plot.skyscraper.height; j++){
+                for(int k = 0; k<plot.skyscraper.levels(); k++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x+plot.skyscraper.width-1, plot.y+j, plot.z+plot.skyscraper.levels()-1-k);
+                    set.add(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(i==plot.level?plot.type.skyscraperFloorType:PlotType.Air, i<plot.level?plot.level-i-1:0, i<plot.level?plot.getFront():Side.FRONT));
+                }
+            }
+        }
+        return button;
+    }
+    private Button createShrinkSkyscraperLeftButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.height).multiply(plot.skyscraper.levels());
+        cash = cash*plot.skyscraper.height*plot.skyscraper.levels();
+        WorkerTask task;
+        Button button = new Button().
+//                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/shrinkLeft"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Shrink", "Left").
+                setEvent(new ButtonEvent.Pair().
+                        addEvent(new ButtonEvent().
+                                setType("Task").
+                                setTask(task = new WorkerTask().
+                                        setOwner(this).
+                                        setPlot(plot).
+                                        setCost(cost).
+                                        setCash(cash).
+                                        setRevenue(new ResourceList()))).
+                        addEvent(new ButtonEvent().
+                                setType("Skyscraper "+(plot.skyscraper.width-1)+" "+plot.skyscraper.height).
+                                setTask(new WorkerTask().setPlot(plot.world.generateAndGetPlot(plot.x+1, plot.y, plot.z)))));
+        int level = plot.level;
+        int levels = plot.skyscraper.levels();
+        for(int i = 0; i<level+1; i++){
+            WorkerTaskSegmentSet set;
+            task.addSegment(set = new WorkerTaskSegmentSet());
+            for(int j = 0; j<plot.skyscraper.height; j++){
+                for(int k = 0; k<levels; k++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x, plot.y+j, plot.z+levels-1-k);
+                    set.add(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(i==level?plot.type.skyscraperFloorType:PlotType.Air, i<level?level-i-1:0, i<level?plot.getFront():Side.FRONT));
+                }
+            }
+        }
+        return button;
+    }
+    private Button createShrinkSkyscraperUpButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.width).multiply(plot.skyscraper.levels());
+        cash = cash*plot.skyscraper.width*plot.skyscraper.levels();
+        WorkerTask task;
+        Button button = new Button().
+//                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/shrinkUp"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Shrink", "Up").
+                setEvent(new ButtonEvent.Pair().
+                        addEvent(new ButtonEvent().
+                                setType("Task").
+                                setTask(task = new WorkerTask().
+                                        setOwner(this).
+                                        setPlot(plot).
+                                        setCost(cost).
+                                        setCash(cash).
+                                        setRevenue(new ResourceList()))).
+                        addEvent(new ButtonEvent().
+                                setType("Skyscraper "+plot.skyscraper.width+" "+(plot.skyscraper.height-1)).
+                                setTask(new WorkerTask().setPlot(plot.world.generateAndGetPlot(plot.x, plot.y+1, plot.z)))));
+        int level = plot.level;
+        int levels = plot.skyscraper.levels();
+        for(int i = 0; i<level+1; i++){
+            WorkerTaskSegmentSet set;
+            task.addSegment(set = new WorkerTaskSegmentSet());
+            for(int j = 0; j<plot.skyscraper.width; j++){
+                for(int k = 0; k<levels; k++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x+j, plot.y, plot.z+levels-1-k);
+                    set.add(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(i==level?plot.type.skyscraperFloorType:PlotType.Air, i<level?level-i-1:0, i<level?plot.getFront():Side.FRONT));
+                }
+            }
+        }
+        return button;
+    }
+    private Button createShrinkSkyscraperDownButton(Plot plot){
+        ResourceList cost = new ResourceList();
+        int cash = 0;
+        for(int i = 0; i<plot.level+1; i++){
+            cost.addAll(plot.getType().getCost(i, race));
+            cash+=100*(i+1)*(i+1);
+        }
+        cost.multiply(plot.skyscraper.width).multiply(plot.skyscraper.levels());
+        cash = cash*plot.skyscraper.width*plot.skyscraper.levels();
+        WorkerTask task;
+        Button button = new Button().
+//                setHotkey(Keyboard.KEY_R).
+                setImage("/gui/buttons/"+race.getName()+"/shrinkDown"+plot.getType().textureFolder+(plot.getLevel()+1)+".png").
+                setText("Shrink", "Down").
+                setEvent(new ButtonEvent.Pair().
+                        addEvent(new ButtonEvent().
+                                setType("Task").
+                                setTask(task = new WorkerTask().
+                                        setOwner(this).
+                                        setPlot(plot).
+                                        setCost(cost).
+                                        setCash(cash).
+                                        setRevenue(new ResourceList()))).
+                        addEvent(new ButtonEvent().
+                                setType("Skyscraper "+plot.skyscraper.width+" "+(plot.skyscraper.height-1)).
+                                setTask(new WorkerTask().setPlot(plot))));
+        int level = plot.level;
+        int levels = plot.skyscraper.levels();
+        for(int i = 0; i<level+1; i++){
+            WorkerTaskSegmentSet set;
+            task.addSegment(set = new WorkerTaskSegmentSet());
+            for(int j = 0; j<plot.skyscraper.width; j++){
+                for(int k = 0; k<levels; k++){
+                    Plot aplot = plot.world.generateAndGetPlot(plot.x+j, plot.y+plot.skyscraper.height-1, plot.z+levels-1-k);
+                    set.add(new WorkerTaskSegment().
+                            setType("Plot Type").
+                            setPlot(aplot).
+                            setData(i==level?plot.type.skyscraperFloorType:PlotType.Air, i<level?level-i-1:0, i<level?plot.getFront():Side.FRONT));
+                }
+            }
+        }
+        return button;
     }
 }

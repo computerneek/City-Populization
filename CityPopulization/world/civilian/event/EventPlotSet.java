@@ -25,11 +25,15 @@ public class EventPlotSet extends Event{
     }
     @Override
     public void start(Civilian worker){
+        boolean scraper = type.skyscraperBaseType!=null&&plot.getType()!=type;
         plot.setType(type);
         plot.setLevel(level);
         plot.setFront(front);
         plot.setOwner(type==PlotType.Air?null:owner);
         started = true;
+        if(scraper){
+            Side.DOWN.getPlot(plot.world, plot.x, plot.y, plot.z).skyscraper.refresh();
+        }
     }
     @Override
     public void work(Civilian worker){}
