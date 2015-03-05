@@ -1,5 +1,6 @@
 package CityPopulization.render;
 import CityPopulization.world.plot.Plot;
+import CityPopulization.world.plot.PlotType;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.ImageStash;
 public class RoadRenderer implements PlotRenderer{
@@ -140,7 +141,7 @@ public class RoadRenderer implements PlotRenderer{
         GL11.glEnd();
     }
     @Override
-    public String[] getPaths(int levels, String textureFolder){
+    public String[] getPaths(PlotType plot, int levels, String textureFolder){
         return new String[]{levels+":/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png"};
     }
 }

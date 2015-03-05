@@ -6,6 +6,7 @@ import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.ResourceList;
+import CityPopulization.world.story.StoryMission;
 import java.io.IOException;
 import java.io.InputStream;
 import org.lwjgl.opengl.GL11;
@@ -32,7 +33,9 @@ public class Civilian{
     }
     public void assign(EventSequence sequence){
         this.eventSequence = sequence;
-        timer-=240;
+        if(!(homePlot.world instanceof StoryMission)||((StoryMission)homePlot.world).workersExpire()){
+            timer-=240;
+        }
     }
     private int findFrameCap(){
         int frameCap = 0;

@@ -1,4 +1,5 @@
 package CityPopulization.world.plot;
+import CityPopulization.Core;
 import CityPopulization.render.AirportRenderer;
 import CityPopulization.render.BankRenderer;
 import CityPopulization.render.CubeRenderer;
@@ -27,32 +28,32 @@ import java.util.Arrays;
 import java.util.HashMap;
 import org.lwjgl.input.Keyboard;
 public enum PlotType{
-    Air("Air", "air", new ResourceList(), new NonRenderer(), 1, false, false, Side.values(), false, false, 0),
-    Grass("Grass", "grass", new ResourceList(Resource.Dirt, 500), new CubeRenderer(), 1, true, true, Side.values(), false, true, 0),
-    Dirt("Dirt", "dirt", new ResourceList(Resource.Dirt, 500), new CubeRenderer(), 1, true, true, Side.values(), false, true, 0),
-    Road("Road", "road", new ResourceList(), new RoadRenderer(), 10, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, false, Keyboard.KEY_R),
-    Warehouse("Warehouse", "warehouse", new ResourceList(), new WarehouseRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_W),
-    Workshop("Workshop", "workshop", new ResourceList(), new WorkshopRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_O),
-    Store("Store", "store", new ResourceList(), new StoreRenderer(), 1, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_S),
-    CoalDeposit("Coal", "coal", new ResourceList(Resource.Coal, 500), new CubeRenderer(), 1, true, true, Side.values(), false, true, 0),
-    OilDeposit("Oil", "oil", new ResourceList(Resource.Oil, 500), new CubeRenderer(), 1, true, true, Side.values(), true, false, 0),
-    Woods("Forest", "woods", new ResourceList(Resource.Wood, 500), new ForestRenderer(), 1, false, true, Side.values(), true, false, 0),
-    Stone("Stone", "stone", new ResourceList(Resource.Stone, 500), new CubeRenderer(), 1, true, true, Side.values(), false, true, 0),
-    IronDeposit("Iron", "iron", new ResourceList(Resource.Iron, 500), new CubeRenderer(), 1, true, true, Side.values(), false, true, 0),
-    Sand("Sand", "sand", new ResourceList(Resource.Sand, 500), new CubeRenderer(), 1, true, true, Side.values(), true, true, 0),
-    ClayDeposit("Clay", "clay", new ResourceList(Resource.Clay, 500), new CubeRenderer(), 1, true, true, Side.values(), false, true, 0),
-    GoldDeposit("Gold", "gold", new ResourceList(Resource.Gold, 500), new CubeRenderer(), 1, true, true, Side.values(), false, true, 0),
-    AirportEntrance("Airport", "airport/entrance", new ResourceList(), new AirportRenderer(AirportRenderer.ENTRANCE), 1, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_E),
-    AirportTerminal("Terminal", "airport/terminal", new ResourceList(), new AirportRenderer(AirportRenderer.TERMINAL), 1, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, false, Keyboard.KEY_T),
-    AirportJetway("Jetway", "airport/jetway", new ResourceList(), new AirportRenderer(AirportRenderer.JETWAY), 1, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, false, Keyboard.KEY_J),
-    AirportRunway("Runway", "airport/runway", new ResourceList(), new AirportRenderer(AirportRenderer.RUNWAY), 1, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, false, Keyboard.KEY_N),
-    Bank("Bank", "bank", new ResourceList(), new BankRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_B),
-    House("House", "house", new ResourceList(), new HouseRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_H),
-    Elevator("Elevator", "elevator", new ResourceList(), new ElevatorRenderer(), 10, false, true, Side.values(), false, false, Keyboard.KEY_L),
-    Support("Support", "support", new ResourceList(), new CubeRenderer(), 1, true, true, Side.values(), false, true, Keyboard.KEY_U),
-    SkyscraperBase("Skyscraper", "skyscraper/base", new ResourceList(), new SkyscraperRenderer(), 10, false, true, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, true, Keyboard.KEY_K),
-    SkyscraperFloor("Skyscraper Floor", "skyscraper/upperFloor", new ResourceList(), new SkyscraperRenderer(), SkyscraperBase.highestLevel, false, true, new Side[0], true, true, 0),
-    Debris("Debris", "debris", new ResourceList(), new DebrisRenderer(), 1, false, false, Side.values(), true, false, 0);
+    Air("Air", "air", new ResourceList(), new NonRenderer(), 1, false, false, Side.values(), false, false, 0, 0, null, false),
+    Grass("Grass", "grass", new ResourceList(Resource.Dirt, 500), new CubeRenderer(), 10, true, true, Side.values(), false, true, 0, 0, null, false),
+    Dirt("Dirt", "dirt", new ResourceList(Resource.Dirt, 500), new CubeRenderer(), 10, true, true, Side.values(), false, true, 0, 0, null, false),
+    Road("Road", "road", new ResourceList(), new RoadRenderer(), 10, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, false, Keyboard.KEY_R, 0, null, false),
+    Warehouse("Warehouse", "warehouse", new ResourceList(), new WarehouseRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_W, 0, null, false),
+    Workshop("Workshop", "workshop", new ResourceList(), new WorkshopRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_O, 0, null, false),
+    Store("Store", "store", new ResourceList(), new StoreRenderer(), 1, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_S, 0, null, false),
+    CoalDeposit("Coal", "coal", new ResourceList(Resource.Coal, 500), new CubeRenderer(), 10, true, true, Side.values(), false, true, 0, 0, null, false),
+    OilDeposit("Oil", "oil", new ResourceList(Resource.Oil, 500), new CubeRenderer(), 10, true, true, Side.values(), true, false, 0, 0, null, false),
+    Woods("Forest", "woods", new ResourceList(Resource.Wood, 500), new ForestRenderer(), 10, false, true, Side.values(), true, false, 0, 0, null, false),
+    Stone("Stone", "stone", new ResourceList(Resource.Stone, 500), new CubeRenderer(), 10, true, true, Side.values(), false, true, 0, 0, null, false),
+    IronDeposit("Iron", "iron", new ResourceList(Resource.Iron, 500), new CubeRenderer(), 10, true, true, Side.values(), false, true, 0, 0, null, false),
+    Sand("Sand", "sand", new ResourceList(Resource.Sand, 500), new CubeRenderer(), 10, true, true, Side.values(), true, true, 0, 0, null, false),
+    ClayDeposit("Clay", "clay", new ResourceList(Resource.Clay, 500), new CubeRenderer(), 10, true, true, Side.values(), false, true, 0, 0, null, false),
+    GoldDeposit("Gold", "gold", new ResourceList(Resource.Gold, 500), new CubeRenderer(), 10, true, true, Side.values(), false, true, 0, 0, null, false),
+    AirportEntrance("Airport", "airport/entrance", new ResourceList(), new AirportRenderer(AirportRenderer.ENTRANCE), 1, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_E, 0, null, false),
+    AirportTerminal("Terminal", "airport/terminal", new ResourceList(), new AirportRenderer(AirportRenderer.TERMINAL), 1, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, false, Keyboard.KEY_T, 0, null, false),
+    AirportJetway("Jetway", "airport/jetway", new ResourceList(), new AirportRenderer(AirportRenderer.JETWAY), 1, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, false, Keyboard.KEY_J, 0, null, false),
+    AirportRunway("Runway", "airport/runway", new ResourceList(), new AirportRenderer(AirportRenderer.RUNWAY), 1, false, false, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, false, Keyboard.KEY_N, 0, null, false),
+    Bank("Bank", "bank", new ResourceList(), new BankRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_B, 0, null, false),
+    House("House", "house", new ResourceList(), new HouseRenderer(), 10, false, true, new Side[]{Side.FRONT}, true, false, Keyboard.KEY_H, 0, null, false),
+    Elevator("Elevator", "elevator", new ResourceList(), new ElevatorRenderer(), 10, false, true, Side.values(), false, false, Keyboard.KEY_L, 0, null, false),
+    Support("Support", "support", new ResourceList(), new CubeRenderer(), 1, true, true, Side.values(), false, true, Keyboard.KEY_U, 0, null, false),
+    SkyscraperBase("Skyscraper", "skyscraper/base", new ResourceList(), new SkyscraperRenderer(), 10, false, true, new Side[]{Side.FRONT, Side.LEFT, Side.RIGHT, Side.BACK}, true, true, Keyboard.KEY_K, 10, null, false),
+    SkyscraperFloor("Skyscraper Floor", "skyscraper/upperFloor", new ResourceList(), new SkyscraperRenderer(), SkyscraperBase.highestLevel, false, true, new Side[0], true, true, 0, 10, SkyscraperBase, false),
+    Debris("Debris", "debris", new ResourceList(), new DebrisRenderer(), 1, false, false, Side.values(), true, false, 0, 0, null, false);
     public final String name;
     public final String textureFolder;
     public ResourceList resourceHarvested;
@@ -66,7 +67,11 @@ public enum PlotType{
     private PlotType fallType;
     private boolean supports;
     private int hotkey;
-    PlotType(String name, String textureFolder, ResourceList resourceHarvested, PlotRenderer renderer, int highestLevel, boolean isOpaque, boolean causesAirlineCrash, Side[] pathableSides, boolean falls, boolean supports, int hotkey){
+    private int skyscraperLevels;
+    public PlotType skyscraperFloorType;
+    public PlotType skyscraperBaseType;
+    private final boolean alwaysVisible;
+    private PlotType(String name, String textureFolder, ResourceList resourceHarvested, PlotRenderer renderer, int highestLevel, boolean isOpaque, boolean causesAirlineCrash, Side[] pathableSides, boolean falls, boolean supports, int hotkey, int skyscraperLevels, PlotType skyscraperBaseType, boolean alwaysVisible){
         this.name = name;
         this.textureFolder = textureFolder;
         this.resourceHarvested = resourceHarvested;
@@ -79,6 +84,18 @@ public enum PlotType{
         this.falls = falls;
         this.supports = supports;
         this.hotkey = hotkey;
+        this.skyscraperLevels=skyscraperLevels;
+        if(skyscraperBaseType!=null){
+            skyscraperBaseType.skyscraperFloorType=this;
+        }
+        this.skyscraperBaseType = skyscraperBaseType;
+        this.alwaysVisible=alwaysVisible;
+    }
+    boolean isAlwaysVisible(){
+        return alwaysVisible;
+    }
+    public int getSkyscraperHeight(){
+        return skyscraperLevels;
     }
     public int getMaximumLevel(){
         return highestLevel;
@@ -94,7 +111,7 @@ public enum PlotType{
         for(int i = 1; i<highestLevel+1; i++){
             for(int j = 1; true; j++){
                 boolean skip = true;
-                String[] paths = renderer.getPaths(1, textureFolder);
+                String[] paths = renderer.getPaths(this, 1, textureFolder);
                 frameCaps[i-1] = new int[paths.length];
                 for(int k = 0; k<paths.length; k++){
                     String path = paths[k].substring(2).replaceAll("<LEVEL>", ""+i).replaceAll("<FRAME>", ""+j);
@@ -153,7 +170,7 @@ public enum PlotType{
         }
     }
     public void loadAllTextures(){
-        for(String texture : renderer.getPaths(highestLevel, textureFolder)){
+        for(String texture : renderer.getPaths(this, highestLevel, textureFolder)){
             TexturepackCreator.addTexture(new Texture(texture));
         }
     }
@@ -163,12 +180,15 @@ public enum PlotType{
         }
     }
     public int getTextureIndex(String string){
-        return new ArrayList<String>(Arrays.asList(renderer.getPaths(1, textureFolder))).indexOf(string);
+        return new ArrayList<String>(Arrays.asList(renderer.getPaths(this, 1, textureFolder))).indexOf(string);
     }
     public ResourceList getCost(int level, Race race){
         HashMap<PlotType, ResourceListList> costs = constructionCosts.get(race);
         if(costs==null){
             return null;
+        }
+        if(costs.get(this)!=null&&costs.get(this).get(level)==null){
+            return new ResourceList();
         }
         return (costs.get(this)!=null&&costs.get(this).get(level)!=null)?new ResourceList().addAll(costs.get(this).get(level)):null;
     }
@@ -179,7 +199,7 @@ public enum PlotType{
         return supports;
     }
     public PlotType getFallenType(){
-        if(supports()||this==PlotType.OilDeposit){
+        if((supports()||this==PlotType.OilDeposit)&&skyscraperBaseType==null&&skyscraperFloorType==null){
             return this;
         }else{
             return Debris;

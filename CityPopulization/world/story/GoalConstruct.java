@@ -48,7 +48,7 @@ public class GoalConstruct extends Goal {
     }
     @Override
     public String getText(){
-        return "Construct "+count+(level>1?"level "+level:"")+" "+type.name+" ("+(progress-initial>=count?"Complete":count-progress+initial+" left")+")";
+        return (additional?"Construct ":"Own ")+count+(level>1?"level "+level:"")+" "+type.name+" ("+(progress-initial>=count?"Complete":count-progress+initial+" left")+")";
     }
     @Override
     public boolean isComplete(){

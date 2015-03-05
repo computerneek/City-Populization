@@ -3,6 +3,7 @@ import CityPopulization.Core;
 import CityPopulization.render.Side;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Path;
+import CityPopulization.world.civilian.WorkerTaskSegmentSet;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.ResourceList;
 import simplelibrary.config2.Config;
@@ -29,7 +30,11 @@ public abstract class Event {
                 ((EventPlotSet)event).started = config.get("started");
                 break;
             case "satisfy":
-                event = new EventSatisfy(Core.loadingWorld.getPlot((int)config.get("x"), (int)config.get("y"), (int)config.get("z")).task.segments.get((int)config.get("index")));
+                if(config.hasProperty("index")){
+                    event = new EventSatisfy(Core.loadingWorld.getPlot((int)config.get("x"), (int)config.get("y"), (int)config.get("z")).task.segments.get((int)config.get("index")));
+                }else{
+                    event = new EventSatisfy(((WorkerTaskSegmentSet)Core.loadingWorld.getPlot((int)config.get("x"), (int)config.get("y"), (int)config.get("z")).task.segments.get((int)config.get("index1"))).segments.get((int)config.get("index2")));
+                }
                 ((EventSatisfy)event).started = config.get("started");
                 break;
             case "train":

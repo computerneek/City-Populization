@@ -3,6 +3,8 @@ import CityPopulization.Core;
 import CityPopulization.menu.MenuAirportSchedule;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.plot.Plot;
+import CityPopulization.world.plot.SkyScraper;
+import java.util.ArrayList;
 public class ButtonEvent {
     private String type;
     private WorkerTask task;
@@ -50,7 +52,28 @@ public class ButtonEvent {
                 task.owner.cash+=task.cash;
                 break;
             default:
+                if(type.startsWith("Skyscraper")){
+                    String[] spl = type.split(" ");
+                    new SkyScraper(plot, Integer.parseInt(spl[1]), Integer.parseInt(spl[2]));
+                    return;
+                }
                 throw new AssertionError(type);
+        }
+    }
+    public static class Pair extends ButtonEvent{
+        ArrayList<ButtonEvent> events = new ArrayList<>();
+        public Pair(){}
+        public Pair addEvent(ButtonEvent event){
+            events.add(event);
+            return this;
+        }
+        public void onClicked(){
+            for(ButtonEvent event : events){
+                event.onClicked();
+            }
+        }
+        public String getInfo(){
+            return events.get(0).getInfo();
         }
     }
 }

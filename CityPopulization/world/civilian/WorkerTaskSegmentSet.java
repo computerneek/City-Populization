@@ -23,9 +23,12 @@ public class WorkerTaskSegmentSet extends WorkerTaskSegment{
     private int requiredWorkers = 1;
     private ResourceList resources;
     private Plot targetPlot;
-    ArrayList<WorkerTaskSegment> segments = new ArrayList<>();
+    public ArrayList<WorkerTaskSegment> segments = new ArrayList<>();
     public WorkerTaskSegmentSet add(WorkerTaskSegment seg){
         segments.add(seg);
+        if(task!=null){
+            seg.setParentTask(task);
+        }
         return this;
     }
     public boolean isFull(){

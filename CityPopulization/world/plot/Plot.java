@@ -17,6 +17,7 @@ import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
+import CityPopulization.world.story.VisibilityOverride;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
@@ -27,7 +28,7 @@ public class Plot{
     public final int y;
     public final int z;
     public final Random rand;
-    public PlotType type;
+    public PlotType type = PlotType.Air;
     public int level;
     public Player owner;
     public final World world;
@@ -40,6 +41,7 @@ public class Plot{
     private int frameBoost;
     public Side front = Side.FRONT;
     public Terminal terminal;
+    public SkyScraper skyscraper;
     public ArrayList<Civilian> civilians = new ArrayList<>();
     public ArrayList<Civilian> civiliansPresent = new ArrayList<>();
     public ArrayList<Worker> workers = new ArrayList<>();
@@ -58,13 +60,15 @@ public class Plot{
     public int lastTaskTimeCivilian = -1;
     public ArrayList<WorkerTask> lastTasksCivilian = new ArrayList<>();
     private int civilianTime;
-    public static final int VISION_DISTANCE = 2;
+    public final int VISION_DISTANCE;
     private boolean taskWorkerFailed;
+    private VisibilityOverride visibilityOverride;
     public Plot(World world, int x, int y, int z){
         this.world = world;
         this.x = x;
         this.y = y;
         this.z = z;
+        VISION_DISTANCE = world.getVisionDistance();
         int anum = x*y*z+x*y+x-2*y*z+47*x*z-2785*y*z+225*x*y*z;
         anum = anum*anum+anum/2+anum*anum*anum-46*anum+anum;
         rand = new Random(world.seed*anum);
@@ -108,13 +112,32 @@ public class Plot{
         if(Core.world==world){
             world.clearPlotUpdates(this);
             world.schedulePlotUpdate(this);
-            for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
-                for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
-                    for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
-                        Plot plot = world.getPlot(x+i, y+j, z+k);
-                        if(plot!=null){
-                            plot.onNeighborPlotChange();
+            if(VISION_DISTANCE>0){
+                for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+                    for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                        for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
+                            Plot plot = world.getPlot(x+i, y+j, z+k);
+                            if(plot!=null){
+                                plot.onNeighborPlotChange();
+                            }
                         }
+                    }
+                }
+//            }else if(world.lineOfSightDistance>0){
+            }else{
+                int[][] coords = new int[][]{
+                    {0, 0, 0},
+                    {0, 0, 1},
+                    {0, 0, -1},
+                    {0, 1, 0},
+                    {0, -1, 0},
+                    {1, 0, 0},
+                    {-1, 0, 0}
+                };
+                for(int[] ints : coords){
+                    Plot plot = world.getPlot(x+ints[0], y+ints[1], z+ints[2]);
+                    if(plot!=null){
+                        plot.onNeighborPlotChange();
                     }
                 }
             }
@@ -125,6 +148,11 @@ public class Plot{
             if(type==PlotType.Warehouse){
                 owner.resourceStructures.add(this);
             }
+        }
+        if(skyscraper!=null&&type.skyscraperBaseType==null&&type.skyscraperFloorType==null){
+            skyscraper.collapse();
+        }else if(skyscraper==null&&type.skyscraperFloorType!=null){
+            new SkyScraper(this, 1, 1);
         }
         return this;
     }
@@ -149,11 +177,27 @@ public class Plot{
         }
         owner = player;
         if(Core.world==world){
-            for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
-                for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
-                    for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
-                        world.generatePlot(x+i, y+j, z+k).updateVisibility();
+            if(VISION_DISTANCE>0){
+                for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+                    for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                        for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
+                            world.generatePlot(x+i, y+j, z+k).updateVisibility();
+                        }
                     }
+                }
+//            }else if(world.lineOfSightDistance>0){
+            }else{
+                int[][] coords = new int[][]{
+                    {0, 0, 0},
+                    {0, 0, 1},
+                    {0, 0, -1},
+                    {0, 1, 0},
+                    {0, -1, 0},
+                    {1, 0, 0},
+                    {-1, 0, 0}
+                };
+                for(int[] ints : coords){
+                    world.generatePlot(x+ints[0], y+ints[1], z+ints[2]).updateVisibility();
                 }
             }
             onPlotChange();
@@ -175,11 +219,37 @@ public class Plot{
     public void updateVisibility(){
         ArrayList<Player> visibilityClone = new ArrayList<Player>(playerVisibilities);
         playerVisibilities.clear();
-        PLAYER:for(Player player : world.listPlayers()){
-            for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
-                for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
-                    for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
-                        Plot plot = world.getPlot(x+i, y+j, z+k);
+        if(visibilityOverride==VisibilityOverride.INVISIBLE){
+        }else if(visibilityOverride==VisibilityOverride.VISIBLE||visibilityOverride==VisibilityOverride.CAN_SEE_FROM||type.isAlwaysVisible()){
+            playerVisibilities.addAll(world.otherPlayers);
+            playerVisibilities.add(world.localPlayer);
+        }else{
+            PLAYER:for(Player player : world.listPlayers()){
+                if(VISION_DISTANCE>0){
+                    for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+                        for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                            for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
+                                Plot plot = world.getPlot(x+i, y+j, z+k);
+                                if(visibilityOverride==VisibilityOverride.VISIBLE||(plot!=null&&(plot.owner==player||plot.visibilityOverride==VisibilityOverride.CAN_SEE_FROM))){
+                                    playerVisibilities.add(player);
+                                    continue PLAYER;
+                                }
+                            }
+                        }
+                    }
+//                }else if(world.lineOfSightDistance>0){
+                }else{
+                    int[][] coords = new int[][]{
+                        {0, 0, 0},
+                        {0, 0, 1},
+                        {0, 0, -1},
+                        {0, 1, 0},
+                        {0, -1, 0},
+                        {1, 0, 0},
+                        {-1, 0, 0}
+                    };
+                    for(int[] ints : coords){
+                        Plot plot = world.getPlot(x+ints[0], y+ints[1], z+ints[2]);
                         if(plot!=null&&plot.owner==player){
                             playerVisibilities.add(player);
                             continue PLAYER;
@@ -194,14 +264,40 @@ public class Plot{
         shouldRenderRightFace = (plot=world.getPlot(x+1, y, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
         shouldRenderFrontFace = (plot=world.getPlot(x, y+1, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
         shouldRenderBackFace = (plot=world.getPlot(x, y-1, z))==null||!plot.getType().isOpaque()||plot.fallProgress>0||fallProgress>0;
-        for(Player player : visibilityClone){
-            if(!playerVisibilities.contains(player)){
+        for(Player player : playerVisibilities){
+            if(!visibilityClone.contains(player)){
                 player.plotDisappear(x-player.offsetX, y-player.offsetY, z);
             }
         }
         for(Player player : playerVisibilities){
-            if(!playerVisibilities.contains(player)){
+            if(!visibilityClone.contains(player)){
                 player.plotAppear(x-player.offsetX, y-player.offsetY, z);
+            }
+        }
+    }
+    public void setVisibilityOverride(VisibilityOverride visibilityOverride){
+        this.visibilityOverride = visibilityOverride;
+        if(VISION_DISTANCE>0){
+            for(int i = -VISION_DISTANCE; i<=VISION_DISTANCE; i++){
+                for(int j = -VISION_DISTANCE; j<=VISION_DISTANCE; j++){
+                    for(int k = -VISION_DISTANCE; k<=VISION_DISTANCE; k++){
+                        world.generatePlot(x+i, y+j, z+k).updateVisibility();
+                    }
+                }
+            }
+//        }else if(world.lineOfSightDistance>0){
+        }else{
+            int[][] coords = new int[][]{
+                {0, 0, 0},
+                {0, 0, 1},
+                {0, 0, -1},
+                {0, 1, 0},
+                {0, -1, 0},
+                {1, 0, 0},
+                {-1, 0, 0}
+            };
+            for(int[] ints : coords){
+                world.generatePlot(x+ints[0], y+ints[1], z+ints[2]).updateVisibility();
             }
         }
     }
@@ -275,23 +371,26 @@ public class Plot{
         }
     }
     public Plot[] getSkyscraperPlots(){
+        if(type==null){
+            return new Plot[0];
+        }
         Plot plot = this;
-        while(plot.type==PlotType.SkyscraperFloor){
+        while(plot.type.skyscraperBaseType!=null){
             plot = world.generateAndGetPlot(x, y, plot.z-1);
         }
-        if(plot.type!=PlotType.SkyscraperBase){
+        if(plot.type.skyscraperFloorType==null){
             return new Plot[0];
         }
         ArrayList<Plot> plots = new ArrayList<>();
         do{
             plots.add(plot);
             plot = world.generateAndGetPlot(x, y, plot.z+1);
-        }while(plot.type==PlotType.SkyscraperFloor);
+        }while(plot.type.skyscraperBaseType!=null);
         return plots.toArray(new Plot[plots.size()]);
     }
     public boolean canAddSkyscraperFloor(){
         Plot[] plots = getSkyscraperPlots();
-        return plots.length>0&&plots.length<10&&world.getPlot(x, y, z+plots.length).type==PlotType.Air;
+        return plots.length>0&&plots.length<skyscraper.maxLevels()&&world.getPlot(x, y, z+plots.length).type==PlotType.Air;
     }
     private void doAirportUpdate(){
         if(world.age%20==0&&!inboundAircraft.isEmpty()){
@@ -436,7 +535,7 @@ public class Plot{
     }
     private void civilianUpdate(){
         timeSinceLastCivilianOperation++;
-        if(world.age%20==0){
+        if(world.age%20==0&&owner!=null){
             owner.cash+=civiliansPresent.size();
         }
         civilianTime++;
@@ -524,7 +623,7 @@ public class Plot{
             Civilian worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
             boolean taskSent = false;
             WorkerTask task = this.task;
-            if(type==PlotType.SkyscraperFloor){
+            if(type.skyscraperBaseType!=null){
                 task = getSkyscraperPlots()[0].task;
             }
             if(task!=null&&task instanceof CivilianTask&&!(task.isFull()||task.getCurrentSegment().isFull()||!task.canReceiveFrom(this))){
@@ -543,7 +642,7 @@ public class Plot{
     }
     private void workerUpdate(){
         timeSinceLastWorkerOperation++;
-        if(world.age%20==0){
+        if(world.age%20==0&&owner!=null){
             owner.cash-=workersPresent.size();
         }
         if(timeSinceLastWorkerOperation>=20){
@@ -576,6 +675,8 @@ public class Plot{
                         world.civilians.add(worker);
                         world.onCivilianAdded(worker);
                         timeSinceLastCivilianOperation = 0;
+                        workers.remove(worker);
+                        workersPresent.remove(worker);
                     }
                 }else{
                     Plot airport = Path.findAirportEntrance(this, false);
@@ -587,6 +688,8 @@ public class Plot{
                             world.civilians.add(worker);
                             world.onCivilianAdded(worker);
                             airport.workers.add(worker);
+                            workers.remove(worker);
+                            workersPresent.remove(worker);
                         }
                     }
                 }
@@ -766,7 +869,7 @@ public class Plot{
         return Path.findHouseWithSpace(this, false);
     }
     public int getMaximumCivilianCapacity(){
-        return (int)Math.round(Math.max((level+1)*(level+1)*world.difficulty.homeOccupantModifier, 1));
+        return type==PlotType.Air?0:    (int)Math.round(Math.max((level+1)*(level+1)*world.difficulty.homeOccupantModifier, 1));
     }
     public Config save(){
         Config config = Config.newConfig();
@@ -783,6 +886,9 @@ public class Plot{
         config.set("frameBoost", frameBoost);
         config.set("front", front.name());
         config.set("terminal", terminal.save());
+        if(skyscraper!=null&&skyscraper.basePlot==this){
+            config.set("skyscraper", skyscraper.save());
+        }
         if(!civiliansPresent.isEmpty()){
             Config two = Config.newConfig();
             two.set("count", civiliansPresent.size());

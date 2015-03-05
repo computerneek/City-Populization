@@ -1,5 +1,6 @@
 package CityPopulization.render;
 import CityPopulization.world.plot.Plot;
+import CityPopulization.world.plot.PlotType;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.opengl.ImageStash;
 public class ForestRenderer implements PlotRenderer{
@@ -10,9 +11,9 @@ public class ForestRenderer implements PlotRenderer{
         int z = plot.z;
         int levelCap = plot.getType().getMaximumLevel();
         int level = plot.getLevel()%levelCap;
-        int frameCap = plot.getType().getFrameCap(level+1, plot.getType().getTextureIndex("1:/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png"));
+        int frameCap = plot.getType().getFrameCap(level+1, plot.getType().getTextureIndex("1:/textures/plots/"+textureFolder+"/frame <FRAME>.png"));
         int frame = plot.getFrameNumber()%frameCap;
-        String path = "/textures/plots/"+textureFolder+"/level "+(level+1)+"/frame "+(frame+1)+".png";
+        String path = "/textures/plots/"+textureFolder+"/frame "+(frame+1)+".png";
         int texture = ImageStash.instance.getTexture(path);
         ImageStash.instance.bindTexture(texture);
         GL11.glBegin(GL11.GL_QUADS);
@@ -34,8 +35,8 @@ public class ForestRenderer implements PlotRenderer{
         GL11.glEnd();
     }
     @Override
-    public String[] getPaths(int levels, String textureFolder){
-        return new String[]{levels+":/textures/plots/"+textureFolder+"/level <LEVEL>/frame <FRAME>.png"};
+    public String[] getPaths(PlotType plot, int levels, String textureFolder){
+        return new String[]{levels+":/textures/plots/"+textureFolder+"/frame <FRAME>.png"};
     }
     
 }
