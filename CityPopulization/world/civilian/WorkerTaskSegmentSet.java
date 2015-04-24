@@ -15,7 +15,6 @@ import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import simplelibrary.config2.Config;
 public class WorkerTaskSegmentSet extends WorkerTaskSegment{
-    public String type;
     private Object[] data;
     private int workers = 0;
     public WorkerTask task;

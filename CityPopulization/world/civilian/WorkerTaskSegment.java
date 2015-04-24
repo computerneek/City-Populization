@@ -1,4 +1,5 @@
 package CityPopulization.world.civilian;
+import CityPopulization.Core;
 import CityPopulization.render.Side;
 import CityPopulization.world.civilian.event.EventLoad;
 import CityPopulization.world.civilian.event.EventPath;
@@ -202,6 +203,11 @@ public class WorkerTaskSegment {
             config.set("tolevel", ((Integer)data[1]).intValue());
             config.set("tofront", ((Side)data[2]).name());
         }
+        if(targetPlot!=null){
+            config.set("targetX", targetPlot.x);
+            config.set("targetY", targetPlot.y);
+            config.set("targetZ", targetPlot.z);
+        }
         return config;
     }
     public static WorkerTaskSegment load(Config get){
@@ -220,6 +226,9 @@ public class WorkerTaskSegment {
         }
         if(seg.type.equals("Plot Type")){
             seg.data = new Object[]{PlotType.valueOf((String)get.get("totype")), (int)get.get("tolevel"), Side.valueOf((String)get.get("tofront"))};
+        }
+        if(get.hasProperty("targetX")){
+            seg.targetPlot = Core.world.generatePlot((int)get.get("targetX"), (int)get.get("targetY"), (int)get.get("targetZ"));
         }
         return seg;
     }

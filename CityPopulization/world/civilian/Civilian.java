@@ -84,9 +84,9 @@ public class Civilian{
         if(plot.getType()==PlotType.Road||plot.getType()==PlotType.Elevator||plot.getSkyscraperPlots().length>0){
             traveledThisTick*=plot.getLevel()+1;
         }
-        if(plot.task!=null){
-            traveledThisTick/=2;
-        }
+//        if(plot.task!=null){
+//            traveledThisTick/=2;
+//        }
         dist+=traveledThisTick;
         while(dist>=1F&&dest!=null){
             if(dest==null&&path!=null){

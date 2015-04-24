@@ -118,6 +118,13 @@ public class ResourceList{
         }
         return config;
     }
+    public int price(){
+        int price = 0;
+        for(Resource res : listResources()){
+            price += res.getCost(get(res));
+        }
+        return price;
+    }
     public static ResourceList load(Config config){
         ResourceList lst = new ResourceList();
         for(Resource res : Resource.values()){

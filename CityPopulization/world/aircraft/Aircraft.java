@@ -210,7 +210,9 @@ public abstract class Aircraft{
                     }
                     schedule.civilians++;
                 }
-                player.cash+=cargoOccupied;
+                for(AircraftCargo cargo : this.cargo){
+                    player.cash+=cargo.value();
+                }
             }
             return;
         }

@@ -34,7 +34,7 @@ public class ScheduleElement {
         if(workers+civilians>template.passengers){
             civilians=template.passengers-workers;
         }
-        return cost+5*template.passengers-10*civilians+5*workers+resourceList.count()*2;
+        return cost+5*template.passengers-10*civilians+5*workers+resourceList.price()+resourceList.count();
     }
     public int getFuelCost(){
         return template.fuel;

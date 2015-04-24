@@ -11,4 +11,5 @@ public class WorldData{
     public GameDifficulty difficulty;
     public String name;
     public boolean sandbox;
+    public int workers;
 }

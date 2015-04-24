@@ -20,4 +20,7 @@ public class AircraftCargoResource extends AircraftCargo{
         config.set("resource", resource.name());
         return config;
     }
+    public int value(){
+        return resource.getCost(1);
+    }
 }

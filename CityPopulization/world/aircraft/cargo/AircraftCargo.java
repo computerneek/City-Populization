@@ -16,4 +16,5 @@ public abstract class AircraftCargo implements Comparable<AircraftCargo>{
         return cargo.getSpaceOccupied()-getSpaceOccupied();
     }
     public abstract Config save();
+    public abstract int value();
 }

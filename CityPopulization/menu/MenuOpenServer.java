@@ -211,7 +211,7 @@ public class MenuOpenServer extends Menu{
                         world.getLocalPlayer().setSandbox(gameMode.getIndex()==1);
                         world.paused = true;
                         Core.playWorld(world);
-                        world.summonInitialWorker();
+                        world.summonInitialWorker(1);
                         Random rand = new Random();
                         synchronized(connections){
                             for(int i = 0; i<connections.size(); i++){
@@ -253,7 +253,7 @@ public class MenuOpenServer extends Menu{
         world.otherPlayers.add(player);
         client.setPlayer(player);
         client.prepare();
-        player.summonInitialWorkers();
+        player.summonInitialWorkers(1);
     }
     private void doThread(){
         while(!connection.isClosed()){

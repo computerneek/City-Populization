@@ -138,8 +138,8 @@ public class World{
         }
         return plots3.get(z);
     }
-    public void summonInitialWorker(){
-        localPlayer.summonInitialWorkers();
+    public void summonInitialWorker(int workers){
+        localPlayer.summonInitialWorkers(workers);
     }
     public synchronized Plot generatePlot(int x, int y, int z){
         if(getPlot(x, y, z)!=null){

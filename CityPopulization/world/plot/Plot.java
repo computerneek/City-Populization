@@ -12,6 +12,7 @@ import CityPopulization.world.civilian.Path;
 import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.civilian.WorkerTaskSegment;
+import CityPopulization.world.civilian.WorkerTaskSegmentSet;
 import CityPopulization.world.civilian.event.EventSequence;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
@@ -149,7 +150,7 @@ public class Plot{
                 owner.resourceStructures.add(this);
             }
         }
-        if(skyscraper!=null&&type.skyscraperBaseType==null&&type.skyscraperFloorType==null){
+        if(skyscraper!=null&&type.skyscraperBaseType==null&&type.skyscraperFloorType==null&&type!=PlotType.Air){
             skyscraper.collapse();
         }else if(skyscraper==null&&type.skyscraperFloorType!=null){
             new SkyScraper(this, 1, 1);
@@ -539,7 +540,7 @@ public class Plot{
             owner.cash+=civiliansPresent.size();
         }
         civilianTime++;
-        if(civilianTime>=20){
+        if(civilianTime/2>=getType().getMaximumLevel()-getLevel()){
             doCivilianUpdate();
         }
     }
@@ -623,8 +624,8 @@ public class Plot{
             Civilian worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
             boolean taskSent = false;
             WorkerTask task = this.task;
-            if(type.skyscraperBaseType!=null){
-                task = getSkyscraperPlots()[0].task;
+            if(skyscraper!=null){
+                task = skyscraper.basePlot.task;
             }
             if(task!=null&&task instanceof CivilianTask&&!(task.isFull()||task.getCurrentSegment().isFull()||!task.canReceiveFrom(this))){
                 WorkerTaskSegment segment = task.getCurrentSegment();
@@ -645,7 +646,7 @@ public class Plot{
         if(world.age%20==0&&owner!=null){
             owner.cash-=workersPresent.size();
         }
-        if(timeSinceLastWorkerOperation>=20){
+        if(timeSinceLastWorkerOperation>=(getType().getMaximumLevel()-getLevel())*5-4){
             doWorkerUpdate();
         }
     }
@@ -733,7 +734,7 @@ public class Plot{
         }
         boolean taskSent = false;
         for(WorkerTask potentialTask : tasks){
-            if(potentialTask.getCurrentSegment()==null||((potentialTask instanceof CivilianTask)&&potentialTask.getCurrentSegment().type.equals("Train Worker"))||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
+            if(potentialTask.getCurrentSegment()==null||((potentialTask instanceof CivilianTask)&&(potentialTask.getCurrentSegment().type!=null&&(potentialTask.getCurrentSegment().type.equals("Train Worker"))||(potentialTask.getCurrentSegment() instanceof WorkerTaskSegmentSet&&((WorkerTaskSegmentSet)potentialTask.getCurrentSegment()).segments.get(0).type.equals("Train Worker"))))||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
                 continue;
             }
             WorkerTaskSegment segment = potentialTask.getCurrentSegment();

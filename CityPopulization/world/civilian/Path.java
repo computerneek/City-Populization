@@ -55,11 +55,11 @@ public class Path implements Comparable<Path>{
         return path;
     }
     public static ArrayList<Plot> findPotentialTasks(ArrayList<WorkerTask> tasks, Plot start, boolean isWorker){
-        if(start.type.skyscraperBaseType!=null){
-            start = start.getSkyscraperPlots()[0];
+        if(start.skyscraper!=null){
+            start = start.skyscraper.basePlot;
         }
-        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
-            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot.task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot;
         }
         ArrayList<Plot> houses = new ArrayList<>();
         ArrayList<Path> paths = new ArrayList<>();
@@ -119,10 +119,10 @@ public class Path implements Comparable<Path>{
     }
     public static Plot findResourcePlot(Plot start, ResourceList resources, boolean isWorker){
         if(start.type.skyscraperBaseType!=null){
-            start = start.getSkyscraperPlots()[0];
+            start = start.skyscraper.basePlot;
         }
-        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
-            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot.task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot;
         }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
@@ -172,10 +172,10 @@ public class Path implements Comparable<Path>{
     }
     public static ArrayList<Plot> findWarehouse(Plot start, boolean isWorker){
         if(start.type.skyscraperBaseType!=null){
-            start = start.getSkyscraperPlots()[0];
+            start = start.skyscraper.basePlot;
         }
-        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
-            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot.task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot;
         }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
@@ -222,10 +222,10 @@ public class Path implements Comparable<Path>{
     }
     public static Plot findAirportEntrance(Plot start, boolean isWorker){
         if(start.type.skyscraperBaseType!=null){
-            start = start.getSkyscraperPlots()[0];
+            start = start.skyscraper.basePlot;
         }
-        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
-            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot.task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot;
         }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
@@ -267,10 +267,10 @@ public class Path implements Comparable<Path>{
     }
     public static Plot findHouseWithSpace(Plot start, boolean isWorker){
         if(start.type.skyscraperBaseType!=null){
-            start = start.getSkyscraperPlots()[0];
+            start = start.skyscraper.basePlot;
         }
         if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0){
-            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+            start = Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot;
         }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
@@ -319,10 +319,10 @@ public class Path implements Comparable<Path>{
     }
     public static Plot findWorkshop(Plot start, boolean isWorker){
         if(start.type.skyscraperBaseType!=null){
-            start = start.getSkyscraperPlots()[0];
+            start = start.skyscraper.basePlot;
         }
-        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
-            start = Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0];
+        if(Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot.task!=null){
+            start = Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot;
         }
         ArrayList<Path> paths = new ArrayList<>();
         ArrayList<Plot> coveredPlots = new ArrayList<>();
@@ -363,26 +363,47 @@ public class Path implements Comparable<Path>{
         return null;
     }
     public static Path findPath(Plot start, Plot end, boolean isWorker){
-        return findPath(start, end, isWorker, false);
+        return findPath(start, end, isWorker, false, false);
     }
-    public static Path findPath(Plot start, Plot end, boolean isWorker, boolean isSkyscrapering){
+    public static Path findPath(Plot start, Plot end, boolean isWorker, boolean isSkyscrapering, boolean isStartingSkyscraper){
         if(start!=end&&start.skyscraper!=null&&start.skyscraper==end.skyscraper){
             return new Path().start(start).path(end);
         }
-        if(start.type.skyscraperBaseType!=null){
-            return findPath(start.getSkyscraperPlots()[0], end, isWorker);
+        if(start.skyscraper!=null&&!isStartingSkyscraper){
+            Plot base = start.skyscraper.basePlot;
+            Path[] paths = new Path[start.skyscraper.width*start.skyscraper.height];
+            for(int x = 0; x<start.skyscraper.width; x++){
+                for(int y = 0; y<start.skyscraper.height; y++){
+                    if(x>0&&x<start.skyscraper.width-1&&y>0&&y<start.skyscraper.height-1){
+                        continue;
+                    }
+                    paths[x*start.skyscraper.height+y] = findPath(base.world.getPlot(base.x+x, base.y+y, base.z), end, isWorker, isSkyscrapering, true);
+                }
+            }
+            Path target = null;
+            for(Path path : paths){
+                if(target==null){
+                    target = path;
+                }else if(path!=null){
+                    if(target.path.size()>path.path.size()){
+                        target = path;
+                    }
+                }
+            }
+            return target;
         }
-        if(start.skyscraper==null&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots()[0].task!=null){
-            return findPath(Core.world.getPlot(start.x, start.y, start.z-1), end, isWorker);
+        if(start.skyscraper==null&&Core.world.getPlot(start.x, start.y, start.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(start.x, start.y, start.z-1).skyscraper.basePlot.task!=null){
+            Path path = findPath(Core.world.getPlot(start.x, start.y, start.z-1), end, isWorker);
         }
         if(end.skyscraper!=null&&!isSkyscrapering){
             ArrayList<Path> path = new ArrayList<Path>();
+            Plot p = end.skyscraper.basePlot;
             for(int x = 0; x<end.skyscraper.width; x++){
                 for(int y = 0; y<end.skyscraper.height; y++){
                     if(x>0&&x<end.skyscraper.width-1&&y>0&&y<end.skyscraper.height-1){
                         continue;
                     }
-                    path.add(findPath(start, end.world.getPlot(end.x+x, end.y+y, end.skyscraper.basePlot.z), isWorker, true));
+                    path.add(findPath(start, end.world.getPlot(p.x+x, p.y+y, p.z), isWorker, true, isStartingSkyscraper));
                 }
             }
             while(path.remove(null));
@@ -390,9 +411,9 @@ public class Path implements Comparable<Path>{
                 return null;
             }
             Collections.sort(path);
-            return path.get(0).path(end);
+            return path.get(path.size()-1).path(end);
         }
-        if(end.skyscraper==null&&Core.world.getPlot(end.x, end.y, end.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(end.x, end.y, end.z-1).getSkyscraperPlots()[0].task!=null){
+        if(end.skyscraper==null&&Core.world.getPlot(end.x, end.y, end.z-1).getSkyscraperPlots().length>0&&Core.world.getPlot(end.x, end.y, end.z-1).skyscraper.basePlot.task!=null){
             Path path = findPath(start, Core.world.getPlot(end.x, end.y, end.z-1), isWorker);
             if(path!=null){
                 path.path(end);

@@ -49,7 +49,7 @@ public class MenuTexturepacks extends Menu {
         }
     }
     private void newTexturepack(){
-        gui.open(new MenuTexturepackCreator(gui, this));
+//        gui.open(new MenuTexturepackCreator(gui, this));
     }
     private void refreshTexturepacks(){
         TexturePackManager.instance.findTexturePacks();
