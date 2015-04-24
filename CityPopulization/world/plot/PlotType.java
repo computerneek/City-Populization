@@ -1,5 +1,4 @@
 package CityPopulization.world.plot;
-import CityPopulization.Core;
 import CityPopulization.render.AirportRenderer;
 import CityPopulization.render.BankRenderer;
 import CityPopulization.render.CubeRenderer;
@@ -15,8 +14,6 @@ import CityPopulization.render.SkyscraperRenderer;
 import CityPopulization.render.StoreRenderer;
 import CityPopulization.render.WarehouseRenderer;
 import CityPopulization.render.WorkshopRenderer;
-import CityPopulization.texturepack.Texture;
-import CityPopulization.texturepack.TexturepackCreator;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
@@ -166,17 +163,7 @@ public enum PlotType{
         costs.put(Support, new ResourceListList(new ResourceList(Resource.Iron, 100)));
         costs.put(SkyscraperBase, new ResourceListList());
         for(int i = 0; i<10; i++){
-            costs.get(SkyscraperBase).add(new ResourceList(Resource.Iron, 30+15*i, Resource.Wood, 50+25*i, Resource.Sand, 100+25*i, Resource.Clay, 50+25*i, Resource.Oil, 150+100*i));
-        }
-    }
-    public void loadAllTextures(){
-        for(String texture : renderer.getPaths(this, highestLevel, textureFolder)){
-            TexturepackCreator.addTexture(new Texture(texture));
-        }
-    }
-    public void loadAllSounds(){
-        for(PlotType type : values()){
-            
+            costs.get(SkyscraperBase).add(new ResourceList(Resource.Iron, 30, Resource.Wood, 50, Resource.Sand, 50, Resource.Clay, 25, Resource.Oil, 75));
         }
     }
     public int getTextureIndex(String string){

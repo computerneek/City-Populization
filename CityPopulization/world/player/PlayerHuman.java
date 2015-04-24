@@ -33,7 +33,7 @@ public class PlayerHuman extends Player {
         return new PlayerHuman(world);
     }
     @Override
-    public void summonInitialWorkers(){
+    public void summonInitialWorkers(int workers){
         world.generateAndGetPlot(-1+offsetX, 0+offsetY, 0).setType(PlotType.AirportTerminal).setOwner(this).setFront(Side.BACK);
         world.generateAndGetPlot(-1+offsetX, -1+offsetY, 0).setType(PlotType.AirportJetway).setOwner(this);
         world.generateAndGetPlot(0+offsetX, -1+offsetY, 0).setType(PlotType.AirportRunway).setOwner(this).setFront(Side.LEFT);
@@ -51,7 +51,7 @@ public class PlayerHuman extends Player {
             ));
             world.getPlot(0+offsetX, 0+offsetY, 0).terminal.schedule.elements.add(new ScheduleElement(Template.HELICOPTER_PASSENGER, 1, 1, new ResourceList(Resource.Fuel, 10), 1200, 0));
         }
-        for(int j = 0; j<1; j++){
+        for(int j = 0; j<workers; j++){
             Worker worker = new Worker();
             worker.homePlot = world.getPlot(0+offsetX, 0+offsetY, 0);
             worker.player = this;
@@ -335,9 +335,26 @@ public class PlayerHuman extends Player {
                         .setType("Airport")
                         .setPlot(plot));
     }
+    private Button createSellResourceButton(Plot plot, Resource resource){
+        return new Button()
+                .setImage("/gui/buttons/"+race.getName()+"/resources/sell/"+resource.name()+".png")
+                .setText("Sell", resource.name())
+                .setEvent(new ButtonEvent()
+                        .setType("Sell_"+resource.name())
+                        .setPlot(plot));
+    }
     private void onAirportClicked(Plot plot, ButtonSet set){
         onPlainOwnedPlotClicked(plot, set);
         set.add(createAirportScheduleButton(plot));
+        if(plot.owner!=null){
+            ResourceList resources = new ResourceList();
+            for(Plot aplot : plot.owner.resourceStructures){
+                resources.addAll(aplot.resources);
+            }
+            for(Resource resource : resources.listResources()){
+                set.add(createSellResourceButton(plot, resource));
+            }
+        }
     }
     private void onWarehouseClicked(Plot plot, ButtonSet set){
         onPlainOwnedPlotClicked(plot, set);
@@ -350,6 +367,7 @@ public class PlayerHuman extends Player {
         Plot workshop = Path.findWorkshop(plot, false);
         if(!plot.civilians.isEmpty()&&plot.task==null&&workshop!=null){
             set.add(createNewWorkerButton(plot, workshop));
+            set.add(createNewWorkersButton(plot, workshop));
         }
     }
     private Button createNewWorkerButton(Plot plot, Plot workshop){
@@ -368,6 +386,36 @@ public class PlayerHuman extends Player {
                                 .setRevenue(new ResourceList())
                                 .addSegment(new WorkerTaskSegment()
                                         .setType("Train Worker"))));
+    }
+    private Button createNewWorkersButton(Plot plot, Plot workshop){
+        int workers = 0;
+        if(plot.skyscraper!=null){
+            for(Plot p : plot.skyscraper.getAllPlots()){
+                workers+=p.civilians.size();
+            }
+        }else{
+            workers = plot.civilians.size();
+        }
+        WorkerTask tsk;
+        Button bttn = new Button()
+                .setHotkey(Keyboard.KEY_T)
+                .setImage("/gui/buttons/"+race.getName()+"/trainWorker"+(plot.getLevel()+1)+".png")
+                .setText("Train All","Workers")
+                .setEvent(new ButtonEvent()
+                        .setType("Task")
+                        .setTask(tsk = new CivilianTask()
+                                .setOwner(this)
+                                .setPlot(plot)
+                                .setAltPlot(workshop)
+                                .setCost(new ResourceList(Resource.Tools, workers))
+                                .setCash(100)
+                                .setRevenue(new ResourceList())));
+        WorkerTaskSegmentSet set = new WorkerTaskSegmentSet();
+        tsk.addSegment(set);
+        for(int i = 0; i<workers; i++){
+            set.add(new WorkerTaskSegment().setType("Train Worker"));
+        }
+        return bttn;
     }
     private void onSkyscraperClicked(Plot plot, ButtonSet set){
         if(plot.task==null){
@@ -414,6 +462,7 @@ public class PlayerHuman extends Player {
         }
         if(civilians>0&&plot.task==null&&workshop!=null){
             set.add(createNewWorkerButton(plot, workshop));
+            set.add(createNewWorkersButton(plot, workshop));
         }
     }
     private Button createRotateRightButton(Plot plot){
@@ -576,15 +625,17 @@ public class PlayerHuman extends Player {
                                 setCost(cost).setCash(cash).setRevenue(new ResourceList())));
         Plot aplot = Core.world.generateAndGetPlot(plot.x, plot.y, plots[plots.length-1].z+1);
         for(int i = 0; i<plot.level+1; i++){
+            WorkerTaskSegmentSet set = new WorkerTaskSegmentSet();
             for(int j=0; j<plot.skyscraper.height; j++){
                 for(int k=0; k<plot.skyscraper.width; k++){
                     Plot aplot2 = aplot.world.generateAndGetPlot(plot.x+k, plot.y+j, aplot.z);
-                    task.addSegment(new WorkerTaskSegment().
+                    set.add(new WorkerTaskSegment().
                             setType("Plot Type").
                             setPlot(aplot2).
                             setData(plot.type.skyscraperFloorType, i, plot.front));
                 }
             }
+            task.addSegment(set);
         }
         return button;
     }

@@ -4,6 +4,8 @@ import CityPopulization.menu.MenuAirportSchedule;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.SkyScraper;
+import CityPopulization.world.resource.Resource;
+import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 public class ButtonEvent {
     private String type;
@@ -17,8 +19,22 @@ public class ButtonEvent {
                 return "";
             case "Cancel Task":
                 return "Refunds $"+plot.task.cash+" instantly";
+            default:
+                if(type.startsWith("Sell_")){
+                    return "Sells "+Math.min(500, getMinResourceQuantity(Resource.valueOf(type.substring(5))))+" "+type.substring(5)+" for $"+Resource.valueOf(type.substring(5)).getCost(Math.min(500, getMinResourceQuantity(Resource.valueOf(type.substring(5)))));
+                }
         }
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    public int getMinResourceQuantity(Resource r){
+        if(plot==null||plot.owner==null){
+            return 0;
+        }
+        ResourceList lst = new ResourceList();
+        for(Plot plot : this.plot.owner.resourceStructures){
+            lst.addAll(plot.resources);
+        }
+        return lst.get(r);
     }
     public ButtonEvent setType(String type){
         this.type = type;
@@ -55,7 +71,15 @@ public class ButtonEvent {
                 if(type.startsWith("Skyscraper")){
                     String[] spl = type.split(" ");
                     new SkyScraper(plot, Integer.parseInt(spl[1]), Integer.parseInt(spl[2]));
-                    return;
+                    break;
+                }else if(type.startsWith("Sell_")){
+                    String str = "Sells "+Math.min(500, getMinResourceQuantity(Resource.valueOf(type.substring(5))))+" "+type.substring(5)+" for $"+Resource.valueOf(type.substring(5)).getCost(Math.min(500, getMinResourceQuantity(Resource.valueOf(type.substring(5)))));
+                    plot.task = new WorkerTask().setCost(new ResourceList(Resource.valueOf(type.substring(5)), Math.min(500, getMinResourceQuantity(Resource.valueOf(type.substring(5)))))).setRevenue(new ResourceList()).setCash(0).setPlot(plot).setOwner(plot.owner);
+                    plot.task.cost.remove(Resource.Tools, 1);
+                    plot.task.revenue.remove(Resource.Tools, 1);
+                    plot.task.prepare();
+                    plot.task.segments.remove(1);
+                    break;
                 }
                 throw new AssertionError(type);
         }

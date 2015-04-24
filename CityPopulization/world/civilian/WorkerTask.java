@@ -135,6 +135,11 @@ public class WorkerTask{
             WorkerTaskSegment seg = WorkerTaskSegment.load((Config)two.get(i+""));
             task.segments.add(seg);
             seg.task = task;
+            if(seg instanceof WorkerTaskSegmentSet){
+                for(WorkerTaskSegment seg2 : ((WorkerTaskSegmentSet)seg).segments){
+                    seg2.task = task;
+                }
+            }
         }
         task.cash = get.get("cash");
         if(get.hasProperty("resx")){

@@ -42,7 +42,7 @@ public abstract class Player{
     public int getCameraZ(){
         return cameraZ;
     }
-    public abstract void summonInitialWorkers();
+    public abstract void summonInitialWorkers(int workers);
     public abstract Player createNew(World world);
     public abstract void onPlotClicked(int plotX, int plotY, MenuIngame menu, int button);
     public void setSandbox(boolean sandbox){

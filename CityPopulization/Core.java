@@ -4,13 +4,9 @@ import CityPopulization.menu.MenuMain;
 import CityPopulization.packets.PacketCash;
 import CityPopulization.packets.PacketPlot;
 import CityPopulization.packets.PacketPlotRequest;
-import CityPopulization.texturepack.Texture;
-import CityPopulization.texturepack.TexturepackCreator;
 import CityPopulization.world.World;
 import CityPopulization.world.WorldData;
 import CityPopulization.world.WorldInfo;
-import CityPopulization.world.player.Race;
-import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.save.LocalSaveLoader;
 import CityPopulization.world.save.SaveLoader;
 import CityPopulization.world.save.StorySaveLoader;
@@ -93,7 +89,7 @@ public class Core{
         GL11.glEnable(GL11.GL_ALPHA_TEST);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glEnable(GL11.GL_BLEND);
-//        AL.create();
+        AL.create();
         Keyboard.enableRepeatEvents(true);
         new TexturePackManager(new File(getAppdataRoot(), "Texture packs"), new TexturePack());
         gui = new GUI(GameHelper.MODE_3D, helper);
@@ -111,7 +107,7 @@ public class Core{
         tick++;
         gui.tick();
         if(isLastTick){
-//            AL.destroy();
+            AL.destroy();
             if(world!=null){
                 world.save();
                 if(world.remote){
@@ -204,7 +200,7 @@ public class Core{
         world.setDifficulty(data.difficulty);
         world.getLocalPlayer().setSandbox(data.sandbox);
         playWorld(world);
-        world.summonInitialWorker();
+        world.summonInitialWorker(data.workers);
     }
     public static String getNow(){
         GregorianCalendar calendar = new GregorianCalendar();
@@ -226,39 +222,5 @@ public class Core{
         }
         Core.world = world;
         gui.open(new MenuIngame(gui, gui.menu));
-    }
-    public static void loadAllSoundsAndTextures(){
-        loadAllSounds();
-        loadAllTextures();
-    }
-    private static void loadAllSounds(){
-        for(PlotType type : PlotType.values()){
-            type.loadAllSounds();
-        }
-    }
-    private static void loadAllTextures(){
-        TexturepackCreator.addTexture(new Texture("/gui/button.png"));
-        TexturepackCreator.addTexture(new Texture("/gui/buttonPressed.png"));
-        TexturepackCreator.addTexture(new Texture("/gui/buttonDisabled.png"));
-        TexturepackCreator.addTexture(new Texture("/gui/textBox.png"));
-        for(PlotType type : PlotType.values()){
-            type.loadAllTextures();
-        }
-        for(Race race : Race.values()){
-            for(PlotType type : PlotType.values()){
-                if(type.getConstructionCost(race)!=null){
-                    for(int i = 0; i<type.getMaximumLevel(); i++){
-                        TexturepackCreator.addTexture(new Texture("/gui/buttons/"+race.getName()+"/build"+type.textureFolder+i+".png"));
-                    }
-                }
-            }
-        }
-        TexturepackCreator.addTexture(new Texture("/gui/buttons/back.png"));
-        TexturepackCreator.addTexture(new Texture("/gui/buttons/next.png"));
-        TexturepackCreator.addTexture(new Texture("/textures/aircraft/initial/frame <FRAME>.png"));
-        TexturepackCreator.addTexture(new Texture("/gui/buttons/background/pressed.png"));
-        TexturepackCreator.addTexture(new Texture("/gui/buttons/background/mouseover.png"));
-        TexturepackCreator.addTexture(new Texture("/gui/buttons/background/plain.png"));
-        TexturepackCreator.addTexture(new Texture("/gui/buttons/background/disabled.png"));
     }
 }

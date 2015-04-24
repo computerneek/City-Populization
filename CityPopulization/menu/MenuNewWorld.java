@@ -10,6 +10,7 @@ import simplelibrary.opengl.gui.GUI;
 import simplelibrary.opengl.gui.Menu;
 import simplelibrary.opengl.gui.components.MenuComponentButton;
 import simplelibrary.opengl.gui.components.MenuComponentOptionButton;
+import simplelibrary.opengl.gui.components.MenuComponentSlider;
 import simplelibrary.opengl.gui.components.MenuComponentTextBox;
 public class MenuNewWorld extends Menu{
     public WinningCondition theGoal=WinningCondition.get("None");
@@ -28,6 +29,7 @@ public class MenuNewWorld extends Menu{
     private final String[] templatesS;
     private final GameDifficulty[] difficulties;
     private final String[] difficultiesS;
+    private final MenuComponentSlider startingWorkers;
     public MenuNewWorld(GUI gui, Menu parent){
         super(gui, parent);
         races = Race.values();
@@ -45,15 +47,16 @@ public class MenuNewWorld extends Menu{
         for(int i = 0; i<difficulties.length; i++){
             difficultiesS[i] = difficulties[i].getName();
         }
-        name = add(new MenuComponentTextBox(-0.8, -0.78, 1.6, 0.16, "New World", true));
-        race = add(new MenuComponentOptionButton(-0.8, -0.58, 1.6, 0.16, "Race", true, 0, racesS));
-        template = add(new MenuComponentOptionButton(-0.8, -0.38, 1.6, 0.16, "Template", true, 0, templatesS));
-        goal = add(new MenuComponentButton(-0.8, -0.18, 1.6, 0.16, "Goal", true));
-        gameSpeed = add(new MenuComponentOptionButton(-0.8, 0.02, 1.6, 0.16, "Game speed", true, 0, "1x", "2x", "4x", "8x", "16x", "32x", "64x"));
-        gameMode = add(new MenuComponentOptionButton(-0.8, 0.22, 1.6, 0.16, "Mode", true, 0, "Standard", "Sandbox"));
-        gameDifficulty = add(new MenuComponentOptionButton(-0.8, 0.42, 1.6, 0.16, "Difficulty", true, 5, difficultiesS));
-        create = add(new MenuComponentButton(-1.58, 0.62, 1.56, 0.16, "Create", false));
-        cancel = add(new MenuComponentButton(0.02, 0.62, 1.56, 0.16, "Cancel", true));
+        name = add(new MenuComponentTextBox(-0.8, -0.88, 1.6, 0.16, "New World", true));
+        race = add(new MenuComponentOptionButton(-0.8, -0.68, 1.6, 0.16, "Race", true, 0, racesS));
+        template = add(new MenuComponentOptionButton(-0.8, -0.48, 1.6, 0.16, "Template", true, 0, templatesS));
+        goal = add(new MenuComponentButton(-0.8, -0.28, 1.6, 0.16, "Goal", true));
+        gameSpeed = add(new MenuComponentOptionButton(-0.8, -0.08, 1.6, 0.16, "Game speed", true, 0, "1x", "2x", "4x", "8x", "16x", "32x", "64x"));
+        gameMode = add(new MenuComponentOptionButton(-0.8, 0.12, 1.6, 0.16, "Mode", true, 0, "Standard", "Sandbox"));
+        gameDifficulty = add(new MenuComponentOptionButton(-0.8, 0.32, 1.6, 0.16, "Difficulty", true, 5, difficultiesS));
+        startingWorkers = add(new MenuComponentSlider(-0.8, 0.52, 1.6, 0.16, 1, 10, 1, true));
+        create = add(new MenuComponentButton(-1.58, 0.72, 1.56, 0.16, "Create", false));
+        cancel = add(new MenuComponentButton(0.02, 0.72, 1.56, 0.16, "Cancel", true));
     }
     @Override
     public void renderBackground(){
@@ -89,6 +92,7 @@ public class MenuNewWorld extends Menu{
         data.sandbox = gameMode.getIndex()==1;
         data.gameSpeed = (int)Math.pow(2, gameSpeed.getIndex());
         data.difficulty = difficulties[gameDifficulty.getIndex()];
+        data.workers = (int)Math.round(startingWorkers.getValue());
         Core.createEmpireWorld(data);
     }
     private void cancel(){
