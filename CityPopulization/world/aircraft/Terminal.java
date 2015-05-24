@@ -1,15 +1,13 @@
 package CityPopulization.world.aircraft;
-import CityPopulization.Core;
 import CityPopulization.world.aircraft.cargo.AircraftCargo;
 import CityPopulization.world.aircraft.cargo.AircraftCargoResource;
 import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.aircraft.schedule.AircraftSchedule;
-import CityPopulization.world.civilian.Worker;
+import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import simplelibrary.config2.Config;
 public class Terminal {
@@ -121,15 +119,15 @@ public class Terminal {
                     timeWaiting = 0;
                 }
             }
-            if(aircraft.passengers.size()<aircraft.passengerCapacity&&(!entrance.plot.workers.isEmpty()||(!entrance.plot.civilians.isEmpty()&&entrance.plot.timeSinceLastCivilianOperation>20))){
+            if(aircraft.passengers.size()<aircraft.passengerCapacity&&(!entrance.plot.workers.isEmpty()||(!entrance.plot.civilians.isEmpty()&&entrance.plot.timeSinceLastCivilianOperation>205))){
                 canLoad = true;
                 if(timeLanded%20==0){
-                    if(!entrance.plot.civiliansPresent.isEmpty()&&entrance.plot.timeSinceLastCivilianOperation>20){
+                    if(!entrance.plot.civiliansPresent.isEmpty()&&entrance.plot.timeSinceLastCivilianOperation>205){
                         aircraft.loadPassengers(AircraftPassenger.civilians(1));
                         entrance.plot.civilians.remove(entrance.plot.civiliansPresent.remove(0));
                         timeWaiting = 0;
                     }else if(!entrance.plot.workersPresent.isEmpty()){
-                        for(Worker worker : entrance.plot.workersPresent){
+                        for(Civilian worker : entrance.plot.workersPresent){
                             if(worker.timer<=0){
                                 aircraft.loadPassengers(AircraftPassenger.workers(1));
                                 entrance.plot.workersPresent.remove(worker);

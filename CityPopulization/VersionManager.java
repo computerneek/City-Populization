@@ -32,6 +32,9 @@ public class VersionManager{
         addVersion("3.5");
         addVersion("3.6");
         addVersion("3.7");
+        addVersion("3.8");
+        addVersion("4.0");
+        breakBackCompatability();
         currentVersion = versions.get(versions.size()-1);
     }
     /**

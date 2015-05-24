@@ -3,7 +3,6 @@ import CityPopulization.Core;
 import CityPopulization.render.Side;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.Path;
-import CityPopulization.world.civilian.WorkerTaskSegmentSet;
 import CityPopulization.world.plot.PlotType;
 import CityPopulization.world.resource.ResourceList;
 import simplelibrary.config2.Config;
@@ -28,14 +27,6 @@ public abstract class Event {
                 which = config.hasProperty("owner")?(int)config.get("owner"):-2;
                 event = new EventPlotSet(Core.loadingWorld.getPlot((int)config.get("x"), (int)config.get("y"), (int)config.get("z")), PlotType.valueOf((String)config.get("plottype")), (int)config.get("level"), Side.valueOf((String)config.get("front")), which==-2?null:(which==-1?Core.loadingWorld.localPlayer:Core.loadingWorld.otherPlayers.get(which)));
                 ((EventPlotSet)event).started = config.get("started");
-                break;
-            case "satisfy":
-                if(config.hasProperty("index")){
-                    event = new EventSatisfy(Core.loadingWorld.getPlot((int)config.get("x"), (int)config.get("y"), (int)config.get("z")).task.segments.get((int)config.get("index")));
-                }else{
-                    event = new EventSatisfy(((WorkerTaskSegmentSet)Core.loadingWorld.getPlot((int)config.get("x"), (int)config.get("y"), (int)config.get("z")).task.segments.get((int)config.get("index1"))).segments.get((int)config.get("index2")));
-                }
-                ((EventSatisfy)event).started = config.get("started");
                 break;
             case "train":
                 event = new EventTrainWorker();

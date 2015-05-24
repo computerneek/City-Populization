@@ -5,7 +5,6 @@ import CityPopulization.packets.PacketPlot;
 import CityPopulization.packets.PacketPlotRequest;
 import CityPopulization.world.aircraft.Aircraft;
 import CityPopulization.world.civilian.Civilian;
-import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.plot.ChunkSize;
@@ -487,8 +486,8 @@ public class World{
         for(int i = 0; i<(int)two.get("count"); i++){
             Civilian civil = Civilian.load((Config)two.get(i+""));
             civilians.add(civil);
-            if(civil instanceof Worker){
-                civil.homePlot.workers.add((Worker)civil);
+            if(civil.worker){
+                civil.homePlot.workers.add(civil);
             }else{
                 civil.homePlot.civilians.add(civil);
             }

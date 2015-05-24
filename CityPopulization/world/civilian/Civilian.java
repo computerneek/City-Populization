@@ -9,6 +9,7 @@ import CityPopulization.world.resource.ResourceList;
 import CityPopulization.world.story.StoryMission;
 import java.io.IOException;
 import java.io.InputStream;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import simplelibrary.config2.Config;
 import simplelibrary.opengl.ImageStash;
@@ -17,6 +18,7 @@ public class Civilian{
     public float x;
     public float y;
     public float z;
+    public int[] lastDest;
     public int[] dest;
     public double speed = 0.025;
     public Path path;
@@ -24,22 +26,23 @@ public class Civilian{
     public Player player;
     private int tick;
     private int frameCap;
-    public EventSequence eventSequence;
-    public Event currentEvent;
+    public WorkerTask task;
+    public WorkerTask.Subtask subtask;
     public int timer = 12000;
     public ResourceList resources = new ResourceList();
+    public boolean worker;
     {
         this.frameCap = findFrameCap();
     }
-    public void assign(EventSequence sequence){
-        this.eventSequence = sequence;
+    public void assign(WorkerTask task){
+        this.task = task;
         if(!(homePlot.world instanceof StoryMission)||((StoryMission)homePlot.world).workersExpire()){
             timer-=240;
         }
     }
     private int findFrameCap(){
         int frameCap = 0;
-        String textureFolder = (this instanceof Worker)?"worker":"civilian";
+        String textureFolder = (worker)?"worker":"civilian";
         for(int i = 1; frameCap==0; i++){
             String path = "/textures/"+textureFolder+"/frame "+i+".png";
             try(InputStream in = PlotType.class.getResourceAsStream(path)){
@@ -51,17 +54,8 @@ public class Civilian{
         return frameCap;
     }
     public void update(){
-        if(currentEvent!=null){
-            currentEvent.work(this);
-        }
-        if(currentEvent==null||currentEvent.isComplete()&&path==null&&dest==null){
-            currentEvent = eventSequence==null?null:eventSequence.nextEvent();
-            if(eventSequence==null||eventSequence.isComplete()){
-                eventSequence = null;
-            }
-            if(currentEvent!=null){
-                currentEvent.start(this);
-            }
+        if(task!=null){
+            task.update(this);
         }
         tick++;
         if(dest!=null||path!=null){
@@ -69,6 +63,12 @@ public class Civilian{
         }
         if(Math.round(x)==homePlot.x&&Math.round(y)==homePlot.y&&Math.round(z)==homePlot.z){
             updateOnHomePlot();
+        }else if(task==null&&subtask==null&&dest==null&&path==null){
+            if(homePlot.workers.contains(this)||homePlot.civilians.contains(this)){
+                path = Path.findPath(homePlot.world.getPlot(Math.round(x), Math.round(y), Math.round(z)), homePlot, worker);
+            }else{
+                homePlot = Path.findAirportEntrance(homePlot.world.getPlot(Math.round(x), Math.round(y), Math.round(z)), true);
+            }
         }
     }
     public void pathingUpdate(){
@@ -76,6 +76,7 @@ public class Civilian{
             if(path.isComplete()){
                 path=null;
             }else{
+                lastDest = dest;
                 dest=path.next();
             }
         }
@@ -84,9 +85,9 @@ public class Civilian{
         if(plot.getType()==PlotType.Road||plot.getType()==PlotType.Elevator||plot.getSkyscraperPlots().length>0){
             traveledThisTick*=plot.getLevel()+1;
         }
-//        if(plot.task!=null){
-//            traveledThisTick/=2;
-//        }
+        if(plot.task!=null){
+            traveledThisTick/=(worker)?2:10;
+        }
         dist+=traveledThisTick;
         while(dist>=1F&&dest!=null){
             if(dest==null&&path!=null){
@@ -100,7 +101,8 @@ public class Civilian{
         }
     }
     public void updateOnHomePlot(){
-        if(eventSequence!=null||currentEvent!=null){
+        if(task!=null&&subtask==null){
+            task.assignOrDismiss(this);
             return;
         }
         if(path==null&&dest==null){
@@ -108,6 +110,18 @@ public class Civilian{
         }
     }
     private void move(){
+        Plot to = homePlot.world.getPlot(dest[0], dest[1], dest[2]);
+        Plot from = null;
+        if(lastDest!=null){
+            from = homePlot.world.getPlot(lastDest[0], lastDest[1], lastDest[2]);
+        }
+        if(!path.isComplete()&&!(to.getType()==PlotType.Road||to.getType()==PlotType.Elevator||to.skyscraper!=null)&&from!=to&&from!=null){
+            path = null;
+            if(from.getType()==PlotType.Road||from.getType()==PlotType.Elevator||from.skyscraper!=null){
+                dest = lastDest;
+                lastDest = null;
+            }
+        }
         float xDist = dest[0]-x;
         float yDist = dest[1]-y;
         float zDist = dest[2]-z;
@@ -129,8 +143,8 @@ public class Civilian{
         z+=zDist*ratio;
     }
     private void arriveHome(){
-        if(this instanceof Worker){
-            homePlot.workersPresent.add((Worker)this);
+        if(worker){
+            homePlot.workersPresent.add(this);
         }else{
             homePlot.civiliansPresent.add(this);
         }
@@ -150,7 +164,7 @@ public class Civilian{
         if(!canPlayerSee){
             return;
         }
-        String textureFolder = (this instanceof Worker)?"worker":"civilian";
+        String textureFolder = (worker)?"worker":"civilian";
         GL11.glTranslatef(x+0.5f, -y-0.5f, z+0.01f);
         ImageStash.instance.bindTexture(ImageStash.instance.getTexture("/textures/"+textureFolder+"/frame "+(tick%frameCap+1)+".png"));
         GL11.glColor4f(1, 1, 1, z!=localPlayer.getCameraZ()?0.2f:1);
@@ -168,10 +182,21 @@ public class Civilian{
         GL11.glTexCoord2f(0, 1);
         GL11.glVertex3d(-0.3, -0.3, 0);
         GL11.glEnd();
+        if(Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)&&Keyboard.isKeyDown(Keyboard.KEY_I)&&(path!=null||dest!=null)){
+            GL11.glBegin(GL11.GL_LINES);
+            if(dest!=null){
+                GL11.glVertex3d(x, y, z);
+                GL11.glVertex3d(dest[0], dest[1], dest[2]);
+                path.draw(dest[0], dest[1], dest[2]);
+            }else{
+                path.draw(x, y, z);
+            }
+            GL11.glEnd();
+        }
     }
     public Config save(){
         Config config = Config.newConfig();
-        config.set("worker", this instanceof Worker);
+        config.set("worker", worker);
         config.set("x", x);
         config.set("y", y);
         config.set("z", z);
@@ -190,18 +215,20 @@ public class Civilian{
             config.set("player", player.world.otherPlayers.indexOf(player));
         }
         config.set("tick", tick);
-        if(eventSequence!=null){
-            config.set("events", eventSequence.save());
-        }
-        if(currentEvent!=null){
-            config.set("event", currentEvent.save());
+        if(task!=null){
+            config.set("taskX", task.targetPlot.x);
+            config.set("taskY", task.targetPlot.y);
+            config.set("taskZ", task.targetPlot.z);
+            if(subtask!=null){
+                config.set("subtask", subtask.save());
+            }
         }
         config.set("timer", timer);
         config.set("resources", resources.save());
         return config;
     }
     public static Civilian load(Config config){
-        Civilian civilian = ((boolean)config.get("worker"))?new Worker():new Civilian();
+        Civilian civilian = ((boolean)config.get("worker"))?new Civilian().upgradeToWorker():new Civilian();
         civilian.x = config.get("x");
         civilian.y = config.get("y");
         civilian.z = config.get("z");
@@ -217,14 +244,22 @@ public class Civilian{
             civilian.player = which==-1?Core.loadingWorld.localPlayer:Core.loadingWorld.otherPlayers.get(which);
         }
         civilian.tick = config.get("tick");
-        if(config.hasProperty("events")){
-            civilian.eventSequence = EventSequence.load((Config)config.get("events"));
-        }
-        if(config.hasProperty("event")){
-            civilian.currentEvent = Event.load((Config)config.get("event"));
+        if(config.hasProperty("taskX")){
+            civilian.task = civilian.homePlot.world.getPlot((int)config.get("taskX"), (int)config.get("taskY"), (int)config.get("taskZ")).task;
+            if(config.hasProperty("subtask")){
+                civilian.subtask = civilian.task.readSubtask((Config)config.get("subtask"));
+            }
         }
         civilian.timer = config.get("timer");
         civilian.resources = ResourceList.load((Config)config.get("resources"));
         return civilian;
+    }
+    public Plot getCurrentPlot(){
+        return homePlot.world.getPlot(Math.round(x), Math.round(y), Math.round(z));
+    }
+    public Civilian upgradeToWorker(){
+        worker = true;
+        speed *= 2;
+        return this;
     }
 }

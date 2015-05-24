@@ -45,6 +45,7 @@ public class Core{
     public static boolean forceRender = false;
     public static GameHelper helper;
     public static GUI gui;
+    public static int saveVersion;
     private static int tick;
     public static World world;
     private static int sourceNum;

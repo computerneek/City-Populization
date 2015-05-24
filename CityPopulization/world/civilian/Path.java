@@ -7,6 +7,7 @@ import CityPopulization.world.resource.Resource;
 import CityPopulization.world.resource.ResourceList;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.lwjgl.opengl.GL11;
 import simplelibrary.config2.Config;
 public class Path implements Comparable<Path>{
     private boolean jumped;
@@ -476,5 +477,11 @@ public class Path implements Comparable<Path>{
             path.path.add(Core.loadingWorld.getPlot((int)config.get(i+"x"), (int)config.get(i+"y"), (int)config.get(i+"z")));
         }
         return path;
+    }
+    void draw(float x, float y, float z){
+        for(Plot p : path){
+            GL11.glVertex3f(x, y, z);
+            GL11.glVertex3f(x=p.x, y=p.y, z=p.y);
+        }
     }
 }

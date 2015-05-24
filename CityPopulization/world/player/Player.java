@@ -5,7 +5,6 @@ import CityPopulization.menu.MenuIngame;
 import CityPopulization.packets.PacketPlot;
 import CityPopulization.world.World;
 import CityPopulization.world.civilian.Civilian;
-import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.plot.Plot;
 import java.util.ArrayList;
 import org.lwjgl.input.Keyboard;
@@ -124,7 +123,7 @@ public abstract class Player{
             civilians.remove(civil);
         }
     }
-    public void civilianTrained(Civilian civil, Worker work){
+    public void civilianTrained(Civilian civil, Civilian work){
         if(client!=null&&civilians.contains(civil)){
             client.client.send(new PacketString("CIVILIAN_TRAINED:"+civilians.indexOf(civil)));
             civilians.set(civilians.indexOf(civil), work);

@@ -4,7 +4,6 @@ import CityPopulization.menu.ListComponentStory;
 import CityPopulization.menu.MenuIngameRestricted;
 import CityPopulization.world.GameDifficulty;
 import CityPopulization.world.civilian.Civilian;
-import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.civilian.WorkerTask;
 import CityPopulization.world.player.PlayerHuman;
 import CityPopulization.world.plot.PlotType;
@@ -79,7 +78,7 @@ public class Mission02 extends StoryMission {
         for(int i = 1; i<2; i++){
             generateAndGetPlot(i, 0, -10).setType(PlotType.House).setLevel(3).setOwner(localPlayer);
             for(int j = 0; j<8; j++){
-                Worker worker = new Worker();
+                Civilian worker = new Civilian().upgradeToWorker();
                 worker.homePlot = getPlot(i, 0, -10);
                 worker.player = localPlayer;
                 worker.homePlot.workers.add(worker);
@@ -102,7 +101,7 @@ public class Mission02 extends StoryMission {
         for(int i = -5; i<-1; i++){
             generateAndGetPlot(i, 0, -10).setType(PlotType.House).setLevel(2).setOwner(localPlayer);
             for(int j = 0; j<4; j++){
-                Worker worker = new Worker();
+                Civilian worker = new Civilian().upgradeToWorker();
                 worker.homePlot = getPlot(i, 0, -10);
                 worker.player = localPlayer;
                 worker.homePlot.workers.add(worker);
@@ -152,7 +151,7 @@ public class Mission02 extends StoryMission {
                         .setOwner(localPlayer);
                 task.cost.remove(Resource.Tools, 1);
                 task.revenue.remove(Resource.Tools, 1);
-                task.prepare();
+                task.configure();
                 task.segments.remove(0);
                 getPlot(-1, 0, -10).task = task;
                 paused = true;

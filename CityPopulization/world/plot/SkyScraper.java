@@ -58,6 +58,20 @@ public class SkyScraper {
         }
         return plots;
     }
+    public Plot[] getAllPlotsFromBottom(){
+        Plot[] plots = new Plot[width*height*levels()];
+        int boost = 0;
+        int levels = levels();
+        for(int k = 0; k<levels; k++){
+            for(int i = 0; i<width; i++){
+                for(int j = 0; j<height; j++){
+                    plots[boost] = basePlot.world.generateAndGetPlot(basePlot.x+i, basePlot.y+j, basePlot.z+k);
+                    boost++;
+                }
+            }
+        }
+        return plots;
+    }
     public boolean canExpandRight(){
         for(int i = 0; i<height; i++){
             for(int j = 0; j<levels(); j++){
