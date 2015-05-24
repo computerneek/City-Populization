@@ -161,9 +161,9 @@ public enum PlotType{
         costs.put(AirportTerminal, new ResourceListList(new ResourceList(Resource.Wood, 100, Resource.Stone, 50, Resource.Iron, 50, Resource.Coal, 5, Resource.Clay, 50, Resource.Oil, 25)));
         costs.put(AirportEntrance, new ResourceListList(new ResourceList(Resource.Wood, 100, Resource.Stone, 50, Resource.Iron, 50, Resource.Coal, 5, Resource.Clay, 50, Resource.Oil, 25)));
         costs.put(Support, new ResourceListList(new ResourceList(Resource.Iron, 100)));
-        costs.put(SkyscraperBase, new ResourceListList());
+//        costs.put(SkyscraperBase, new ResourceListList());
         for(int i = 0; i<10; i++){
-            costs.get(SkyscraperBase).add(new ResourceList(Resource.Iron, 30, Resource.Wood, 50, Resource.Sand, 50, Resource.Clay, 25, Resource.Oil, 75));
+//            costs.get(SkyscraperBase).add(new ResourceList(Resource.Iron, 30, Resource.Wood, 50, Resource.Sand, 50, Resource.Clay, 25, Resource.Oil, 75));
         }
     }
     public int getTextureIndex(String string){

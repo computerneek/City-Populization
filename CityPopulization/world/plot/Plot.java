@@ -9,11 +9,7 @@ import CityPopulization.world.aircraft.passenger.AircraftPassenger;
 import CityPopulization.world.civilian.Civilian;
 import CityPopulization.world.civilian.CivilianTask;
 import CityPopulization.world.civilian.Path;
-import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.civilian.WorkerTask;
-import CityPopulization.world.civilian.WorkerTaskSegment;
-import CityPopulization.world.civilian.WorkerTaskSegmentSet;
-import CityPopulization.world.civilian.event.EventSequence;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.player.Race;
 import CityPopulization.world.resource.Resource;
@@ -45,8 +41,8 @@ public class Plot{
     public SkyScraper skyscraper;
     public ArrayList<Civilian> civilians = new ArrayList<>();
     public ArrayList<Civilian> civiliansPresent = new ArrayList<>();
-    public ArrayList<Worker> workers = new ArrayList<>();
-    public ArrayList<Worker> workersPresent = new ArrayList<>();
+    public ArrayList<Civilian> workers = new ArrayList<>();
+    public ArrayList<Civilian> workersPresent = new ArrayList<>();
     public int timeSinceLastCivilianOperation = 0;
     public int timeSinceLastWorkerOperation = 0;
     public WorkerTask task;
@@ -90,7 +86,7 @@ public class Plot{
             inboundResources = new ResourceList();
             if(task!=null){
                 task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
-                task.prepare();
+                task.configure();
                 task.cost.remove(Resource.Tools, 1);
                 task.revenue.remove(Resource.Tools, 1);
                 task.segments.remove(0);
@@ -101,13 +97,14 @@ public class Plot{
                 resources = new ResourceList();
             }
         }else if((this.type==PlotType.House||getSkyscraperPlots().length>0)&&type!=this.type){
-            for(Worker worker : workers){
+            for(Civilian worker : workers){
                 worker.timer = 0;
             }
             for(Civilian civil : civilians){
                 civil.timer = 0;
             }
         }
+        PlotType old = this.type;
         this.type = type;
         this.level = 0;
         if(Core.world==world){
@@ -154,6 +151,13 @@ public class Plot{
             skyscraper.collapse();
         }else if(skyscraper==null&&type.skyscraperFloorType!=null){
             new SkyScraper(this, 1, 1);
+        }else if(skyscraper!=null&&type==PlotType.Air){
+            skyscraper = null;
+        }else if(skyscraper==null&&type.skyscraperBaseType!=null){
+            Plot p = world.getPlot(x, y, z-1);
+            if((p.type==type||p.type==type.skyscraperBaseType)&&p.skyscraper!=null){
+                p.skyscraper.refresh();
+            }
         }
         return this;
     }
@@ -303,6 +307,10 @@ public class Plot{
         }
     }
     public void update(){
+        if(task!=null){
+            world.schedulePlotUpdate(this);
+            task.check(this);
+        }
         if(type.falls()&&world.getPlot(x, y, z-1)!=null&&!world.getPlot(x, y, z-1).type.supports()){
             boolean go = true;
             PlotType atype = world.getPlot(x, y, z-1).type;
@@ -356,14 +364,14 @@ public class Plot{
             if(task==null&&resources.count()>(level+1)*owner.getResourcesPerWarehouse()){
                 ResourceList lst = resources.split(resources.count()-(level+1)*owner.getResourcesPerWarehouse());
                 task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(lst);
-                task.prepare();
+                task.configure();
                 task.cost.remove(Resource.Tools, 1);
                 task.revenue.remove(Resource.Tools, 1);
                 task.segments.remove(0);
             }
         }else if(owner!=null&&type!=PlotType.AirportEntrance&&task==null&&resources.count()>0){
             task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
-            task.prepare();
+            task.configure();
             task.cost.remove(Resource.Tools, 1);
             task.revenue.remove(Resource.Tools, 1);
             task.segments.remove(0);
@@ -422,7 +430,7 @@ public class Plot{
             resources.removeAll(fuel);
             if(resources.count()>0){
                 task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList()).setRevenue(resources);
-                task.prepare();
+                task.configure();
                 task.cost.remove(Resource.Tools, 1);
                 task.revenue.remove(Resource.Tools, 1);
                 task.segments.remove(0);
@@ -439,7 +447,7 @@ public class Plot{
             }
             int count = Math.min(Math.max(1, available/10), 500-terminal.fuel-resources.get(Resource.Fuel));
             task = new WorkerTask().setOwner(owner).setCash(0).setPlot(this).setCost(new ResourceList(Resource.Fuel, count)).setRevenue(new ResourceList());
-            task.prepare();
+            task.configure();
             task.cost.remove(Resource.Tools, 1);
             task.revenue.remove(Resource.Tools, 1);
             task.segments.remove(1);
@@ -525,9 +533,9 @@ public class Plot{
         civilian.x = x;
         civilian.y = y;
         civilian.z = z;
-        if(civilian instanceof Worker){
-            workers.add((Worker)civilian);
-            workersPresent.add((Worker)civilian);
+        if(civilian.worker){
+            workers.add(civilian);
+            workersPresent.add(civilian);
         }else{
             civilians.add(civilian);
             civiliansPresent.add(civilian);
@@ -540,7 +548,7 @@ public class Plot{
             owner.cash+=civiliansPresent.size();
         }
         civilianTime++;
-        if(civilianTime/2>=getType().getMaximumLevel()-getLevel()){
+        if(civilianTime/2>=getType().getMaximumLevel()-getLevel()+100){
             doCivilianUpdate();
         }
     }
@@ -589,6 +597,14 @@ public class Plot{
         }else{
             for(Iterator<Civilian> it=civilians.iterator(); it.hasNext();){
                 Civilian worker=it.next();
+                if(worker.worker){
+                    it.remove();
+                    workers.add(worker);
+                    if(civiliansPresent.contains(worker)){
+                        civiliansPresent.remove(worker);
+                        workersPresent.add(worker);
+                    }
+                }
                 if(shouldCivilianBeUnstable()){
                     worker.timer--;
                 }
@@ -622,22 +638,16 @@ public class Plot{
                 return;
             }
             Civilian worker = workersAvailable.get(new Random().nextInt(workersAvailable.size()));
-            boolean taskSent = false;
             WorkerTask task = this.task;
             if(skyscraper!=null){
                 task = skyscraper.basePlot.task;
             }
-            if(task!=null&&task instanceof CivilianTask&&!(task.isFull()||task.getCurrentSegment().isFull()||!task.canReceiveFrom(this))){
-                WorkerTaskSegment segment = task.getCurrentSegment();
-                EventSequence sequence = segment.generateEventSequence(worker, this);
-                if(sequence!=null){
-                    worker.assign(sequence);
-                    world.civilians.add(worker);
-                    world.onCivilianAdded(worker);
-                    civiliansPresent.remove(worker);
-                    timeSinceLastCivilianOperation = 0;
-                    taskSent = true;
-                }
+            if(task!=null&&task instanceof CivilianTask&&task.couldUseMoreCivilians(this)){
+                world.civilians.add(worker);
+                world.onCivilianAdded(worker);
+                civiliansPresent.remove(worker);
+                timeSinceLastCivilianOperation = 0;
+                task.assign(worker);
             }
         }
     }
@@ -646,11 +656,22 @@ public class Plot{
         if(world.age%20==0&&owner!=null){
             owner.cash-=workersPresent.size();
         }
-        if(timeSinceLastWorkerOperation>=(getType().getMaximumLevel()-getLevel())*5-4){
+        if(timeSinceLastWorkerOperation>=(getType().getMaximumLevel()-getLevel())*5+96){
             doWorkerUpdate();
         }
     }
     private void doWorkerUpdate(){
+        for(Iterator<Civilian> it = civilians.iterator(); it.hasNext();){
+            Civilian c = it.next();
+            if(c.worker){
+                it.remove();
+                workers.add(c);
+                if(civiliansPresent.contains(c)){
+                    civiliansPresent.remove(c);
+                    workersPresent.add(c);
+                }
+            }
+        }
         if(owner==null){
             return;
         }
@@ -658,11 +679,11 @@ public class Plot{
             workersPresent.get(0).timer = 0;
         }
         if(getType()!=PlotType.House&&getSkyscraperPlots().length==0){
-            for(Worker worker : workers){
+            for(Civilian worker : workers){
                 worker.timer--;
             }
             if(getType()!=PlotType.AirportEntrance){
-                Worker worker = workersPresent.get(0);
+                Civilian worker = workersPresent.get(0);
                 if(worker.timer>0){
                     Plot house = findEmptyHouse();
                     if(house!=null){
@@ -696,7 +717,7 @@ public class Plot{
                 }
             }
         }else{
-            for(Worker worker : workersPresent){
+            for(Civilian worker : workersPresent){
                 if(worker.timer<=0){
                     Plot airport = Path.findAirportEntrance(this, true);
                     if(airport!=null){
@@ -721,9 +742,9 @@ public class Plot{
             taskWorkerFailed = false;
             return;
         }
-        ArrayList<Worker> workersAvailable = new ArrayList<>();
-        Worker worker = null;
-        for(Worker aworker : workersPresent){
+        ArrayList<Civilian> workersAvailable = new ArrayList<>();
+        Civilian worker = null;
+        for(Civilian aworker : workersPresent){
             if(aworker.timer>0){
                 worker = aworker;
                 break;
@@ -734,18 +755,13 @@ public class Plot{
         }
         boolean taskSent = false;
         for(WorkerTask potentialTask : tasks){
-            if(potentialTask.getCurrentSegment()==null||((potentialTask instanceof CivilianTask)&&(potentialTask.getCurrentSegment().type!=null&&(potentialTask.getCurrentSegment().type.equals("Train Worker"))||(potentialTask.getCurrentSegment() instanceof WorkerTaskSegmentSet&&((WorkerTaskSegmentSet)potentialTask.getCurrentSegment()).segments.get(0).type.equals("Train Worker"))))||potentialTask.isFull()||potentialTask.getCurrentSegment().isFull()||!potentialTask.canReceiveFrom(this)){
-                continue;
-            }
-            WorkerTaskSegment segment = potentialTask.getCurrentSegment();
-            EventSequence sequence = segment.generateEventSequence(worker, this);
-            if(sequence!=null){
-                worker.assign(sequence);
+            if(potentialTask.couldUseMoreWorkers(this)){
                 world.civilians.add(worker);
                 world.onCivilianAdded(worker);
                 workersPresent.remove(worker);
                 timeSinceLastWorkerOperation = 0;
                 taskSent = true;
+                potentialTask.assign(worker);
                 break;
             }
         }
@@ -959,7 +975,7 @@ public class Plot{
         if(get.hasProperty("workers")){
             Config two = get.get("workers");
             for(int i = 0; i<(int)two.get("count"); i++){
-                Worker worker = (Worker)Civilian.load((Config)two.get(i+""));
+                Civilian worker = Civilian.load((Config)two.get(i+""));
                 workersPresent.add(worker);
                 workers.add(worker);
             }

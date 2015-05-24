@@ -53,7 +53,7 @@ public class ButtonEvent {
             case "Task":
                 if(task.owner.cash>=task.cash){
                     task.targetPlot.task = task;
-                    task.prepare();
+                    task.start();
                 }
                 break;
             case "Airport":
@@ -77,7 +77,7 @@ public class ButtonEvent {
                     plot.task = new WorkerTask().setCost(new ResourceList(Resource.valueOf(type.substring(5)), Math.min(500, getMinResourceQuantity(Resource.valueOf(type.substring(5)))))).setRevenue(new ResourceList()).setCash(0).setPlot(plot).setOwner(plot.owner);
                     plot.task.cost.remove(Resource.Tools, 1);
                     plot.task.revenue.remove(Resource.Tools, 1);
-                    plot.task.prepare();
+                    plot.task.configure();
                     plot.task.segments.remove(1);
                     break;
                 }

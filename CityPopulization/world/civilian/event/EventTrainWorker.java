@@ -1,6 +1,5 @@
 package CityPopulization.world.civilian.event;
 import CityPopulization.world.civilian.Civilian;
-import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.player.Player;
 import simplelibrary.config2.Config;
 public class EventTrainWorker extends Event {
@@ -13,7 +12,7 @@ public class EventTrainWorker extends Event {
     @Override
     public void start(Civilian worker){
         started = true;
-        Worker aworker = new Worker();
+        Civilian aworker = new Civilian().upgradeToWorker();
         aworker.dest = worker.dest;
         aworker.dist = worker.dist;
         aworker.homePlot = worker.homePlot;
@@ -21,8 +20,8 @@ public class EventTrainWorker extends Event {
         aworker.x = worker.x;
         aworker.y = worker.y;
         aworker.z = worker.z;
-        aworker.eventSequence = worker.eventSequence;
-        aworker.currentEvent = worker.currentEvent;
+        aworker.task = worker.task;
+        aworker.subtask = worker.subtask;
         worker.homePlot.civilians.remove(worker);
         worker.homePlot.workers.add(aworker);
         aworker.player = worker.player;

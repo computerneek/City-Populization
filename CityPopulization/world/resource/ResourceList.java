@@ -35,6 +35,13 @@ public class ResourceList{
         }
         return this;
     }
+    public ResourceList clear(){
+        list.clear();
+        return this;
+    }
+    public boolean isEmpty(){
+        return list.isEmpty();
+    }
     public ResourceList multiply(double modifier){
         for(Resource resource : new ArrayList<>(list.keySet())){
             int value = (int)Math.floor(modifier*list.get(resource));

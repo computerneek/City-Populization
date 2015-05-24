@@ -54,8 +54,13 @@ public class LocalSaveLoader implements SaveLoader{
     public World loadWorld(WorldInfo info){
         switch(info.version){
             default:
-                return load3_1(info);
+                if(info.version.startsWith("3.")){
+                    outdatedWorld("3.8", false);
+                }else{
+                    return load4_0(info);
+                }
         }
+        return null;
     }
     @Override
     public void saveWorld(World world){
@@ -95,7 +100,8 @@ public class LocalSaveLoader implements SaveLoader{
             throw ex;
         }
     }
-    private World load3_1(WorldInfo info){
+    private World load4_0(WorldInfo info){
+        Core.saveVersion = 1;
         World world = new World();
         world.info = info;
         try(FileInputStream in = new FileInputStream(info.file)){
@@ -124,5 +130,19 @@ public class LocalSaveLoader implements SaveLoader{
             throw ex;
         }
         return world;
+    }
+    private void outdatedWorld(final String version, final boolean definite){
+        new Thread(){
+            public void run(){
+                try{
+                    Thread.sleep(1000);
+                }catch(InterruptedException ex1){
+                    throw new RuntimeException(ex1);
+                }
+                JOptionPane.showMessageDialog(null, "World load failed due to outdated version!\n"
+                                                    + "That world will "+(definite?"":"probably ")+"load in City Populization "+version,
+                                                    "Load Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        }.start();
     }
 }

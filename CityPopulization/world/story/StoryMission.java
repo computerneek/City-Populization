@@ -5,10 +5,11 @@ import CityPopulization.menu.MenuIngame;
 import CityPopulization.menu.MenuIngameVictory;
 import CityPopulization.world.World;
 import CityPopulization.world.civilian.Civilian;
-import CityPopulization.world.civilian.Worker;
 import CityPopulization.world.player.Player;
 import CityPopulization.world.plot.Plot;
 import CityPopulization.world.plot.PlotType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import simplelibrary.opengl.gui.components.ListComponent;
 public abstract class StoryMission extends World{
     public abstract boolean isComplete();
@@ -35,7 +36,15 @@ public abstract class StoryMission extends World{
     public void save(){}
     public void display(Display menu){
         Core.gui.open(menu);
-        while(Core.gui.menu==menu);
+        while(Core.gui.menu==menu){
+            synchronized(Core.gui){
+                try{
+                    Core.gui.wait(1);
+                }catch(InterruptedException ex){
+                    Logger.getLogger(StoryMission.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        };
     }
     public void waitUntil(int tick){
         while(age<tick){
@@ -54,10 +63,6 @@ public abstract class StoryMission extends World{
         while(plot.getType()!=type||plot.getLevel()!=level){
             waitFor(1);
         }
-    }
-    public void zoom(int x, int y, int z){
-        Player player = Core.world.localPlayer;
-        while(player.cameraX!=x&&player.cameraY!=y&&player.cameraZ!=z);
     }
     public MenuIngameRestricted restrict(){
         if(!(Core.gui.menu instanceof MenuIngameRestricted)){
@@ -84,7 +89,7 @@ public abstract class StoryMission extends World{
         Plot plot;
         (plot = generateAndGetPlot(x, y, z)).setType(PlotType.House).setLevel(level).setOwner(owner);
         for(int i = 0; i<workers; i++){
-            Worker worker = new Worker();
+            Civilian worker = new Civilian().upgradeToWorker();
             worker.homePlot = plot;
             worker.player = owner;
             plot.workers.add(worker);
@@ -158,7 +163,7 @@ public abstract class StoryMission extends World{
                 for(int k = z; k<=Z; k++){
                     plot = generateAndGetPlot(i, j, k).setType(type).setLevel(level).setOwner(owner);
                     for(int l = 0; l<workers; l++){
-                        Worker worker = new Worker();
+                        Civilian worker = new Civilian().upgradeToWorker();
                         worker.homePlot = plot;
                         worker.player = owner;
                         plot.workers.add(worker);
