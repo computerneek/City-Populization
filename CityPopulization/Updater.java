@@ -14,9 +14,6 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.JOptionPane;
-import simplelibrary.Sys;
-import simplelibrary.error.ErrorCategory;
-import simplelibrary.error.ErrorLevel;
 public class Updater{
     private ArrayList<String> versions = new ArrayList<>();
     private HashMap<String, String> links = new HashMap<>();
@@ -209,7 +206,7 @@ public class Updater{
                 }
             }
         }catch (Exception ex){
-            Sys.error(ErrorLevel.severe, null, ex, ErrorCategory.InternetIO);
+            ex.printStackTrace();
             new File(temporaryFilename).delete();
         }//</editor-fold>
         if(!existingFilename.equals(fileName)){
